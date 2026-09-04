@@ -18,7 +18,7 @@
             <form action="{{ route('admin.stage-products.store', $stage) }}" method="POST" class="flex flex-wrap items-end gap-3">
                 @csrf
                 <div class="flex-1 min-w-[220px]">
-                    <x-admin.select name="product_id" label="Product" :options="$products->mapWithKeys(fn ($p) => [$p->id => $p->name . ($p->sku ? ' (' . $p->sku . ')' : '') . ' — ₹' . number_format((float) $p->rate, 2) . '/' . $p->unit])->all()" placeholder="Select a product" required />
+                    <x-admin.select name="product_id" label="Product" :options="$products->mapWithKeys(fn ($p) => [$p->id => $p->name . ($p->sku ? ' (' . $p->sku . ')' : '') . ' — ₹' . number_format((float) $p->rate, 0) . '/' . $p->unit])->all()" placeholder="Select a product" required />
                 </div>
                 <div>
                     <x-admin.input name="quantity" label="Quantity" type="number" step="0.001" min="0.001" :value="old('quantity', 1)" required />
@@ -54,7 +54,7 @@
                                 </td>
                                 <td class="px-6 py-4 text-gray-600">
                                     @if($templateProduct->product)
-                                        ₹{{ number_format((float) $templateProduct->product->rate, 2) }} / {{ $templateProduct->product->unit }}
+                                        ₹{{ number_format((float) $templateProduct->product->rate, 0) }} / {{ $templateProduct->product->unit }}
                                     @else
                                         —
                                     @endif

@@ -20,7 +20,7 @@
                         <x-admin.input name="name" label="Product Name" :value="old('name', $product->name)" required />
                         <x-admin.input name="sku" label="SKU" :value="old('sku', $product->sku)" />
                         <x-admin.select name="unit" label="Unit" :options="$units" :value="old('unit', $product->unit)" required />
-                        <x-admin.input name="rate" label="Rate (₹ per unit)" type="number" step="0.01" min="0" :value="old('rate', $product->rate)" required />
+                        <x-admin.input name="rate" label="Rate (₹ per unit)" type="number" step="1" min="0" :value="old('rate', $product->rate)" required />
                         <x-admin.input name="gst_rate" label="GST Rate (%)" type="number" step="0.01" min="0" max="100" :value="old('gst_rate', $product->gst_rate)" />
                         <x-admin.select name="supplier_id" label="Primary Supplier" :options="$suppliers->pluck('name', 'id')->all()" :value="(string) old('supplier_id', $product->supplier_id)" placeholder="None" />
                     </div>

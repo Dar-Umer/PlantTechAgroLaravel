@@ -10,12 +10,15 @@ use App\Models\Product;
 use App\Models\Service;
 use App\Models\WorkOrder;
 use App\Models\WorkOrderStage;
+use App\Models\WorkOrderStageAttachment;
 use App\Models\WorkOrderStageProduct;
 use App\Notifications\WorkOrderAssigned;
 use App\Services\InvoiceNumberer;
 use App\Services\StockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class WorkOrderController extends Controller
 {
@@ -122,7 +125,7 @@ class WorkOrderController extends Controller
 
     public function show(WorkOrder $workOrder)
     {
-        $workOrder->load(['stages.products.product', 'agent', 'customer', 'service', 'invoice']);
+        $workOrder->load(['stages.products.product', 'stages.attachments', 'agent', 'createdBy', 'customer', 'service.stages', 'invoice']);
 
         $agents = Admin::where('is_active', true)->orderBy('name')->get(['id', 'name']);
         $products = Product::active()->orderBy('name')->get(['id', 'name', 'sku', 'unit', 'rate', 'gst_rate', 'stock_qty']);
@@ -184,7 +187,20 @@ class WorkOrderController extends Controller
             return back()->with('error', 'Invalid stage.');
         }
 
-        $data = $request->validate(['notes' => ['nullable', 'string', 'max:2000']]);
+        $rules = [
+            'notes' => ['nullable', 'string', 'max:2000'],
+        ];
+
+        if ($stage->requires_photo) {
+            $rules['photos'] = ['required', 'array', 'min:'.$stage->min_photos];
+            $rules['photos.*'] = ['required', 'image', 'mimes:jpeg,jpg,png,webp,gif', 'max:5120'];
+        }
+
+        if ($stage->requires_pdf) {
+            $rules['pdf'] = ['required', 'file', 'mimes:pdf', 'max:10240'];
+        }
+
+        $data = $request->validate($rules);
 
         $stage->update([
             'status' => 'completed',
@@ -192,9 +208,40 @@ class WorkOrderController extends Controller
             'notes' => $data['notes'] ?? $stage->notes,
         ]);
 
+        if ($stage->requires_photo && $request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photo) {
+                $stage->attachments()->create([
+                    'type' => 'photo',
+                    'file_path' => $photo->store('work-orders/stages', 'public'),
+                    'original_name' => $photo->getClientOriginalName(),
+                ]);
+            }
+        }
+
+        if ($stage->requires_pdf && $request->hasFile('pdf')) {
+            $pdf = $request->file('pdf');
+            $stage->attachments()->create([
+                'type' => 'pdf',
+                'file_path' => $pdf->store('work-orders/stages', 'public'),
+                'original_name' => $pdf->getClientOriginalName(),
+            ]);
+        }
+
         $this->refreshWorkOrderStatus($workOrder);
 
         return back()->with('success', 'Stage "'.$stage->name.'" marked as completed.');
+    }
+
+    public function destroyAttachment(WorkOrder $workOrder, WorkOrderStage $stage, WorkOrderStageAttachment $attachment)
+    {
+        if ($attachment->work_order_stage_id !== $stage->id || $stage->work_order_id !== $workOrder->id) {
+            return back()->with('error', 'Invalid attachment.');
+        }
+
+        Storage::disk('public')->delete($attachment->file_path);
+        $attachment->delete();
+
+        return back()->with('success', 'Attachment removed.');
     }
 
     public function skipStage(Request $request, WorkOrder $workOrder, WorkOrderStage $stage)

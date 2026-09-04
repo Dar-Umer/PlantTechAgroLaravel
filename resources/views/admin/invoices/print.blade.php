@@ -120,10 +120,10 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $item->name }}@if($item->unit) <span style="color:#9ca3af;">({{ $item->unit }})</span>@endif</td>
                         <td class="r">{{ $item->qty }}</td>
-                        <td class="r">₹{{ number_format((float) $item->rate, 2) }}</td>
-                        <td class="r">{{ (float) $item->discount > 0 ? '₹' . number_format((float) $item->discount, 2) : '—' }}</td>
+                        <td class="r">₹{{ number_format((float) $item->rate, 0) }}</td>
+                        <td class="r">{{ (float) $item->discount > 0 ? '₹' . number_format((float) $item->discount, 0) : '—' }}</td>
                         <td class="r">{{ $item->gst_rate }}%</td>
-                        <td class="r">₹{{ number_format((float) $item->total, 2) }}</td>
+                        <td class="r">₹{{ number_format((float) $item->total, 0) }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -131,12 +131,12 @@
 
         <div class="totals">
             <table>
-                <tr><td>Subtotal</td><td>₹{{ number_format((float) $invoice->subtotal, 2) }}</td></tr>
-                <tr><td>Discount</td><td>₹{{ number_format((float) $invoice->discount_total, 2) }}</td></tr>
-                <tr><td>GST</td><td>₹{{ number_format((float) $invoice->gst_total, 2) }}</td></tr>
-                <tr class="grand"><td>Grand Total</td><td>₹{{ number_format((float) $invoice->grand_total, 2) }}</td></tr>
-                <tr><td>Amount Paid</td><td>₹{{ number_format((float) $invoice->amount_paid, 2) }}</td></tr>
-                <tr><td><strong>Balance Due</strong></td><td><strong>₹{{ number_format($invoice->balanceDue(), 2) }}</strong></td></tr>
+                <tr><td>Subtotal</td><td>₹{{ number_format((float) $invoice->subtotal, 0) }}</td></tr>
+                <tr><td>Discount</td><td>₹{{ number_format((float) $invoice->discount_total, 0) }}</td></tr>
+                <tr><td>GST</td><td>₹{{ number_format((float) $invoice->gst_total, 0) }}</td></tr>
+                <tr class="grand"><td>Grand Total</td><td>₹{{ number_format((float) $invoice->grand_total, 0) }}</td></tr>
+                <tr><td>Amount Paid</td><td>₹{{ number_format((float) $invoice->amount_paid, 0) }}</td></tr>
+                <tr><td><strong>Balance Due</strong></td><td><strong>₹{{ number_format($invoice->balanceDue(), 0) }}</strong></td></tr>
             </table>
         </div>
 

@@ -79,7 +79,7 @@
                             <x-admin.input name="quantity_final" label="New Stock Level" type="number" step="0.001" min="0" :value="old('quantity_final')" helptext="Set the actual counted stock. The difference is recorded." />
                         </div>
                         <div x-show="type === 'in'" x-cloak>
-                            <x-admin.input name="unit_cost" label="Unit Cost (₹, optional)" type="number" step="0.01" min="0" :value="old('unit_cost')" />
+                            <x-admin.input name="unit_cost" label="Unit Cost (₹, optional)" type="number" step="1" min="0" :value="old('unit_cost')" />
                         </div>
                     </div>
 

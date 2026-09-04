@@ -9,7 +9,7 @@
             <x-admin.button href="{{ route('admin.services.stages.index', $service) }}" variant="secondary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>'>Back</x-admin.button>
         </div>
 
-        <form action="{{ route('admin.services.stages.update', [$service, $stage]) }}" method="POST" class="space-y-6">
+        <form action="{{ route('admin.services.stages.update', $stage) }}" method="POST" class="space-y-6">
             @csrf
             @method('PUT')
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">

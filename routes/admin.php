@@ -98,6 +98,7 @@ Route::middleware('admin')->group(function () {
     Route::post('work-orders/{workOrder}/stages/{stage}/products', [WorkOrderController::class, 'addStageProduct'])->name('admin.work-orders.stages.products.store');
     Route::patch('work-orders/{workOrder}/stages/{stage}/products/{stageProduct}', [WorkOrderController::class, 'updateStageProduct'])->name('admin.work-orders.stages.products.update');
     Route::delete('work-orders/{workOrder}/stages/{stage}/products/{stageProduct}', [WorkOrderController::class, 'destroyStageProduct'])->name('admin.work-orders.stages.products.destroy');
+    Route::delete('work-orders/{workOrder}/stages/{stage}/attachments/{attachment}', [WorkOrderController::class, 'destroyAttachment'])->name('admin.work-orders.stages.attachments.destroy');
     Route::post('work-orders/{workOrder}/invoice', [WorkOrderController::class, 'generateInvoice'])->name('admin.work-orders.invoice');
 
     // Invoices

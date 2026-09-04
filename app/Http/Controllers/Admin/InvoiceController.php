@@ -47,7 +47,7 @@ class InvoiceController extends Controller
     public function create(Request $request)
     {
         $customers = Customer::where('status', 'active')->orderBy('name')->get(['id', 'name', 'phone']);
-        $products = Product::active()->orderBy('name')->get(['id', 'name', 'sku', 'unit', 'rate', 'gst_rate']);
+        $products = Product::active()->orderBy('name')->get(['id', 'name', 'sku', 'unit', 'rate', 'gst_rate', 'stock_qty', 'low_stock_threshold']);
 
         return view('admin.invoices.create', [
             'customers' => $customers,

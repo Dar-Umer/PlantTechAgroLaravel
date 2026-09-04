@@ -42,8 +42,8 @@
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                         <x-admin.button href="{{ route('admin.stage-products.index', $stage) }}" variant="secondary" size="sm">Materials ({{ $stage->products()->count() }})</x-admin.button>
-                        <x-admin.button href="{{ route('admin.services.stages.edit', [$service, $stage]) }}" variant="secondary" size="sm">Edit</x-admin.button>
-                        <form action="{{ route('admin.services.stages.destroy', [$service, $stage]) }}" method="POST" onsubmit="return confirm('Delete this stage?')">
+                        <x-admin.button href="{{ route('admin.services.stages.edit', $stage) }}" variant="secondary" size="sm">Edit</x-admin.button>
+                        <form action="{{ route('admin.services.stages.destroy', $stage) }}" method="POST" onsubmit="return confirm('Delete this stage?')">
                             @csrf
                             @method('DELETE')
                             <x-admin.button type="submit" variant="danger" size="sm">Delete</x-admin.button>

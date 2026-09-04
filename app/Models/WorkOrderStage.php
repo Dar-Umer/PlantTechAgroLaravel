@@ -43,4 +43,9 @@ class WorkOrderStage extends Model
     {
         return $this->hasMany(WorkOrderStageProduct::class);
     }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(WorkOrderStageAttachment::class);
+    }
 }

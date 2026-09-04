@@ -19,11 +19,11 @@
             </div>
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
                 <p class="text-sm font-medium text-gray-500">Outstanding</p>
-                <p class="text-3xl font-bold text-red-600 mt-2">₹{{ number_format($totals['outstanding'], 2) }}</p>
+                <p class="text-3xl font-bold text-red-600 mt-2">₹{{ number_format($totals['outstanding'], 0) }}</p>
             </div>
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
                 <p class="text-sm font-medium text-gray-500">Collected</p>
-                <p class="text-3xl font-bold text-green-600 mt-2">₹{{ number_format($totals['collected'], 2) }}</p>
+                <p class="text-3xl font-bold text-green-600 mt-2">₹{{ number_format($totals['collected'], 0) }}</p>
             </div>
         </div>
 
@@ -70,8 +70,8 @@
                                 <td class="px-6 py-4 font-semibold text-gray-900">{{ $invoice->number }}</td>
                                 <td class="px-6 py-4 text-gray-600">{{ $invoice->customer_name }}</td>
                                 <td class="px-6 py-4 text-gray-500 text-xs">{{ $invoice->invoice_date->format('d M Y') }}</td>
-                                <td class="px-6 py-4 font-semibold text-gray-900">₹{{ number_format((float) $invoice->grand_total, 2) }}</td>
-                                <td class="px-6 py-4 text-gray-600">₹{{ number_format((float) $invoice->amount_paid, 2) }}</td>
+                                <td class="px-6 py-4 font-semibold text-gray-900">₹{{ number_format((float) $invoice->grand_total, 0) }}</td>
+                                <td class="px-6 py-4 text-gray-600">₹{{ number_format((float) $invoice->amount_paid, 0) }}</td>
                                 <td class="px-6 py-4">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $statusClass }}">
                                         {{ \App\Models\Invoice::STATUSES[$invoice->status] ?? $invoice->status }}

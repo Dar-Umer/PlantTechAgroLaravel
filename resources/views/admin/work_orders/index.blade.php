@@ -14,17 +14,17 @@
             </x-admin.button>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4">
             <a href="{{ route('admin.work-orders.index') }}"
-               class="bg-white rounded-2xl shadow-sm border p-4 text-center transition {{ request('status') ? 'border-gray-100 hover:border-brand-200' : 'border-brand-300 ring-1 ring-brand-200' }}">
-                <p class="text-2xl font-bold text-gray-900">{{ \App\Models\WorkOrder::count() }}</p>
-                <p class="text-xs text-gray-500 mt-0.5">All</p>
+               class="bg-white rounded-2xl shadow-sm border p-5 transition {{ request('status') ? 'border-gray-100 hover:border-brand-200' : 'border-brand-300 ring-1 ring-brand-200' }}">
+                <p class="text-sm font-medium text-gray-500">All</p>
+                <p class="text-3xl font-bold text-gray-900 mt-2">{{ \App\Models\WorkOrder::count() }}</p>
             </a>
             @foreach(\App\Models\WorkOrder::STATUSES as $key => $label)
                 <a href="{{ route('admin.work-orders.index', ['status' => $key]) }}"
-                   class="bg-white rounded-2xl shadow-sm border p-4 text-center transition {{ request('status') === $key ? 'border-brand-300 ring-1 ring-brand-200' : 'border-gray-100 hover:border-brand-200' }}">
-                    <p class="text-2xl font-bold text-gray-900">{{ $counts[$key] ?? 0 }}</p>
-                    <p class="text-xs text-gray-500 mt-0.5">{{ $label }}</p>
+                   class="bg-white rounded-2xl shadow-sm border p-5 transition {{ request('status') === $key ? 'border-brand-300 ring-1 ring-brand-200' : 'border-gray-100 hover:border-brand-200' }}">
+                    <p class="text-sm font-medium text-gray-500">{{ $label }}</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ $counts[$key] ?? 0 }}</p>
                 </a>
             @endforeach
         </div>
@@ -54,6 +54,7 @@
                             <th class="px-6 py-3 font-semibold text-gray-600">Agent</th>
                             <th class="px-6 py-3 font-semibold text-gray-600">Status</th>
                             <th class="px-6 py-3 font-semibold text-gray-600">Invoice</th>
+                            <th class="px-6 py-3 font-semibold text-gray-600">Created</th>
                             <th class="px-6 py-3 font-semibold text-gray-600 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -64,10 +65,27 @@
                                 $statusClass = ['gray' => 'bg-gray-100 text-gray-600', 'blue' => 'bg-blue-50 text-blue-700', 'yellow' => 'bg-yellow-50 text-yellow-700', 'green' => 'bg-green-50 text-green-700', 'red' => 'bg-red-50 text-red-700'][$color];
                             @endphp
                             <tr class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 font-semibold text-gray-900">{{ $workOrder->number }}</td>
-                                <td class="px-6 py-4 text-gray-600">{{ $workOrder->customer_name }}</td>
-                                <td class="px-6 py-4 text-gray-600">{{ $workOrder->service_name }}</td>
-                                <td class="px-6 py-4 text-gray-600">{{ $workOrder->agent?->name ?? '—' }}</td>
+                                <td class="px-6 py-4">
+                                    <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="font-semibold text-brand-600 hover:text-brand-700">{{ $workOrder->number }}</a>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-gray-600">{{ $workOrder->customer_name }}</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-gray-600">{{ $workOrder->service_name }}</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    @if($workOrder->agent)
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-7 h-7 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                                {{ strtoupper(substr($workOrder->agent->name, 0, 1)) }}
+                                            </div>
+                                            <span class="text-gray-600 text-xs">{{ $workOrder->agent->name }}</span>
+                                        </div>
+                                    @else
+                                        <span class="text-gray-400 text-xs">—</span>
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $statusClass }}">
                                         {{ \App\Models\WorkOrder::STATUSES[$workOrder->status] ?? $workOrder->status }}
@@ -80,13 +98,16 @@
                                         <span class="text-gray-400 text-xs">—</span>
                                     @endif
                                 </td>
+                                <td class="px-6 py-4 text-gray-500 text-xs">
+                                    {{ $workOrder->created_at->format('d M Y') }}
+                                </td>
                                 <td class="px-6 py-4 text-right">
                                     <x-admin.button href="{{ route('admin.work-orders.show', $workOrder) }}" variant="secondary" size="sm">Open</x-admin.button>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                                <td colspan="8" class="px-6 py-12 text-center text-gray-500">
                                     <div class="flex flex-col items-center">
                                         <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                                         <p class="text-sm">No work orders found.</p>
