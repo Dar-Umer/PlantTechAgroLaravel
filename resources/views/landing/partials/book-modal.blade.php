@@ -2,7 +2,9 @@
     $leadFormHeading = config('frontend.lead_form.heading', 'Book Your Service');
     $leadFormDescription = config('frontend.lead_form.description');
     $leadFormButtonText = config('frontend.lead_form.button_text', 'Submit Request');
-    $leadFormSuccessMessage = config('frontend.lead_form.success_message', 'Thank you! Our team will contact you shortly.');
+    $leadFormSuccessMessage = config('frontend.lead_form.success_message', 'Thank you! Our team will contact you soon.');
+    $services = $services ?? collect();
+    $leadFormFields = $leadFormFields ?? collect();
     $formSubmitted = request('submitted') === '1';
     $formErrored = $errors->any() && (old('name') || old('phone') || old('service_id') || old()->hasAny(array_map(fn ($f) => 'custom.' . $f->name, $leadFormFields->all())));
 @endphp

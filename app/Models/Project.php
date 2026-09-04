@@ -8,8 +8,8 @@ use Illuminate\Support\Str;
 class Project extends Model
 {
     protected $fillable = [
-        'title', 'slug', 'description', 'content', 'featured_image', 'gallery',
-        'location', 'completed_at', 'is_featured', 'is_published',
+        'title', 'slug', 'description', 'content', 'featured_image', 'video_url',
+        'gallery', 'location', 'completed_at', 'is_featured', 'is_published',
     ];
 
     public function scopePublished($query)

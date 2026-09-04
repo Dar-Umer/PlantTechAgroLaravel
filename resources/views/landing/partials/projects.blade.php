@@ -9,14 +9,23 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach($projects as $project)
-                <article class="group rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-lg transition">
+                @php $embedSrc = \App\Support\YouTube::embedSrc($project->video_url); @endphp
+                <a href="{{ route('project.show', $project) }}"
+                   class="group rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition duration-300 flex flex-col">
                     <div class="h-48 bg-gradient-to-br from-brand-800 to-brand-700 overflow-hidden">
-                        @if($project->featured_image && \App\Support\Media::exists($project->featured_image))
+                        @if($embedSrc)
+                            <iframe src="{{ $embedSrc }}"
+                                    title="{{ $project->title }}"
+                                    loading="lazy"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowfullscreen
+                                    class="w-full h-full"></iframe>
+                        @elseif($project->featured_image && \App\Support\Media::exists($project->featured_image))
                             <img src="{{ \App\Support\Media::url($project->featured_image) }}" alt="{{ $project->title }}"
                                  class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                         @endif
                     </div>
-                    <div class="p-5">
+                    <div class="p-5 flex-1 flex flex-col">
                         <div class="flex items-center gap-3 text-xs text-gray-400">
                             @if($project->location)
                                 <span class="inline-flex items-center gap-1">
@@ -29,9 +38,13 @@
                             @endif
                         </div>
                         <h3 class="mt-2 font-bold text-gray-900 group-hover:text-brand-700 transition">{{ $project->title }}</h3>
-                        <p class="mt-1.5 text-sm text-gray-500 line-clamp-2">{{ $project->description }}</p>
+                        <p class="mt-1.5 text-sm text-gray-500 line-clamp-2 flex-1">{{ $project->description }}</p>
+                        <span class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 group-hover:text-brand-700 transition">
+                            View Project
+                            <svg class="w-4 h-4 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                        </span>
                     </div>
-                </article>
+                </a>
             @endforeach
         </div>
     </div>

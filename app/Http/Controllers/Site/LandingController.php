@@ -25,7 +25,11 @@ class LandingController extends Controller
             'partners' => Partner::active()->orderBy('sort_order')->get(),
             'gallery' => GalleryImage::active()->orderBy('sort_order')->take(6)->get(),
             'stats' => ImpactStat::active()->orderBy('sort_order')->get(),
-            'projects' => Project::published()->featured()->orderBy('completed_at', 'desc')->take(6)->get(),
+            'projects' => Project::published()
+                ->orderByDesc('is_featured')
+                ->orderByDesc('completed_at')
+                ->take(6)
+                ->get(),
             'posts' => Post::published()->latest('published_at')->take(3)->get(),
             'testimonials' => Testimonial::active()->orderBy('sort_order')->get(),
             'leadFormFields' => LeadFormField::active()->get(),

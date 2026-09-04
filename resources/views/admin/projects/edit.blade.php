@@ -27,7 +27,7 @@
 
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-1">Media & Completion</h3>
-                <p class="text-sm text-gray-500 mb-5">Featured image and completion details.</p>
+                <p class="text-sm text-gray-500 mb-5">Featured image, video and completion details.</p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <x-admin.input name="completed_at" label="Completed At" type="date" :value="old('completed_at', $project->completed_at?->format('Y-m-d'))" />
                     <div>
@@ -45,6 +45,9 @@
                             <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
                         @enderror
                     </div>
+                </div>
+                <div class="mt-5">
+                    <x-admin.input name="video_url" label="YouTube Video Link" :value="old('video_url', $project->video_url)" placeholder="https://www.youtube.com/watch?v=..." helptext="Optional. If set, the landing page shows the video instead of the image." />
                 </div>
             </div>
 
