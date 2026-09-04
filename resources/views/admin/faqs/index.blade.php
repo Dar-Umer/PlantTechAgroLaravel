@@ -9,8 +9,8 @@
                 <h2 class="text-2xl font-bold text-gray-900">FAQs</h2>
                 <p class="text-sm text-gray-500 mt-1">Frequently asked questions shown to visitors.</p>
             </div>
-            <x-admin.button type="button" variant="primary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>'>
-                <a href="{{ route('admin.faqs.create') }}">Create FAQ</a>
+            <x-admin.button href="{{ route('admin.faqs.create') }}" variant="primary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>'>
+                Create FAQ
             </x-admin.button>
         </div>
 
@@ -47,9 +47,7 @@
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <x-admin.button type="button" variant="secondary" size="sm">
-                                            <a href="{{ route('admin.faqs.edit', $faq) }}">Edit</a>
-                                        </x-admin.button>
+                                        <x-admin.button href="{{ route('admin.faqs.edit', $faq) }}" variant="secondary" size="sm">Edit</x-admin.button>
                                         <form action="{{ route('admin.faqs.destroy', $faq) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this FAQ?')">
                                             @csrf
                                             @method('DELETE')

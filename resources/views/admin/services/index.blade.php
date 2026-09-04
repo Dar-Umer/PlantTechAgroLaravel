@@ -5,9 +5,12 @@
 @section('content')
     <div class="space-y-6">
         <div class="flex items-center justify-between">
-            <h2 class="text-2xl font-bold text-gray-900">Services</h2>
-            <x-admin.button type="button" variant="primary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>'>
-                <a href="{{ route('admin.services.create') }}">Create Service</a>
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Services</h2>
+                <p class="text-sm text-gray-500 mt-1">Services offered to customers, with items and multi-stage workflows.</p>
+            </div>
+            <x-admin.button href="{{ route('admin.services.create') }}" variant="primary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>'>
+                Create Service
             </x-admin.button>
         </div>
 
@@ -42,9 +45,7 @@
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <x-admin.button type="button" variant="secondary" size="sm">
-                                            <a href="{{ route('admin.services.edit', $service) }}">Edit</a>
-                                        </x-admin.button>
+                                        <x-admin.button href="{{ route('admin.services.edit', $service) }}" variant="secondary" size="sm">Edit</x-admin.button>
                                         <form action="{{ route('admin.services.destroy', $service) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this service?')">
                                             @csrf
                                             @method('DELETE')

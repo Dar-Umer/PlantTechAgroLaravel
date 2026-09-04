@@ -9,8 +9,8 @@
                 <h2 class="text-2xl font-bold text-gray-900">Projects</h2>
                 <p class="text-sm text-gray-500 mt-1">Showcase of completed work across Kashmir.</p>
             </div>
-            <x-admin.button type="button" variant="primary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>'>
-                <a href="{{ route('admin.projects.create') }}">Create Project</a>
+            <x-admin.button href="{{ route('admin.projects.create') }}" variant="primary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>'>
+                Create Project
             </x-admin.button>
         </div>
 
@@ -49,9 +49,7 @@
                                 <td class="px-6 py-4 text-gray-500 text-xs">{{ $project->created_at->format('d M Y') }}</td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <x-admin.button type="button" variant="secondary" size="sm">
-                                            <a href="{{ route('admin.projects.edit', $project) }}">Edit</a>
-                                        </x-admin.button>
+                                        <x-admin.button href="{{ route('admin.projects.edit', $project) }}" variant="secondary" size="sm">Edit</x-admin.button>
                                         <form action="{{ route('admin.projects.destroy', $project) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this project?')">
                                             @csrf
                                             @method('DELETE')

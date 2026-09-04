@@ -9,12 +9,11 @@
                 <h2 class="text-2xl font-bold text-gray-900">Customers</h2>
                 <p class="text-sm text-gray-500 mt-1">{{ $totalCustomers }} total · {{ $activeCustomers }} active. Customers log into the Customer App with phone + password.</p>
             </div>
-            <x-admin.button type="button" variant="primary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>'>
-                <a href="{{ route('admin.customers.create') }}">Add Customer</a>
+            <x-admin.button href="{{ route('admin.customers.create') }}" variant="primary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>'>
+                Add Customer
             </x-admin.button>
         </div>
 
-        {{-- Filters --}}
         <form method="GET" action="{{ route('admin.customers.index') }}" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-wrap items-center gap-3">
             <div class="flex-1 min-w-[200px]">
                 <input type="text" name="q" value="{{ request('q') }}" placeholder="Search by name, phone or email..."
@@ -64,9 +63,7 @@
                                 <td class="px-6 py-4 text-gray-500 text-xs">{{ $customer->created_at->format('d M Y') }}</td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <x-admin.button type="button" variant="secondary" size="sm">
-                                            <a href="{{ route('admin.customers.edit', $customer) }}">Edit</a>
-                                        </x-admin.button>
+                                        <x-admin.button href="{{ route('admin.customers.edit', $customer) }}" variant="secondary" size="sm">Edit</x-admin.button>
                                         <form action="{{ route('admin.customers.destroy', $customer) }}" method="POST" onsubmit="return confirm('Delete this customer? This cannot be undone.')">
                                             @csrf
                                             @method('DELETE')

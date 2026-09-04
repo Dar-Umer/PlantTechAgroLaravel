@@ -23,6 +23,12 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
                     Appearance
                 </button>
+                <button @click="activeTab = 'invoice'"
+                    :class="activeTab === 'invoice' ? 'bg-brand-50 text-brand-700 border-brand-200' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8h4m-4 4h4"/></svg>
+                    Invoice
+                </button>
             </nav>
         </div>
 
@@ -188,6 +194,60 @@
                     </div>
 
                 </div>
+            </div>
+
+            {{-- Invoice Tab --}}
+            <div x-show="activeTab === 'invoice'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-cloak class="space-y-6">
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Company Details</h3>
+                    <p class="text-sm text-gray-500 mb-5">Shown on every generated invoice.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <x-admin.input name="invoice_company_name" label="Company Name" :value="$invoiceSettings['company_name']" required />
+                        <x-admin.input name="invoice_gst_no" label="GST Number" :value="$invoiceSettings['gst_no']" placeholder="e.g. 01ABCDE1234F1Z5" />
+                        <x-admin.input name="invoice_phone" label="Phone Number" :value="$invoiceSettings['phone']" />
+                        <x-admin.input name="invoice_email" label="Email" type="email" :value="$invoiceSettings['email']" />
+                    </div>
+                    <div class="mt-5">
+                        <x-admin.textarea name="invoice_address" label="Address" :value="$invoiceSettings['address']" rows="2" />
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Invoice Branding & Numbering</h3>
+                    <p class="text-sm text-gray-500 mb-5">Logo and invoice number format. Invoice numbers are generated as PREFIX/YEAR/0001.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <x-admin.input name="invoice_prefix" label="Invoice Prefix" :value="$invoiceSettings['prefix']" required helptext="Letters, numbers and dashes only. e.g. PTA" />
+                        <div>
+                            @if(!empty($invoiceSettings['logo']))
+                                <p class="text-sm font-medium text-gray-700 mb-1.5">Current Logo</p>
+                                <div class="w-32 h-16 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden mb-3 flex items-center justify-center">
+                                    <img src="{{ \App\Support\Media::url($invoiceSettings['logo']) }}" alt="Invoice logo" class="max-h-full max-w-full object-contain">
+                                </div>
+                            @endif
+                            <label for="invoice_logo_file" class="block text-sm font-medium text-gray-700 mb-1.5">Invoice Logo</label>
+                            <input type="file" name="invoice_logo_file" id="invoice_logo_file" accept="image/png,image/jpeg,image/svg+xml"
+                                   class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 transition file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                            <p class="mt-1.5 text-xs text-gray-400">PNG, JPG, or SVG. Shown on the invoice header.</p>
+                            @if(!empty($invoiceSettings['logo']))
+                                <label class="mt-2 flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                                    <input type="checkbox" name="remove_invoice_logo" value="1" class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500">
+                                    Remove current logo
+                                </label>
+                            @endif
+                            @error('invoice_logo_file')
+                                <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Terms & Conditions</h3>
+                    <p class="text-sm text-gray-500 mb-5">Default terms printed at the bottom of every invoice.</p>
+                    <x-admin.textarea name="invoice_terms" label="Invoice Terms" :value="$invoiceSettings['terms']" rows="4" />
+                </div>
+
             </div>
 
             {{-- Save Button --}}

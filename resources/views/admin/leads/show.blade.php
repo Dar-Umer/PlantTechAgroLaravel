@@ -23,13 +23,9 @@
                 </span>
             </div>
             <div class="flex items-center gap-2">
-                <x-admin.button type="button" variant="secondary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>'>
-                    <a href="{{ route('admin.leads.index') }}">Back</a>
-                </x-admin.button>
+                <x-admin.button href="{{ route('admin.leads.index') }}" variant="secondary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>'>Back</x-admin.button>
                 @if($lead->status !== 'converted')
-                    <x-admin.button type="button" variant="primary">
-                        <a href="{{ route('admin.leads.convert', $lead) }}">Convert to Customer</a>
-                    </x-admin.button>
+                    <x-admin.button href="{{ route('admin.leads.convert', $lead) }}" variant="primary">Convert to Customer</x-admin.button>
                 @endif
             </div>
         </div>
@@ -121,9 +117,7 @@
                     <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $lead->phone) }}" target="_blank" rel="noopener" class="block w-full text-center px-4 py-2.5 rounded-xl bg-emerald-50 text-emerald-700 text-sm font-semibold hover:bg-emerald-100 transition">
                         💬 WhatsApp
                     </a>
-                    <x-admin.button type="button" variant="secondary" class="w-full">
-                        <a href="{{ route('admin.leads.edit', $lead) }}">Edit Lead Details</a>
-                    </x-admin.button>
+                    <x-admin.button href="{{ route('admin.leads.edit', $lead) }}" variant="secondary" class="w-full">Edit Lead Details</x-admin.button>
                 </div>
             </div>
         </div>

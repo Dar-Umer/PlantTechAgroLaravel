@@ -24,12 +24,12 @@ class YouTube
 
         // https://www.youtube.com/watch?v=VIDEO_ID
         if (preg_match('~[?&]v=([A-Za-z0-9_-]{6,20})~', $url, $m)) {
-            return 'https://www.youtube.com/embed/' . $m[1];
+            return 'https://www.youtube.com/embed/'.$m[1];
         }
 
         // https://youtu.be/ID, /embed/ID, /shorts/ID, /live/ID
         if (preg_match('~(?:youtu\.be|youtube\.com/(?:embed|shorts|live))/([A-Za-z0-9_-]{6,20})~i', $url, $m)) {
-            return 'https://www.youtube.com/embed/' . $m[1];
+            return 'https://www.youtube.com/embed/'.$m[1];
         }
 
         return null;
@@ -39,6 +39,6 @@ class YouTube
     {
         $embed = self::embedUrl($url);
 
-        return $embed ? $embed . '?' . self::PLAYER_PARAMS : null;
+        return $embed ? $embed.'?'.self::PLAYER_PARAMS : null;
     }
 }

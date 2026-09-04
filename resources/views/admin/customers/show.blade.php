@@ -14,12 +14,8 @@
                 @endif
             </div>
             <div class="flex items-center gap-2">
-                <x-admin.button type="button" variant="secondary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>'>
-                    <a href="{{ route('admin.customers.index') }}">Back</a>
-                </x-admin.button>
-                <x-admin.button type="button" variant="primary">
-                    <a href="{{ route('admin.customers.edit', $customer) }}">Edit Customer</a>
-                </x-admin.button>
+                <x-admin.button href="{{ route('admin.customers.index') }}" variant="secondary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>'>Back</x-admin.button>
+                <x-admin.button href="{{ route('admin.customers.edit', $customer) }}" variant="primary">Edit Customer</x-admin.button>
             </div>
         </div>
 

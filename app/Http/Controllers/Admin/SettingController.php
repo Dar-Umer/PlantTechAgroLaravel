@@ -36,7 +36,18 @@ class SettingController extends Controller
             'seo_og_image' => config('shop.seo_og_image', ''),
         ];
 
-        return view('admin.settings.index', compact('settings', 'palettes', 'fonts', 'sidebarStyles'));
+        $invoiceSettings = [
+            'company_name' => config('invoice.company_name', config('shop.site_name', 'Plant Tech Agro')),
+            'address' => config('invoice.address', ''),
+            'gst_no' => config('invoice.gst_no', ''),
+            'phone' => config('invoice.phone', ''),
+            'email' => config('invoice.email', ''),
+            'logo' => config('invoice.logo', ''),
+            'prefix' => config('invoice.prefix', 'PTA'),
+            'terms' => config('invoice.terms', ''),
+        ];
+
+        return view('admin.settings.index', compact('settings', 'invoiceSettings', 'palettes', 'fonts', 'sidebarStyles'));
     }
 
     public function update(Request $request)
@@ -61,6 +72,13 @@ class SettingController extends Controller
             'seo_meta_description' => 'nullable|string|max:500',
             'seo_meta_keywords' => 'nullable|string|max:500',
             'logo_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
+            'invoice_company_name' => ['required', 'string', 'max:255'],
+            'invoice_address' => ['nullable', 'string', 'max:1000'],
+            'invoice_gst_no' => ['nullable', 'string', 'max:64'],
+            'invoice_phone' => ['nullable', 'string', 'max:20'],
+            'invoice_email' => ['nullable', 'email', 'max:255'],
+            'invoice_prefix' => ['required', 'string', 'max:16', 'regex:/^[A-Za-z0-9\-]+$/'],
+            'invoice_terms' => ['nullable', 'string', 'max:2000'],
         ]);
 
         $shopSettings = config('shop', []);
@@ -72,7 +90,6 @@ class SettingController extends Controller
             $shopSettings[$key] = $value;
         }
 
-        // Handle logo upload
         if ($request->hasFile('logo_file')) {
             $file = $request->file('logo_file');
             $path = $file->store('logos', 'public');
@@ -82,6 +99,23 @@ class SettingController extends Controller
         }
 
         app(ShopSettingsService::class)->set($shopSettings, 'shop');
+
+        $invoiceSettings = config('invoice', []);
+
+        foreach ($validated as $key => $value) {
+            if (str_starts_with($key, 'invoice_')) {
+                $invoiceSettings[substr($key, 8)] = $value;
+            }
+        }
+
+        if ($request->hasFile('invoice_logo_file')) {
+            $path = $request->file('invoice_logo_file')->store('logos', 'public');
+            $invoiceSettings['logo'] = '/storage/'.$path;
+        } elseif ($request->input('remove_invoice_logo') === '1') {
+            $invoiceSettings['logo'] = '';
+        }
+
+        app(ShopSettingsService::class)->set($invoiceSettings, 'invoice');
 
         $tab = $request->input('tab', 'general');
 

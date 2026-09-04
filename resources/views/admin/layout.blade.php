@@ -163,12 +163,30 @@
                             'items' => [
                                 ['route' => 'admin.leads.index', 'label' => 'Leads'],
                                 ['route' => 'admin.customers.index', 'label' => 'Customers'],
+                                ['route' => 'admin.invoices.index', 'label' => 'Invoices'],
+                            ],
+                        ],
+                        [
+                            'label' => 'Operations',
+                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>',
+                            'items' => [
+                                ['route' => 'admin.work-orders.index', 'label' => 'Work Orders'],
+                            ],
+                        ],
+                        [
+                            'label' => 'Inventory',
+                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>',
+                            'items' => [
+                                ['route' => 'admin.products.index', 'label' => 'Products'],
+                                ['route' => 'admin.suppliers.index', 'label' => 'Suppliers'],
+                                ['route' => 'admin.stock-movements.index', 'label' => 'Stock Movements'],
                             ],
                         ],
                         [
                             'label' => 'Administration',
                             'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>',
                             'items' => [
+                                ['route' => 'admin.staff.index', 'label' => 'Staff'],
                                 ['route' => 'admin.settings.index', 'label' => 'Settings'],
                             ],
                         ],
@@ -251,6 +269,54 @@
                 </h1>
 
                 <div class="flex items-center space-x-4">
+                    {{-- Notifications --}}
+                    @php $unreadNotifications = Auth::guard('admin')->user()?->unreadNotifications ?? collect(); @endphp
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open" class="relative text-gray-500 hover:text-gray-700 p-1.5 focus:outline-none" title="Notifications">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                            @if($unreadNotifications->isNotEmpty())
+                                <span class="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">{{ $unreadNotifications->count() > 9 ? '9+' : $unreadNotifications->count() }}</span>
+                            @endif
+                        </button>
+
+                        <div x-show="open" @click.away="open = false" x-cloak
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg z-50 border border-gray-200 overflow-hidden">
+                            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                                <p class="text-sm font-semibold text-gray-900">Notifications</p>
+                                @if($unreadNotifications->isNotEmpty())
+                                    <form action="{{ route('admin.notifications.read-all') }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="text-xs text-brand-600 hover:text-brand-700 font-medium">Mark all read</button>
+                                    </form>
+                                @endif
+                            </div>
+                            <div class="max-h-80 overflow-y-auto divide-y divide-gray-50">
+                                @forelse($unreadNotifications->take(10) as $notification)
+                                    <div class="px-4 py-3 hover:bg-gray-50">
+                                        @php $data = $notification->data; @endphp
+                                        <p class="text-sm font-medium text-gray-900">{{ $data['title'] ?? 'Notification' }}</p>
+                                        <p class="text-xs text-gray-500 mt-0.5">
+                                            @if(isset($data['product_name']))
+                                                {{ $data['product_name'] }} — stock {{ $data['stock_qty'] }} {{ $data['unit'] }} (threshold {{ $data['threshold'] }})
+                                                @if(isset($data['supplier'])) · Supplier: {{ $data['supplier'] }}@endif
+                                            @elseif(isset($data['number']))
+                                                {{ $data['number'] }} — {{ $data['customer'] }} · {{ $data['service'] }}
+                                            @else
+                                                {{ json_encode($data) }}
+                                            @endif
+                                        </p>
+                                        <p class="text-[10px] text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                    </div>
+                                @empty
+                                    <div class="px-4 py-8 text-center text-sm text-gray-400">No unread notifications</div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+
                     <div x-data="{ open: false }" class="relative">
                         <button @click="open = !open" class="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 focus:outline-none">
                             <div class="w-8 h-8 bg-brand-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">

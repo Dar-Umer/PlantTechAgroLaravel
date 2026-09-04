@@ -9,14 +9,9 @@
             <h2 class="text-2xl font-bold text-gray-900">Create Post</h2>
             <p class="text-sm text-gray-500 mt-1">Write a new blog post or article.</p>
         </div>
-        <a href="{{ route('admin.posts.index') }}">
-            <x-admin.button type="button" variant="secondary">
-                <svg class="w-4 h-4 mr-1.5 -ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                </svg>
+            <x-admin.button href="{{ route('admin.posts.index') }}" variant="secondary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>'>
                 Back
             </x-admin.button>
-        </a>
     </div>
 
     <form action="{{ route('admin.posts.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">

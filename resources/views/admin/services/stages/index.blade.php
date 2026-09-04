@@ -10,12 +10,8 @@
                 <p class="text-sm text-gray-500 mt-1">Step-by-step workflow of <span class="font-medium text-gray-700">{{ $service->name }}</span>, from start to completion. Field Agents will complete these stages for customers.</p>
             </div>
             <div class="flex items-center gap-2">
-                <x-admin.button type="button" variant="secondary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>'>
-                    <a href="{{ route('admin.services.edit', $service) }}">Back to Service</a>
-                </x-admin.button>
-                <x-admin.button type="button" variant="primary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>'>
-                    <a href="{{ route('admin.services.stages.create', $service) }}">Add Stage</a>
-                </x-admin.button>
+                <x-admin.button href="{{ route('admin.services.edit', $service) }}" variant="secondary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>'>Back to Service</x-admin.button>
+                <x-admin.button href="{{ route('admin.services.stages.create', $service) }}" variant="primary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>'>Add Stage</x-admin.button>
             </div>
         </div>
 
@@ -45,9 +41,8 @@
                         @endif
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
-                        <x-admin.button type="button" variant="secondary" size="sm">
-                            <a href="{{ route('admin.services.stages.edit', [$service, $stage]) }}">Edit</a>
-                        </x-admin.button>
+                        <x-admin.button href="{{ route('admin.stage-products.index', $stage) }}" variant="secondary" size="sm">Materials ({{ $stage->products()->count() }})</x-admin.button>
+                        <x-admin.button href="{{ route('admin.services.stages.edit', [$service, $stage]) }}" variant="secondary" size="sm">Edit</x-admin.button>
                         <form action="{{ route('admin.services.stages.destroy', [$service, $stage]) }}" method="POST" onsubmit="return confirm('Delete this stage?')">
                             @csrf
                             @method('DELETE')
