@@ -151,9 +151,16 @@ class InvoiceController extends Controller
         ]);
 
         $invoice->amount_paid = round((float) $invoice->payments()->sum('amount'), 2);
-        $invoice->status = bccomp((string) $invoice->amount_paid, (string) $invoice->grand_total, 2) >= 0
-            ? 'paid'
-            : 'partial';
+
+        if (bccomp((string) $invoice->amount_paid, (string) $invoice->grand_total, 2) >= 0) {
+            $invoice->status = 'paid';
+        } elseif ($invoice->status === 'overdue') {
+            // Keep the overdue marker until fully settled.
+            $invoice->status = 'overdue';
+        } else {
+            $invoice->status = 'partial';
+        }
+
         $invoice->save();
 
         return back()->with('success', 'Payment of ₹'.number_format((float) $data['amount'], 2).' recorded.');

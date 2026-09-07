@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', config('shop.site_name', 'Plant Tech Agro'))</title>
-    <meta name="description" content="{{ config('shop.seo_meta_description', config('shop.footer_tagline')) }}">
+    <title>@yield('title', config('seo.meta_title') ?: config('shop.site_name', 'Plant Tech Agro'))</title>
+    @include('landing.partials.seo-head')
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

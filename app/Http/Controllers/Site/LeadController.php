@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Site;
 use App\Http\Controllers\Controller;
 use App\Models\Lead;
 use App\Models\LeadFormField;
+use App\Notifications\NewLeadAlert;
+use App\Services\AdminNotifier;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -28,7 +30,7 @@ class LeadController extends Controller
 
         $custom = $this->validateCustomFields($request);
 
-        Lead::create([
+        $lead = Lead::create([
             'name' => $data['name'],
             'phone' => $data['phone'],
             'service_id' => $data['service_id'],
@@ -36,6 +38,10 @@ class LeadController extends Controller
             'status' => 'new',
             'source' => 'landing',
         ]);
+
+        if (config('automation.new_lead_alerts_enabled', true)) {
+            AdminNotifier::send(new NewLeadAlert($lead));
+        }
 
         return redirect()->to('/?submitted=1');
     }

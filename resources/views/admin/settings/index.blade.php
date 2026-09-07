@@ -29,6 +29,18 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8h4m-4 4h4"/></svg>
                     Invoice
                 </button>
+                <button @click="activeTab = 'seo'"
+                    :class="activeTab === 'seo' ? 'bg-brand-50 text-brand-700 border-brand-200' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.1-4.4a5.5 5.5 0 11-11 0 5.5 5.5 0 0111 0z"/></svg>
+                    SEO
+                </button>
+                <button @click="activeTab = 'smtp'"
+                    :class="activeTab === 'smtp' ? 'bg-brand-50 text-brand-700 border-brand-200' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    Email / SMTP
+                </button>
             </nav>
         </div>
 
@@ -64,15 +76,6 @@
                             <x-admin.input name="social_youtube" label="YouTube URL" :value="$settings['social_youtube'] ?? ''" placeholder="https://youtube.com/@yourchannel" helptext="Blank to hide" />
                             <x-admin.input name="social_whatsapp" label="WhatsApp" :value="$settings['social_whatsapp'] ?? ''" placeholder="https://wa.me/919999999999 or +91 99999 99999" helptext="Full link or phone number. Blank to hide" />
                             <x-admin.input name="social_x" label="X (Twitter) URL" :value="$settings['social_x'] ?? ''" placeholder="https://x.com/yourhandle" helptext="Blank to hide" />
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-1">Search Engine Optimization</h3>
-                        <p class="text-sm text-gray-500 mb-5">Site-wide defaults used in the page head and when your store is shared on social media.</p>
-                        <div class="space-y-5">
-                            <x-admin.input name="seo_meta_description" label="Meta Description" :value="$settings['seo_meta_description'] ?? ''" placeholder="Short description of your store (up to 500 chars)" helptext="Shown in search results under your page title" />
-                            <x-admin.input name="seo_meta_keywords" label="Meta Keywords" :value="$settings['seo_meta_keywords'] ?? ''" placeholder="farming, platform, admin, India" helptext="Comma-separated keywords. Blank to omit" />
                         </div>
                     </div>
 
@@ -250,9 +253,159 @@
 
             </div>
 
+            {{-- SEO Tab --}}
+            <div x-show="activeTab === 'seo'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-cloak class="space-y-6">
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Search Engine Optimization</h3>
+                    <p class="text-sm text-gray-500 mb-5">Site-wide defaults used in the head of every public page. Individual pages can override the title, but these apply everywhere else.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <x-admin.input name="seo_meta_title" label="Meta Title" :value="$seoSettings['meta_title'] ?? ''" placeholder="e.g. Plant Tech Agro — Agritech Services in Kashmir" helptext="Shown as the browser tab and search result title (up to 120 chars). Blank uses the store name." />
+                        <x-admin.input name="seo_author" label="Author" :value="$seoSettings['author'] ?? ''" placeholder="e.g. Plant Tech Agro" helptext="Adds an author meta tag to every page." />
+                        <div class="md:col-span-2">
+                            <x-admin.textarea name="seo_meta_description" label="Meta Description" :value="$seoSettings['meta_description'] ?? ''" rows="3" placeholder="Short description of your store (up to 500 chars)" />
+                        </div>
+                        <div class="md:col-span-2">
+                            <x-admin.input name="seo_meta_keywords" label="Meta Keywords" :value="$seoSettings['meta_keywords'] ?? ''" placeholder="farming, irrigation, Kashmir agriculture" helptext="Comma-separated keywords. Blank to omit the tag." />
+                        </div>
+                        <div class="md:col-span-2">
+                            <x-admin.input name="seo_canonical_url" label="Canonical URL" :value="$seoSettings['canonical_url'] ?? ''" placeholder="https://plantechagro.com/" helptext="Preferred base URL for indexing. Blank uses the current page URL automatically." />
+                        </div>
+                        <div class="md:col-span-2">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <x-admin.checkbox name="seo_robots_index" label="Allow indexing" :checked="$seoSettings['robots_index'] ?? true" help="Adds noindex if off" />
+                                <x-admin.checkbox name="seo_robots_follow" label="Allow following links" :checked="$seoSettings['robots_follow'] ?? true" help="Adds nofollow if off" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Social Sharing — Open Graph</h3>
+                    <p class="text-sm text-gray-500 mb-5">Controls how pages look when shared on Facebook, WhatsApp, LinkedIn, Telegram and other Open Graph clients.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="md:col-span-2">
+                            <x-admin.checkbox name="seo_og_enabled" label="Enable Open Graph tags" :checked="$seoSettings['og_enabled'] ?? true" />
+                        </div>
+                        <x-admin.select name="seo_og_type" label="Content Type"
+                            :options="[
+                                'website' => 'Website',
+                                'article' => 'Article',
+                                'product' => 'Product',
+                                'profile' => 'Profile',
+                                'business.business' => 'Business',
+                                'book' => 'Book',
+                                'music.song' => 'Music',
+                                'video.movie' => 'Movie',
+                            ]"
+                            :value="$seoSettings['og_type'] ?? 'website'" />
+                        <x-admin.input name="seo_og_site_name" label="Site Name" :value="$seoSettings['og_site_name'] ?? ''" placeholder="e.g. Plant Tech Agro" helptext="Blank uses the store name." />
+                        <x-admin.input name="seo_og_title" label="Share Title" :value="$seoSettings['og_title'] ?? ''" placeholder="e.g. High-Density Orchard Development" helptext="Blank uses the page title." />
+                        <div class="md:col-span-2">
+                            <x-admin.textarea name="seo_og_description" label="Share Description" :value="$seoSettings['og_description'] ?? ''" rows="2" placeholder="Blank uses the meta description." />
+                        </div>
+                        <div class="md:col-span-2">
+                            <x-admin.input name="seo_og_image" label="Share Image" :value="$seoSettings['og_image'] ?? ''" placeholder="https://plantechagro.com/og-image.jpg or /storage/logos/xxx.png" helptext="1200×630 recommended. Full URL or a /storage/... path. Blank falls back to the store logo." />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Social Sharing — X (Twitter) Card</h3>
+                    <p class="text-sm text-gray-500 mb-5">How pages look when shared on X/Twitter. Open Graph values are used as fallbacks.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="md:col-span-2">
+                            <x-admin.checkbox name="seo_twitter_enabled" label="Enable Twitter Card tags" :checked="$seoSettings['twitter_enabled'] ?? true" />
+                        </div>
+                        <x-admin.select name="seo_twitter_card" label="Card Type"
+                            :options="[
+                                'summary_large_image' => 'Summary with Large Image (recommended)',
+                                'summary' => 'Summary',
+                                'app' => 'App',
+                                'player' => 'Player',
+                            ]"
+                            :value="$seoSettings['twitter_card'] ?? 'summary_large_image'" />
+                        <x-admin.input name="seo_twitter_site" label="Site Handle" :value="$seoSettings['twitter_site'] ?? ''" placeholder="@plantechagro" helptext="Optional @handle shown on the card." />
+                        <x-admin.input name="seo_twitter_title" label="Card Title" :value="$seoSettings['twitter_title'] ?? ''" placeholder="Blank uses the page title." />
+                        <div class="md:col-span-2">
+                            <x-admin.textarea name="seo_twitter_description" label="Card Description" :value="$seoSettings['twitter_description'] ?? ''" rows="2" placeholder="Blank uses the meta description." />
+                        </div>
+                        <div class="md:col-span-2">
+                            <x-admin.input name="seo_twitter_image" label="Card Image" :value="$seoSettings['twitter_image'] ?? ''" placeholder="https://plantechagro.com/tw-image.jpg or /storage/logos/xxx.png" helptext="Full URL or /storage/... path. Blank falls back to the Open Graph image." />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Search Engines & Structured Data</h3>
+                    <p class="text-sm text-gray-500 mb-5">Ownership verification codes and schema.org markup for richer search results.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <x-admin.input name="seo_google_site_verification" label="Google Site Verification" :value="$seoSettings['google_site_verification'] ?? ''" placeholder="Google code from Search Console" helptext="Paste the content between the Google meta tag quotes." />
+                        <x-admin.input name="seo_bing_site_verification" label="Bing Site Verification" :value="$seoSettings['bing_site_verification'] ?? ''" placeholder="Bing code from Webmaster Tools" helptext="Paste the content between the msvalidate.01 meta tag quotes." />
+                        <x-admin.input name="seo_yandex_verification" label="Yandex Site Verification" :value="$seoSettings['yandex_verification'] ?? ''" placeholder="Yandex code from Webmaster" helptext="Paste the content between the yandex-verification meta tag quotes." />
+                        <div class="md:col-span-2">
+                            <x-admin.checkbox name="seo_schema_enabled" label="Enable Organization structured data" :checked="$seoSettings['schema_enabled'] ?? true" help="Emits schema.org JSON-LD built from store details" />
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
             {{-- Save Button --}}
             <div class="flex justify-end">
                 <x-admin.button type="submit">Save All Settings</x-admin.button>
+            </div>
+        </form>
+
+        {{-- Email / SMTP Tab (separate form so the test button can post independently) --}}
+        <form action="{{ route('admin.settings.mail.update') }}" method="POST" x-show="activeTab === 'smtp'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-cloak class="space-y-6">
+            @csrf
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-1">Mail Driver</h3>
+                <p class="text-sm text-gray-500 mb-5">Choose the transport used for all outgoing notifications and follow-up emails.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <x-admin.select name="default" label="Send Method"
+                            :options="[
+                                'smtp' => 'SMTP (recommended)',
+                                'log' => 'Log to file (development, no real delivery)',
+                                'array' => 'Array (discard, dev only)',
+                            ]"
+                            :value="old('default', $mailSettings['default'])" />
+                    </div>
+
+                    <x-admin.input name="smtp_host" label="SMTP Host" :value="old('smtp_host', $mailSettings['smtp_host'])" placeholder="e.g. smtp.gmail.com" helptext="Leave blank to keep methods like Gmail/Outlook defaults." />
+
+                    <x-admin.input name="smtp_port" label="SMTP Port" type="number" :value="old('smtp_port', $mailSettings['smtp_port'])" placeholder="e.g. 587" helptext="587 (TLS) or 465 (SSL)." />
+
+                    <x-admin.input name="smtp_username" label="SMTP Username" :value="old('smtp_username', $mailSettings['smtp_username'])" placeholder="you@gmail.com" />
+
+                    <x-admin.input name="smtp_password" label="SMTP Password / App Password"
+                        type="password"
+                        :value="old('smtp_password', $mailSettings['has_password'] ? '_____' : '')"
+                        helptext="{{ $mailSettings['has_password'] ? 'A password is already saved. Leave blank to keep it.' : 'App passwords recommended (e.g. Gmail).' }}" />
+
+                    <x-admin.select name="smtp_encryption" label="Encryption"
+                        :options="['none' => 'None', 'tls' => 'TLS', 'ssl' => 'SSL']"
+                        :value="old('smtp_encryption', $mailSettings['smtp_encryption'])" />
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-1">Sender Address</h3>
+                <p class="text-sm text-gray-500 mb-5">Used as the "from" address on every email your customers receive.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-admin.input name="from_address" label="From Email" type="email" :value="old('from_address', $mailSettings['from_address'])" required />
+                    <x-admin.input name="from_name" label="From Name" :value="old('from_name', $mailSettings['from_name'])" required />
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3">
+                <x-admin.button type="submit" variant="secondary" formaction="{{ route('admin.settings.mail.test') }}">Send Test Email</x-admin.button>
+                <x-admin.button type="submit">Save Mail Settings</x-admin.button>
             </div>
         </form>
     </div>

@@ -100,9 +100,11 @@ class StaffController extends Controller
             'is_active' => ['nullable', 'boolean'],
         ];
 
+        $passwordRules = ['string', 'min:8', 'max:64', 'regex:/[a-zA-Z]/', 'regex:/[0-9]/'];
+
         $rules['password'] = $passwordRequired
-            ? ['required', 'string', 'min:6', 'max:64']
-            : ['nullable', 'string', 'min:6', 'max:64'];
+            ? array_merge(['required'], $passwordRules)
+            : array_merge(['nullable'], $passwordRules);
 
         return $request->validate($rules);
     }

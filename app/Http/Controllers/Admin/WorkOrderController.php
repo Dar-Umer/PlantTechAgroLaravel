@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Models\Customer;
-use App\Models\Invoice;
 use App\Models\Product;
 use App\Models\Service;
 use App\Models\WorkOrder;
@@ -13,8 +12,8 @@ use App\Models\WorkOrderStage;
 use App\Models\WorkOrderStageAttachment;
 use App\Models\WorkOrderStageProduct;
 use App\Notifications\WorkOrderAssigned;
-use App\Services\InvoiceNumberer;
 use App\Services\StockService;
+use App\Services\WorkOrderInvoiceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -229,7 +228,7 @@ class WorkOrderController extends Controller
 
         $this->refreshWorkOrderStatus($workOrder);
 
-        return back()->with('success', 'Stage "'.$stage->name.'" marked as completed.');
+        return back()->with('success', 'Stage "'.$stage->name.'" marked as completed.'.$this->maybeAutoInvoice($workOrder));
     }
 
     public function destroyAttachment(WorkOrder $workOrder, WorkOrderStage $stage, WorkOrderStageAttachment $attachment)
@@ -254,7 +253,7 @@ class WorkOrderController extends Controller
 
         $this->refreshWorkOrderStatus($workOrder);
 
-        return back()->with('success', 'Stage "'.$stage->name.'" skipped.');
+        return back()->with('success', 'Stage "'.$stage->name.'" skipped.'.$this->maybeAutoInvoice($workOrder));
     }
 
     public function addStageProduct(Request $request, WorkOrder $workOrder, WorkOrderStage $stage)
@@ -337,46 +336,11 @@ class WorkOrderController extends Controller
                 ->with('error', 'This work order is already invoiced ('.$workOrder->invoice->number.').');
         }
 
-        $rows = WorkOrderStageProduct::whereHas('stage', fn ($q) => $q->where('work_order_id', $workOrder->id))
-            ->with('stage')
-            ->get()
-            ->sortBy(fn ($r) => $r->stage->sort_order)
-            ->values();
+        $invoice = app(WorkOrderInvoiceService::class)->generate($workOrder, $request->user('admin')->id ?? null);
 
-        if ($rows->isEmpty()) {
+        if (! $invoice) {
             return back()->with('error', 'No materials have been recorded yet. Add materials to stages first.');
         }
-
-        $invoice = DB::transaction(function () use ($workOrder, $rows, $request) {
-            $invoice = Invoice::create([
-                'number' => InvoiceNumberer::next(),
-                'customer_id' => $workOrder->customer_id,
-                'customer_name' => $workOrder->customer_name,
-                'work_order_id' => $workOrder->id,
-                'invoice_date' => now()->toDateString(),
-                'status' => 'unpaid',
-                'terms' => config('invoice.terms', ''),
-                'created_by' => $request->user('admin')->id ?? null,
-            ]);
-
-            foreach ($rows as $index => $row) {
-                $invoice->items()->create([
-                    'product_id' => $row->product_id,
-                    'name' => $row->name,
-                    'unit' => $row->unit,
-                    'qty' => (float) $row->quantity,
-                    'rate' => (float) $row->rate,
-                    'discount' => 0,
-                    'gst_rate' => (float) $row->gst_rate,
-                    'total' => $row->lineTotal(),
-                    'sort_order' => $index,
-                ]);
-            }
-
-            $this->recalculateInvoice($invoice);
-
-            return $invoice;
-        });
 
         return redirect()->route('admin.invoices.show', $invoice)
             ->with('success', 'Invoice '.$invoice->number.' generated from work order '.$workOrder->number.'.');
@@ -408,19 +372,14 @@ class WorkOrderController extends Controller
         }
     }
 
-    private function recalculateInvoice(Invoice $invoice): void
+    private function maybeAutoInvoice(WorkOrder $workOrder): string
     {
-        $invoice->refresh()->load('items');
+        if ($workOrder->status !== 'completed' || ! config('automation.auto_invoice_on_completion', true)) {
+            return '';
+        }
 
-        $subtotal = round((float) $invoice->items->sum(fn ($i) => (float) $i->qty * (float) $i->rate), 2);
-        $discountTotal = round((float) $invoice->items->sum('discount'), 2);
-        $gstTotal = round((float) $invoice->items->sum(fn ($i) => $i->gstAmount()), 2);
+        $invoice = app(WorkOrderInvoiceService::class)->generate($workOrder);
 
-        $invoice->update([
-            'subtotal' => $subtotal,
-            'discount_total' => $discountTotal,
-            'gst_total' => $gstTotal,
-            'grand_total' => round(max(0, $subtotal - $discountTotal + $gstTotal), 2),
-        ]);
+        return $invoice ? ' Invoice '.$invoice->number.' generated automatically.' : '';
     }
 }

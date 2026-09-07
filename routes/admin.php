@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\Admin\AttributeController;
+use App\Http\Controllers\Admin\AutomationController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FaqController;
+use App\Http\Controllers\Admin\ForgotPasswordController;
 use App\Http\Controllers\Admin\FrontendController;
 use App\Http\Controllers\Admin\GalleryController;
 use App\Http\Controllers\Admin\InvoiceController;
@@ -13,6 +16,7 @@ use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProjectController;
+use App\Http\Controllers\Admin\ResetPasswordController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\ServiceItemController;
 use App\Http\Controllers\Admin\ServiceStageController;
@@ -28,7 +32,14 @@ use Illuminate\Support\Facades\Route;
 // Public admin auth routes
 Route::middleware('guest')->group(function () {
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('admin.login');
-    Route::post('login', [LoginController::class, 'login'])->name('admin.login.submit');
+    Route::post('login', [LoginController::class, 'login'])
+        ->middleware('throttle:admin-login')
+        ->name('admin.login.submit');
+
+    Route::get('password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('admin.password.request');
+    Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('admin.password.email');
+    Route::get('password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])->name('admin.password.reset');
+    Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('admin.password.update');
 });
 
 Route::post('logout', [LoginController::class, 'logout'])->name('admin.logout');
@@ -36,9 +47,17 @@ Route::post('logout', [LoginController::class, 'logout'])->name('admin.logout');
 // Authenticated admin routes
 Route::middleware('admin')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
+Route::get('settings', [SettingController::class, 'index'])->name('admin.settings.index');
 
-    Route::get('settings', [SettingController::class, 'index'])->name('admin.settings.index');
     Route::put('settings', [SettingController::class, 'update'])->name('admin.settings.update');
+
+    Route::post('settings/mail', [SettingController::class, 'smtpUpdate'])->name('admin.settings.mail.update');
+
+    Route::post('settings/mail/test', [SettingController::class, 'smtpTest'])->name('admin.settings.mail.test');
+
+    Route::get('automation', [AutomationController::class, 'index'])->name('admin.automation.index');
+
+    Route::put('automation', [AutomationController::class, 'update'])->name('admin.automation.update');
 
     // Content management
     Route::resource('posts', PostController::class)->except('show')->names('admin.posts');

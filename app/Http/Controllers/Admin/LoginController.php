@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 
 class LoginController extends Controller
 {
@@ -33,6 +35,12 @@ class LoginController extends Controller
 
                 return back()->withErrors(['email' => 'Your account has been deactivated.']);
             }
+
+            RateLimiter::clear('admin-login:'.Str::lower($credentials['email']).'|'.$request->ip());
+
+            $admin->last_login_at = now();
+            $admin->last_login_ip = $request->ip();
+            $admin->save();
 
             return redirect()->intended(route('admin.dashboard'));
         }

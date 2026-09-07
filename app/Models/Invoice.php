@@ -11,6 +11,7 @@ class Invoice extends Model
     public const STATUSES = [
         'unpaid' => 'Unpaid',
         'partial' => 'Partially Paid',
+        'overdue' => 'Overdue',
         'paid' => 'Paid',
         'cancelled' => 'Cancelled',
     ];
@@ -18,6 +19,7 @@ class Invoice extends Model
     public const STATUS_COLORS = [
         'unpaid' => 'red',
         'partial' => 'yellow',
+        'overdue' => 'red',
         'paid' => 'green',
         'cancelled' => 'gray',
     ];
@@ -74,5 +76,10 @@ class Invoice extends Model
     public function isCancelled(): bool
     {
         return $this->status === 'cancelled';
+    }
+
+    public function isOverdue(): bool
+    {
+        return $this->status === 'overdue';
     }
 }

@@ -27,13 +27,14 @@ class Lead extends Model
 
     protected $fillable = [
         'name', 'phone', 'service_id', 'custom_fields', 'status',
-        'notes', 'source', 'converted_customer_id',
+        'notes', 'source', 'converted_customer_id', 'last_reminder_sent_at',
     ];
 
     protected function casts(): array
     {
         return [
             'custom_fields' => 'array',
+            'last_reminder_sent_at' => 'datetime',
         ];
     }
 

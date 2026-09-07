@@ -28,6 +28,7 @@ class WorkOrder extends Model
     protected $fillable = [
         'number', 'customer_id', 'customer_name', 'service_id', 'service_name',
         'assigned_agent_id', 'status', 'started_at', 'completed_at', 'notes', 'created_by',
+        'last_reminder_sent_at',
     ];
 
     protected function casts(): array
@@ -35,6 +36,7 @@ class WorkOrder extends Model
         return [
             'started_at' => 'datetime',
             'completed_at' => 'datetime',
+            'last_reminder_sent_at' => 'datetime',
         ];
     }
 

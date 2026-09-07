@@ -15,6 +15,7 @@ class Admin extends Authenticatable
 
     protected $fillable = [
         'name', 'email', 'password', 'phone', 'role', 'avatar', 'is_active',
+        'last_login_at', 'last_login_ip',
     ];
 
     protected $hidden = [
@@ -27,6 +28,12 @@ class Admin extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new \App\Notifications\AdminResetPassword($token, $this->email));
     }
 }

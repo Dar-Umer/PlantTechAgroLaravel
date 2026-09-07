@@ -8,7 +8,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class WorkOrderAssigned extends Notification
+class WorkOrderStale extends Notification
 {
     use Queueable, ConfigurableChannel;
 
@@ -16,24 +16,23 @@ class WorkOrderAssigned extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
+        $days = max(1, (int) config('automation.work_order_stale_days', 7));
+
         return (new MailMessage)
-            ->subject('New work order assigned: '.$this->workOrder->number)
-            ->greeting('Hi '.$notifiable->name.',')
-            ->line('A new work order has been assigned to you.')
-            ->line('**'.$this->workOrder->number.'** — '.$this->workOrder->customer_name.' ('.$this->workOrder->service_name.')')
-            ->line($this->workOrder->stages()->count().' stage(s) to complete.')
-            ->action('Open Work Order', route('admin.work-orders.show', $this->workOrder));
+            ->subject('Work order '.$this->workOrder->number.' needs attention')
+            ->greeting('Hello '.$notifiable->name.',')
+            ->line('Work order **'.$this->workOrder->number.'** — '.$this->workOrder->customer_name.' ('.$this->workOrder->service_name.') — has had no activity for more than '.$days.' days.')
+            ->action('View Work Order', route('admin.work-orders.show', $this->workOrder));
     }
 
     public function toArray(object $notifiable): array
     {
         return [
-            'title' => 'New work order assigned',
+            'title' => 'Work order needs attention',
             'work_order_id' => $this->workOrder->id,
             'number' => $this->workOrder->number,
             'customer' => $this->workOrder->customer_name,
             'service' => $this->workOrder->service_name,
-            'stages' => $this->workOrder->stages()->count(),
         ];
     }
 }
