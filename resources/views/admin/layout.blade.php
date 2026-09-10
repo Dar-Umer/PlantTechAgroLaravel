@@ -301,7 +301,7 @@
                                         <p class="text-sm font-medium text-gray-900">{{ $data['title'] ?? 'Notification' }}</p>
                                         <p class="text-xs text-gray-500 mt-0.5">
                                             @if(isset($data['product_name']))
-                                                {{ $data['product_name'] }} — stock {{ $data['stock_qty'] }} {{ $data['unit'] }} (threshold {{ $data['threshold'] }})
+                                                {{ $data['product_name'] }} — stock {{ \App\Support\Format::qty($data['stock_qty'] ?? 0) }} {{ $data['unit'] }} (threshold {{ \App\Support\Format::qty($data['threshold'] ?? 0) }})
                                                 @if(isset($data['supplier'])) · Supplier: {{ $data['supplier'] }}@endif
                                             @elseif(isset($data['number']))
                                                 {{ $data['number'] }} — {{ $data['customer'] }} · {{ $data['service'] }}

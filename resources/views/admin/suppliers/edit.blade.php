@@ -35,10 +35,10 @@
                                     <td class="px-4 py-2.5 font-medium text-gray-900">{{ $product->name }}</td>
                                     <td class="px-4 py-2.5">
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $product->isLowStock() ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700' }}">
-                                            {{ $product->stock_qty }} {{ $product->unit }}
+                                            {{ \App\Support\Format::qty($product->stock_qty) }} {{ $product->unit }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-2.5 text-gray-600">{{ $product->low_stock_threshold }} {{ $product->unit }}</td>
+                                    <td class="px-4 py-2.5 text-gray-600">{{ \App\Support\Format::qty($product->low_stock_threshold) }} {{ $product->unit }}</td>
                                     <td class="px-4 py-2.5 text-right">
                                         <a href="{{ route('admin.products.edit', $product) }}" class="text-xs text-brand-600 hover:text-brand-700 font-medium">Manage</a>
                                     </td>

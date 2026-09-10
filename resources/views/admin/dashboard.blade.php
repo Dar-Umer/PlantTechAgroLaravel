@@ -130,7 +130,7 @@
         </div>
 
         {{-- Row 4: Recent Activity --}}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-gray-900">Recent Leads</h3>
@@ -178,6 +178,36 @@
                     </div>
                 @else
                     <p class="text-sm text-gray-400 py-6 text-center">No payments yet.</p>
+                @endif
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Recent Stock Movements</h3>
+                    <a href="{{ route('admin.stock-movements.index') }}" class="text-sm font-medium text-brand-600 hover:text-brand-700">View all →</a>
+                </div>
+                @if($recentStockMovements->isNotEmpty())
+                    <div class="divide-y divide-gray-50">
+                        @foreach($recentStockMovements as $movement)
+                            @php
+                                $mTypeClass = ['in' => 'bg-green-50 text-green-700', 'out' => 'bg-red-50 text-red-700', 'adjustment' => 'bg-blue-50 text-blue-700'][$movement->type] ?? 'bg-gray-100 text-gray-600';
+                            @endphp
+                            <a href="{{ route('admin.stock-movements.show', $movement) }}" class="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded-lg transition">
+                                <div class="min-w-0">
+                                    <p class="text-sm font-medium text-gray-800 truncate">{{ $movement->product?->name ?? 'Deleted product' }}</p>
+                                    <span class="text-xs px-2 py-0.5 rounded-full {{ $mTypeClass }}">{{ \App\Models\StockMovement::TYPES[$movement->type] ?? $movement->type }}</span>
+                                </div>
+                                <div class="flex items-center gap-2 flex-shrink-0">
+                                    <span class="text-sm font-semibold {{ $movement->quantity >= 0 ? 'text-emerald-600' : 'text-red-600' }}">
+                                        {{ $movement->quantity >= 0 ? '+' : '' }}{{ \App\Support\Format::qty($movement->quantity) }} {{ $movement->product?->unit }}
+                                    </span>
+                                    <span class="text-xs text-gray-400">{{ $movement->created_at->diffForHumans() }}</span>
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-sm text-gray-400 py-6 text-center">No movements yet.</p>
                 @endif
             </div>
         </div>

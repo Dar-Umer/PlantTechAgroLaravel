@@ -30,9 +30,9 @@
 
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-1">Stock</h3>
-                <p class="text-sm text-gray-500 mb-5">Stock level is managed via stock movements. Current: <span class="font-semibold">{{ $product->stock_qty }} {{ $product->unit }}</span></p>
+                <p class="text-sm text-gray-500 mb-5">Stock level is managed via stock movements. Current: <span class="font-semibold">{{ \App\Support\Format::qty($product->stock_qty) }} {{ $product->unit }}</span></p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <x-admin.input name="low_stock_threshold" label="Low Stock Threshold" type="number" step="0.001" min="0" :value="old('low_stock_threshold', $product->low_stock_threshold)" helptext="Alerts trigger when stock falls to or below this. 0 disables." />
+                    <x-admin.input name="low_stock_threshold" label="Low Stock Threshold" type="number" step="0.001" min="0" :value="old('low_stock_threshold', \App\Support\Format::qty($product->low_stock_threshold))" helptext="Alerts trigger when stock falls to or below this. 0 disables." />
                     <div class="flex items-end">
                         <x-admin.button href="{{ route('admin.stock-movements.create', ['product_id' => $product->id]) }}" variant="secondary">Adjust Stock</x-admin.button>
                     </div>

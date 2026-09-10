@@ -7,8 +7,8 @@ The following material supplied by you has reached its low stock threshold:
 
 **{{ $product->name }}**@if($product->sku) (SKU: {{ $product->sku }})@endif
 
-- **Current stock:** {{ $product->stock_qty }} {{ $product->unit }}
-- **Low stock threshold:** {{ $product->low_stock_threshold }} {{ $product->unit }}
+- **Current stock:** {{ \App\Support\Format::qty($product->stock_qty) }} {{ $product->unit }}
+- **Low stock threshold:** {{ \App\Support\Format::qty($product->low_stock_threshold) }} {{ $product->unit }}
 
 Please arrange replenishment at the earliest.
 

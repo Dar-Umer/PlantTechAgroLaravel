@@ -68,7 +68,7 @@
                                 <td class="px-6 py-4 text-gray-600">{{ $product->gst_rate }}%</td>
                                 <td class="px-6 py-4">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $product->isLowStock() ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700' }}">
-                                        {{ $product->stock_qty }} {{ $product->unit }}
+                                        {{ \App\Support\Format::qty($product->stock_qty) }} {{ $product->unit }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">

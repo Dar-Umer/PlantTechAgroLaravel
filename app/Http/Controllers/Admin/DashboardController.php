@@ -9,6 +9,7 @@ use App\Models\Invoice;
 use App\Models\Lead;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\StockMovement;
 use App\Models\WorkOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -70,6 +71,12 @@ class DashboardController extends Controller
             ->limit(5)
             ->get(['id', 'amount', 'method', 'paid_at', 'invoice_id']);
 
+        $recentStockMovements = StockMovement::query()
+            ->with('product:id,name,unit')
+            ->latest()
+            ->limit(6)
+            ->get(['id', 'product_id', 'type', 'quantity', 'created_at']);
+
         return view('admin.dashboard', compact(
             'leadCount', 'newLeads',
             'customerCount', 'activeCustomers',
@@ -80,7 +87,7 @@ class DashboardController extends Controller
             'overdueInvoices', 'overdueAmount',
             'staleWorkOrders', 'staleLeads',
             'collectedThisMonth',
-            'recentLeads', 'recentPayments',
+            'recentLeads', 'recentPayments', 'recentStockMovements',
         ));
     }
 }

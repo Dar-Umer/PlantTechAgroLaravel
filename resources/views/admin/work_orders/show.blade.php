@@ -186,11 +186,11 @@
                                         <div class="space-y-2 mb-3">
                                             @foreach($stage->products as $row)
                                                 <div class="flex items-center justify-between gap-3 rounded-xl bg-gray-50 border border-gray-100 px-4 py-2.5"
-                                                     x-data="{ editing: false, qty: '{{ $row->quantity }}', rate: '{{ $row->rate }}' }">
+                                                     x-data="{ editing: false, qty: '{{ \App\Support\Format::qty($row->quantity) }}', rate: '{{ $row->rate }}' }">
                                                     <div class="flex-1 min-w-0">
                                                         <p class="text-sm font-medium text-gray-900 truncate">{{ $row->name }}</p>
                                                         <div x-show="!editing" class="text-xs text-gray-500">
-                                                            {{ $row->quantity }} {{ $row->unit }} × ₹{{ number_format((float) $row->rate, 0) }}
+                                                            {{ \App\Support\Format::qty($row->quantity) }} {{ $row->unit }} × ₹{{ number_format((float) $row->rate, 0) }}
                                                             <span class="font-semibold text-gray-900">= ₹{{ number_format($row->lineTotal(), 0) }}</span>
                                                         </div>
                                                     </div>
@@ -240,7 +240,7 @@
                                                 <select name="product_id" required class="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                                                     <option value="">Select product...</option>
                                                     @foreach($products as $product)
-                                                        <option value="{{ $product->id }}" data-rate="{{ $product->rate }}">{{ $product->name }} ({{ $product->stock_qty }} {{ $product->unit }} in stock)</option>
+                                                        <option value="{{ $product->id }}" data-rate="{{ $product->rate }}">{{ $product->name }} ({{ \App\Support\Format::qty($product->stock_qty) }} {{ $product->unit }} in stock)</option>
                                                     @endforeach
                                                 </select>
                                             </div>

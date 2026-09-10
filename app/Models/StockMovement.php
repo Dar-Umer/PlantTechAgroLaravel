@@ -13,6 +13,8 @@ class StockMovement extends Model
         'adjustment' => 'Adjustment',
     ];
 
+    public const MANUAL_REF_PREFIX = 'MV-';
+
     protected $fillable = [
         'product_id', 'type', 'quantity', 'stock_after', 'unit_cost',
         'supplier_id', 'reference', 'note', 'created_by',
@@ -25,6 +27,25 @@ class StockMovement extends Model
             'stock_after' => 'decimal:3',
             'unit_cost' => 'decimal:2',
         ];
+    }
+
+    public function stockBefore(): float
+    {
+        return round((float) $this->stock_after - (float) $this->quantity, 3);
+    }
+
+    public function withUnitCost(): bool
+    {
+        return $this->unit_cost !== null && (float) $this->unit_cost > 0;
+    }
+
+    public function movementValue(): ?float
+    {
+        if ($this->unit_cost === null) {
+            return null;
+        }
+
+        return round((float) $this->unit_cost * abs((float) $this->quantity), 2);
     }
 
     public function product(): BelongsTo

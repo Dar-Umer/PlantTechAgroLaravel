@@ -14,6 +14,7 @@ use App\Models\WorkOrderStageProduct;
 use App\Notifications\WorkOrderAssigned;
 use App\Services\StockService;
 use App\Services\WorkOrderInvoiceService;
+use App\Support\Format;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -282,7 +283,7 @@ class WorkOrderController extends Controller
 
         StockService::record($product, 'out', (float) $row->quantity, $workOrder->number, 'Used in '.$stage->name, null, null, $request->user('admin')->id ?? null);
 
-        return back()->with('success', $product->name.' ('.$row->quantity.' '.$product->unit.') recorded and deducted from stock.');
+        return back()->with('success', $product->name.' ('.Format::qty($row->quantity).' '.$product->unit.') recorded and deducted from stock.');
     }
 
     public function updateStageProduct(Request $request, WorkOrder $workOrder, WorkOrderStage $stage, WorkOrderStageProduct $stageProduct)

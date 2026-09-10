@@ -102,8 +102,10 @@ Route::get('settings', [SettingController::class, 'index'])->name('admin.setting
     Route::post('products/{product}/notify-supplier', [ProductController::class, 'notifySupplier'])->name('admin.products.notify-supplier');
     Route::resource('suppliers', SupplierController::class)->except('show')->names('admin.suppliers');
     Route::get('stock-movements', [StockMovementController::class, 'index'])->name('admin.stock-movements.index');
+    Route::get('stock-movements/export', [StockMovementController::class, 'export'])->name('admin.stock-movements.export');
     Route::get('stock-movements/create', [StockMovementController::class, 'create'])->name('admin.stock-movements.create');
     Route::post('stock-movements', [StockMovementController::class, 'store'])->name('admin.stock-movements.store');
+    Route::get('stock-movements/{movement}', [StockMovementController::class, 'show'])->name('admin.stock-movements.show');
 
     // Work orders
     Route::get('work-orders', [WorkOrderController::class, 'index'])->name('admin.work-orders.index');

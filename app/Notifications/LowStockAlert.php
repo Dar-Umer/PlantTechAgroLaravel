@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\Product;
 use App\Notifications\Concerns\ConfigurableChannel;
+use App\Support\Format;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -20,8 +21,8 @@ class LowStockAlert extends Notification
             ->subject('Low stock alert: '.$this->product->name)
             ->greeting('Hello '.$notifiable->name.',')
             ->line($this->product->name.' has reached its low stock threshold.')
-            ->line('**Current stock:** '.$this->product->stock_qty.' '.$this->product->unit)
-            ->line('**Threshold:** '.$this->product->low_stock_threshold.' '.$this->product->unit)
+            ->line('**Current stock:** ' . Format::qty($this->product->stock_qty) . ' ' . $this->product->unit)
+            ->line('**Threshold:** ' . Format::qty($this->product->low_stock_threshold) . ' ' . $this->product->unit)
             ->action('View Products', route('admin.products.index'));
     }
 

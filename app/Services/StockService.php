@@ -6,6 +6,7 @@ use App\Mail\SupplierLowStockMail;
 use App\Models\Admin;
 use App\Models\Product;
 use App\Models\StockMovement;
+use App\Support\Format;
 use App\Notifications\LowStockAlert;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -59,7 +60,7 @@ class StockService
 
             if ($newStock < 0) {
                 throw ValidationException::withMessages([
-                    'quantity' => "Insufficient stock for {$product->name}. Available: {$product->stock_qty} {$product->unit}.",
+                    'quantity' => "Insufficient stock for {$product->name}. Available: " . Format::qty($product->stock_qty) . " {$product->unit}.",
                 ]);
             }
 
@@ -76,6 +77,12 @@ class StockService
                 'note' => $note,
                 'created_by' => $userId,
             ]);
+
+            if ($movement->reference === null || trim($movement->reference) === '') {
+                $movement->forceFill([
+                    'reference' => StockMovement::MANUAL_REF_PREFIX . str_pad((string) $movement->id, 4, '0', STR_PAD_LEFT),
+                ])->save();
+            }
 
             $isLow = $product->isLowStock();
 

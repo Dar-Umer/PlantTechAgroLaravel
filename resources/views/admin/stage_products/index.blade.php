@@ -45,11 +45,11 @@
                     <tbody class="divide-y divide-gray-100">
                         @forelse($stage->products as $templateProduct)
                             <tr class="hover:bg-gray-50 transition"
-                                x-data="{ editing: false, qty: '{{ $templateProduct->quantity }}', note: @js($templateProduct->note) }">
+                                x-data="{ editing: false, qty: '{{ \App\Support\Format::qty($templateProduct->quantity) }}', note: @js($templateProduct->note) }">
                                 <td class="px-6 py-4 font-medium text-gray-900">
                                     {{ $templateProduct->product?->name ?? 'Deleted product' }}
                                     @if($templateProduct->product)
-                                        <span class="block text-xs text-gray-400">Stock: {{ $templateProduct->product->stock_qty }} {{ $templateProduct->product->unit }}</span>
+                                        <span class="block text-xs text-gray-400">Stock: {{ \App\Support\Format::qty($templateProduct->product->stock_qty) }} {{ $templateProduct->product->unit }}</span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-gray-600">
@@ -59,7 +59,7 @@
                                         —
                                     @endif
                                 </td>
-                                <td class="px-6 py-4" x-show="!editing">{{ $templateProduct->quantity }}</td>
+                                <td class="px-6 py-4" x-show="!editing">{{ \App\Support\Format::qty($templateProduct->quantity) }}</td>
                                 <td class="px-6 py-4 text-gray-600" x-show="!editing">{{ $templateProduct->note ?: '—' }}</td>
                                 <td class="px-6 py-4 text-right" x-show="!editing">
                                     <div class="flex items-center justify-end gap-2">
