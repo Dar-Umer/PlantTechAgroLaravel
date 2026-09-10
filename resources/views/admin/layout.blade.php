@@ -376,6 +376,14 @@
 
                 @yield('content')
             </main>
+
+            <!-- Footer -->
+            <footer class="flex-shrink-0 px-4 lg:px-6 py-3 border-t {{ $sidebarStyle === 'light' ? 'border-gray-200 bg-gray-50' : 'border-gray-100 bg-white' }}">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <p class="text-xs text-gray-400">© {{ date('Y') }} {{ $theme['site_name'] ?? 'Plant Tech Agro' }}</p>
+                    <p class="text-xs text-gray-400">Version <span class="font-medium text-gray-600">v{{ config('version.number', '1.0') }}</span></p>
+                </div>
+            </footer>
         </div>
     </div>
 

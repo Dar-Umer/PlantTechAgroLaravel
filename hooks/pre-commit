@@ -1,0 +1,28 @@
+#!/usr/bin/env sh
+set -e
+
+cd "$(git rev-parse --show-toplevel)" || exit 1
+
+VERSION_FILE="config/version.php"
+
+if [ ! -f "$VERSION_FILE" ]; then
+    echo "pre-commit: $VERSION_FILE not found; skipping version bump." >&2
+    exit 0
+fi
+
+version=$(sed -n "s/^    'number' => '\([0-9][0-9]*\.[0-9][0-9]*\)',$/\1/p" "$VERSION_FILE" | head -n1)
+
+if [ -z "$version" ]; then
+    echo "pre-commit: could not parse version from $VERSION_FILE; aborting." >&2
+    exit 1
+fi
+
+major=$(printf '%s' "$version" | cut -d. -f1)
+minor=$(printf '%s' "$version" | cut -d. -f2)
+new_minor=$((minor + 1))
+new_version="$major.$new_minor"
+
+sed -i "s/^    'number' => '[0-9][0-9]*\.[0-9][0-9]*',$/    'number' => '$new_version',/" "$VERSION_FILE"
+
+echo "pre-commit: version $version -> $new_version"
+git add -- "$VERSION_FILE"
