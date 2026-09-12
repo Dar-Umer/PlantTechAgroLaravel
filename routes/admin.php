@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\LeadController;
 use App\Http\Controllers\Admin\LeadFormFieldController;
 use App\Http\Controllers\Admin\LoginController;
+use App\Http\Controllers\Admin\MobileAppController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\ProductController;
@@ -50,6 +51,10 @@ Route::middleware('admin')->group(function () {
 Route::get('settings', [SettingController::class, 'index'])->name('admin.settings.index');
 
     Route::put('settings', [SettingController::class, 'update'])->name('admin.settings.update');
+
+    Route::get('mobile-apps', [MobileAppController::class, 'index'])->name('admin.mobile-apps.index');
+
+    Route::put('mobile-apps', [MobileAppController::class, 'update'])->name('admin.mobile-apps.update');
 
     Route::post('settings/mail', [SettingController::class, 'smtpUpdate'])->name('admin.settings.mail.update');
 

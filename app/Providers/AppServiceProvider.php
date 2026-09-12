@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Services\MailSettingsService;
 use App\Services\ShopSettingsService;
+use App\Support\Phone;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -49,6 +50,26 @@ class AppServiceProvider extends ServiceProvider
                 return back()->withErrors([
                     'email' => 'Too many login attempts. Please wait a minute before trying again.',
                 ]);
+            });
+        });
+
+        RateLimiter::for('customer-login', function (Request $request) {
+            $phone = Phone::digits((string) $request->input('phone', ''));
+
+            return Limit::perMinute(5)->by('customer-login:'.$phone.'|'.$request->ip())->response(function () {
+                return response()->json([
+                    'message' => 'Too many login attempts. Please wait a minute before trying again.',
+                ], 429);
+            });
+        });
+
+        RateLimiter::for('customer-otp', function (Request $request) {
+            $phone = Phone::digits((string) $request->input('phone', ''));
+
+            return Limit::perMinute(3)->by('customer-otp:'.$phone.'|'.$request->ip())->response(function () {
+                return response()->json([
+                    'message' => 'Too many OTP requests. Please wait a minute before trying again.',
+                ], 429);
             });
         });
 
