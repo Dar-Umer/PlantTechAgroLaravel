@@ -21,14 +21,22 @@ class LeadController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'max:20', 'regex:/^[0-9+\-\s()]{7,20}$/'],
+            'phone' => ['required', 'string', 'max:10', 'regex:/^[0-9]{10}$/'],
             'service_id' => ['required', Rule::exists('services', 'id')->where('is_active', true)],
         ], [
             'service_id.required' => 'Please select a service.',
-            'phone.regex' => 'Please enter a valid phone number.',
+            'phone.regex' => 'Please enter a valid 10-digit phone number.',
         ]);
 
         $custom = $this->validateCustomFields($request);
+
+        // Time trap: a real visitor needs a moment to fill the form. Bots submit instantly.
+        $minSeconds = (int) config('frontend.lead_form.min_submit_seconds', 3);
+        $loadedAt = (int) $request->input('loaded_at');
+
+        if (! $request->filled('loaded_at') || $loadedAt <= 0 || $loadedAt > time() + 60 || (time() - $loadedAt) < $minSeconds) {
+            return redirect()->to('/?submitted=1');
+        }
 
         $lead = Lead::create([
             'name' => $data['name'],
@@ -70,7 +78,7 @@ class LeadController extends Controller
                 'email' => ['email', 'max:255'],
                 'number' => ['numeric'],
                 'date' => ['date'],
-                'tel' => ['string', 'max:20', 'regex:/^[0-9+\-\s()]{7,20}$/'],
+                'tel' => ['string', 'max:10', 'regex:/^[0-9]{10}$/'],
                 'textarea' => ['string', 'max:2000'],
                 'select' => [Rule::in($field->options ?? [])],
                 default => ['string', 'max:500'],

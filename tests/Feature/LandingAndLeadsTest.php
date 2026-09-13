@@ -38,6 +38,7 @@ class LandingAndLeadsTest extends TestCase
             'name' => 'Farooq Ahmad',
             'phone' => '9999999999',
             'service_id' => $service->id,
+            'loaded_at' => time() - 10,
             'custom' => [
                 'address' => 'Pulwama',
                 'area' => 'Tahab',
@@ -63,6 +64,7 @@ class LandingAndLeadsTest extends TestCase
             'name' => 'Test',
             'phone' => '9999999999',
             'service_id' => $service->id,
+            'loaded_at' => time() - 10,
             'custom' => ['hacker_field' => 'x'],
         ])->assertRedirect('/?submitted=1');
 
@@ -113,6 +115,7 @@ class LandingAndLeadsTest extends TestCase
             'name' => 'Test',
             'phone' => '9999999999',
             'service_id' => $service->id,
+            'loaded_at' => time() - 10,
             'custom' => ['area' => 'Pulwama'],
         ])->assertRedirect('/?submitted=1');
 
@@ -137,7 +140,7 @@ class LandingAndLeadsTest extends TestCase
     {
         $service = Service::factory()->create();
 
-        $payload = ['name' => 'Test', 'phone' => '9999999999', 'service_id' => $service->id];
+        $payload = ['name' => 'Test', 'phone' => '9999999999', 'service_id' => $service->id, 'loaded_at' => time() - 10];
 
         for ($i = 0; $i < 5; $i++) {
             $this->post('/leads', $payload + ['phone' => '999999999'.$i]);
@@ -146,5 +149,25 @@ class LandingAndLeadsTest extends TestCase
         $this->post('/leads', $payload)->assertStatus(429);
 
         $this->assertSame(5, Lead::count());
+    }
+
+    public function test_instant_submissions_are_discarded(): void
+    {
+        $service = Service::factory()->create();
+
+        $this->post('/leads', [
+            'name' => 'Bot',
+            'phone' => '9999999999',
+            'service_id' => $service->id,
+            'loaded_at' => time(),
+        ])->assertRedirect('/?submitted=1');
+
+        $this->post('/leads', [
+            'name' => 'Bot',
+            'phone' => '9999999999',
+            'service_id' => $service->id,
+        ])->assertRedirect('/?submitted=1');
+
+        $this->assertSame(0, Lead::count());
     }
 }

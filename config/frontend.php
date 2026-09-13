@@ -6,5 +6,6 @@ return [
         'description' => 'Fill in your details and our team will call you back shortly.',
         'button_text' => 'Submit Request',
         'success_message' => 'Thank you! Your request has been received. Our team will call you soon.',
+        'min_submit_seconds' => 3,
     ],
 ];

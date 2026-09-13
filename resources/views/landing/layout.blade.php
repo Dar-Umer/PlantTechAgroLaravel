@@ -41,8 +41,54 @@
         .animate-marquee {
             animation: marquee 40s linear infinite;
         }
+        @keyframes fade-up {
+            from { opacity: 0; transform: translateY(18px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-up {
+            opacity: 0;
+            animation: fade-up .7s cubic-bezier(.22,1,.36,1) forwards;
+        }
+        @keyframes caret-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        .animate-caret {
+            animation: caret-blink 1s steps(1) infinite;
+        }
+        @keyframes wave-move {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+        .animate-wave {
+            animation: wave-move 14s linear infinite;
+            will-change: transform;
+        }
+        .rain-drop {
+            background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.45));
+            animation: rain-fall 4s linear infinite;
+            will-change: transform;
+        }
+        @keyframes rain-fall {
+            from { transform: translate3d(0, -12vh, 0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            to { transform: translate3d(0, 112vh, 0); opacity: 0; }
+        }
         [x-cloak] {
             display: none !important;
+        }
+        .hero-cursor, .hero-cursor * {
+            cursor: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='26'%20height='26'%20viewBox='0%200%2026%2026'%3E%3Crect%20x='11.5'%20y='2'%20width='2.6'%20height='5'%20rx='1'%20fill='%2378350f'/%3E%3Cellipse%20cx='17'%20cy='3.5'%20rx='3.5'%20ry='1.8'%20fill='%23059669'%20transform='rotate(-30%2017%203.5)'/%3E%3Cpath%20d='M13%206c-1-1.5-3-2-4-2-1.5%200-3%20.8-3.6%202.3C3.8%208%203.2%2010.4%203.2%2013c0%204.4%202.6%209%209.8%209s9.8-4.6%209.8-9c0-2.6-.6-5-2.2-6.7-.6-1.5-2.1-2.3-3.6-2.3-1%200-3%20.5-4%202z'%20fill='%23ef4444'%20stroke='%237f1d1d'%20stroke-width='0.8'/%3E%3Cellipse%20cx='9'%20cy='10'%20rx='2'%20ry='3'%20fill='%23fca5a5'%20opacity='0.7'%20transform='rotate(-20%209%2010)'/%3E%3C/svg%3E") 13 6, auto;
+        }
+        .hero-glow {
+            background: radial-gradient(circle 195px at var(--gx, 50%) var(--gy, 30%), rgba(16, 185, 129, 0.45) 0%, rgba(16, 185, 129, 0.15) 55%, rgba(16, 185, 129, 0.03) 80%, transparent 100%);
+            transition: opacity .4s ease;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .animate-fade-up,
+            .animate-wave { animation: none; opacity: 1; transform: none; }
+            .rain-drop { animation: none; opacity: 0; }
         }
     </style>
     <script>
