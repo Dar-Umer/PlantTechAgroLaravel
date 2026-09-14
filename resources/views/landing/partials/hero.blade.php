@@ -10,7 +10,7 @@
     $headline = count($words) > 1 ? implode(' ', array_slice($words, 0, -1)) : '';
 @endphp
 @if($heroActive)
-<section id="hero-section" class="hero-cursor relative flex items-center overflow-hidden bg-white min-h-[60vh] sm:min-h-[64vh] pt-12 pb-8 sm:pt-8 sm:pb-10">
+<section id="hero-section" class="hero-cursor relative flex items-center overflow-hidden bg-white min-h-[60vh] sm:min-h-[64vh] pt-24 pb-8 sm:pt-28 sm:pb-10">
     <div class="absolute inset-0 bg-gradient-to-b from-brand-50 via-white to-gray-50"></div>
     <div class="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.35),transparent_55%)]"></div>
     <div class="absolute inset-0 opacity-[0.36] bg-[linear-gradient(rgba(15,23,42,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.06)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_72%)]"></div>
