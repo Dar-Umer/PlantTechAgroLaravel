@@ -56,16 +56,8 @@
         .animate-caret {
             animation: caret-blink 1s steps(1) infinite;
         }
-        @keyframes wave-move {
-            from { transform: translateX(0); }
-            to { transform: translateX(-50%); }
-        }
-        .animate-wave {
-            animation: wave-move 14s linear infinite;
-            will-change: transform;
-        }
         .rain-drop {
-            background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.45));
+            background: linear-gradient(to bottom, transparent, rgba(5, 150, 105, 0.55));
             animation: rain-fall 4s linear infinite;
             will-change: transform;
         }
@@ -86,8 +78,7 @@
             transition: opacity .4s ease;
         }
         @media (prefers-reduced-motion: reduce) {
-            .animate-fade-up,
-            .animate-wave { animation: none; opacity: 1; transform: none; }
+            .animate-fade-up { animation: none; opacity: 1; transform: none; }
             .rain-drop { animation: none; opacity: 0; }
         }
     </style>

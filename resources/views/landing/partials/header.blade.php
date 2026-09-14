@@ -3,10 +3,12 @@
     $brandParts = explode(' ', trim($siteName), 2);
     $logo = config('shop.logo_url');
 @endphp
-<header x-data="{ mobileOpen: false, scrolled: false }"
-        @scroll.passive.window="scrolled = window.scrollY > 10"
-        :class="scrolled ? 'bg-white shadow-md shadow-gray-900/[0.04] border-gray-100' : 'bg-white/90 border-transparent'"
-        class="fixed top-0 inset-x-0 z-40 backdrop-blur border-b transition-all duration-300 ease-out">
+<header x-data="{ mobileOpen: false, scrolled: false,
+            updateTint() { this.scrolled = window.scrollY > 24; } }"
+        x-init="updateTint()"
+        @scroll.passive.window="updateTint()"
+        :class="scrolled ? 'bg-white shadow-md shadow-gray-900/[0.04] border-gray-100' : 'bg-transparent border-transparent'"
+        class="fixed top-0 inset-x-0 z-40 border-b transition-all duration-300 ease-out">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="relative flex items-center justify-between h-16">
             <a href="{{ url('/') }}" class="absolute left-1/2 -translate-x-1/2 lg:static lg:left-auto lg:translate-x-0 flex items-center gap-2">
