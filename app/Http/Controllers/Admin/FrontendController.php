@@ -21,6 +21,18 @@ class FrontendController extends Controller
             'lead_form_description' => config('frontend.lead_form.description'),
             'lead_form_button_text' => config('frontend.lead_form.button_text'),
             'lead_form_success_message' => config('frontend.lead_form.success_message'),
+            'site_name' => config('shop.site_name'),
+            'site_email' => config('shop.site_email'),
+            'site_phone' => config('shop.site_phone'),
+            'support_hours' => config('shop.support_hours'),
+            'site_address' => config('shop.site_address'),
+            'footer_tagline' => config('shop.footer_tagline'),
+            'social_facebook' => config('shop.social_facebook'),
+            'social_instagram' => config('shop.social_instagram'),
+            'social_youtube' => config('shop.social_youtube'),
+            'social_whatsapp' => config('shop.social_whatsapp'),
+            'social_x' => config('shop.social_x'),
+            'support_hours' => config('shop.support_hours'),
         ];
 
         $fields = LeadFormField::query()->orderBy('sort_order')->get();
@@ -101,5 +113,40 @@ class FrontendController extends Controller
 
         return redirect()->route('admin.frontend.index', ['tab' => 'home_sections'])
             ->with('success', 'Home sections updated.');
+    }
+
+    public function updateFooter(Request $request, ShopSettingsService $settingsService)
+    {
+        $validated = $request->validate([
+            'footer_heading' => ['nullable', 'string', 'max:255'],
+            'footer_tagline' => ['nullable', 'string', 'max:1000'],
+            'site_name' => ['nullable', 'string', 'max:255'],
+            'site_email' => ['nullable', 'email', 'max:255'],
+            'site_phone' => ['nullable', 'string', 'max:50'],
+            'site_address' => ['nullable', 'string', 'max:1000'],
+            'support_hours' => ['nullable', 'string', 'max:255'],
+            'social_facebook' => ['nullable', 'string', 'max:500'],
+            'social_instagram' => ['nullable', 'string', 'max:500'],
+            'social_youtube' => ['nullable', 'string', 'max:500'],
+            'social_whatsapp' => ['nullable', 'string', 'max:500'],
+            'social_x' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $settingsService->set([
+            'site_name' => $validated['site_name'] ?? config('shop.site_name'),
+            'footer_tagline' => $validated['footer_tagline'] ?? '',
+            'site_email' => $validated['site_email'] ?? '',
+            'site_phone' => $validated['site_phone'] ?? '',
+            'site_address' => $validated['site_address'] ?? '',
+            'support_hours' => $validated['support_hours'] ?? '',
+            'social_facebook' => $validated['social_facebook'] ?? '',
+            'social_instagram' => $validated['social_instagram'] ?? '',
+            'social_youtube' => $validated['social_youtube'] ?? '',
+            'social_whatsapp' => $validated['social_whatsapp'] ?? '',
+            'social_x' => $validated['social_x'] ?? '',
+        ], 'shop');
+
+        return redirect()->route('admin.frontend.index', ['tab' => 'footer'])
+            ->with('success', 'Footer settings updated.');
     }
 }

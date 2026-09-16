@@ -56,26 +56,9 @@
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                         <h3 class="text-lg font-semibold text-gray-900 mb-1">Store Information</h3>
                         <p class="text-sm text-gray-500 mb-5">Basic details about your platform.</p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <x-admin.input name="site_name" label="Store Name" :value="$settings['site_name'] ?? ''" />
-                            <x-admin.input name="site_email" label="Store Email" type="email" :value="$settings['site_email'] ?? ''" />
-                            <x-admin.input name="site_phone" label="Store Phone" :value="$settings['site_phone'] ?? ''" />
-                            <x-admin.input name="support_hours" label="Support Hours" :value="$settings['support_hours'] ?? ''" helptext="Shown in the footer contact section." />
-                            <x-admin.input name="site_address" label="Store Address" :value="$settings['site_address'] ?? ''" helptext="Shown in the footer contact section." />
-                            <x-admin.input name="footer_tagline" label="Footer Tagline" :value="$settings['footer_tagline'] ?? ''" helptext="Short description shown in the footer." />
                             <x-admin.input name="return_policy_text" label="Return Policy Text" :value="$settings['return_policy_text'] ?? ''" helptext="Shown on the product detail page." />
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-1">Social Media</h3>
-                        <p class="text-sm text-gray-500 mb-5">Links shown in the store footer and available to the mobile app. Leave blank to hide a platform.</p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <x-admin.input name="social_facebook" label="Facebook URL" :value="$settings['social_facebook'] ?? ''" placeholder="https://facebook.com/yourpage" helptext="Blank to hide" />
-                            <x-admin.input name="social_instagram" label="Instagram URL" :value="$settings['social_instagram'] ?? ''" placeholder="https://instagram.com/yourhandle" helptext="Blank to hide" />
-                            <x-admin.input name="social_youtube" label="YouTube URL" :value="$settings['social_youtube'] ?? ''" placeholder="https://youtube.com/@yourchannel" helptext="Blank to hide" />
-                            <x-admin.input name="social_whatsapp" label="WhatsApp" :value="$settings['social_whatsapp'] ?? ''" placeholder="https://wa.me/919999999999 or +91 99999 99999" helptext="Full link or phone number. Blank to hide" />
-                            <x-admin.input name="social_x" label="X (Twitter) URL" :value="$settings['social_x'] ?? ''" placeholder="https://x.com/yourhandle" helptext="Blank to hide" />
                         </div>
                     </div>
 

@@ -78,6 +78,7 @@ Route::get('settings', [SettingController::class, 'index'])->name('admin.setting
     Route::get('frontend', [FrontendController::class, 'index'])->name('admin.frontend.index');
     Route::put('frontend/lead-form', [FrontendController::class, 'updateLeadForm'])->name('admin.frontend.lead-form.update');
     Route::put('frontend/home-sections', [FrontendController::class, 'updateHomeSections'])->name('admin.frontend.home-sections.update');
+    Route::put('frontend/footer', [FrontendController::class, 'updateFooter'])->name('admin.frontend.footer.update');
     Route::post('frontend/lead-form/fields', [LeadFormFieldController::class, 'store'])->name('admin.lead-form-fields.store');
     Route::put('frontend/lead-form/fields/{field}', [LeadFormFieldController::class, 'update'])->name('admin.lead-form-fields.update');
     Route::delete('frontend/lead-form/fields/{field}', [LeadFormFieldController::class, 'destroy'])->name('admin.lead-form-fields.destroy');

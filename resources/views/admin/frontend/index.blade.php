@@ -23,6 +23,12 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                     Home Sections
                 </button>
+                <button @click="activeTab = 'footer'"
+                    :class="activeTab === 'footer' ? 'bg-brand-50 text-brand-700 border-brand-200' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Footer
+                </button>
             </nav>
         </div>
 
@@ -267,6 +273,43 @@
 
                 <div class="flex justify-end">
                     <x-admin.button type="submit">Save Home Sections</x-admin.button>
+                </div>
+            </form>
+        </div>
+
+        {{-- Footer Tab --}}
+        <div x-show="activeTab === 'footer'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-cloak class="space-y-6">
+            <form action="{{ route('admin.frontend.footer.update') }}" method="POST" class="space-y-6">
+                @csrf
+                @method('PUT')
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Footer & Contact Info</h3>
+                    <p class="text-sm text-gray-500 mb-6">These appear in the site footer (tagline, contact details and social links).</p>
+                    <div class="space-y-5">
+                        <x-admin.input name="site_name" label="Site Name" :value="$settings['site_name'] ?? ''" />
+                        <x-admin.textarea name="footer_tagline" label="Footer Tagline" :value="$settings['footer_tagline'] ?? ''" rows="2" />
+                        <x-admin.input name="site_email" label="Contact Email" type="email" :value="$settings['site_email'] ?? ''" />
+                        <x-admin.input name="site_phone" label="Contact Phone" :value="$settings['site_phone'] ?? ''" />
+                        <x-admin.input name="support_hours" label="Support Hours" :value="$settings['support_hours'] ?? ''" helptext="Shown in the footer contact section." />
+                        <x-admin.textarea name="site_address" label="Address" :value="$settings['site_address'] ?? ''" rows="2" />
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Social Links</h3>
+                    <p class="text-sm text-gray-500 mb-6">Links shown in the footer social icons. Paste full URLs.</p>
+                    <div class="space-y-5">
+                        <x-admin.input name="social_facebook" label="Facebook" :value="$settings['social_facebook'] ?? ''" />
+                        <x-admin.input name="social_instagram" label="Instagram" :value="$settings['social_instagram'] ?? ''" />
+                        <x-admin.input name="social_youtube" label="YouTube" :value="$settings['social_youtube'] ?? ''" />
+                        <x-admin.input name="social_whatsapp" label="WhatsApp" :value="$settings['social_whatsapp'] ?? ''" />
+                        <x-admin.input name="social_x" label="X (Twitter) URL" :value="$settings['social_x'] ?? ''" placeholder="https://x.com/yourhandle" helptext="Blank to hide" />
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <x-admin.button type="submit">Save Footer</x-admin.button>
                 </div>
             </form>
         </div>

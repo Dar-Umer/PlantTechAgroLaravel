@@ -10,7 +10,7 @@
     $headline = count($words) > 1 ? implode(' ', array_slice($words, 0, -1)) : '';
 @endphp
 @if($heroActive)
-<section id="hero-section" class="hero-cursor relative flex items-center overflow-hidden bg-white min-h-[60vh] sm:min-h-[64vh] pt-24 pb-8 sm:pt-28 sm:pb-10">
+<section id="hero-section" class="hero-cursor relative flex items-center overflow-hidden bg-white min-h-[80vh] pt-24 pb-8 sm:pt-28 sm:pb-10">
     <div class="absolute inset-0 bg-gradient-to-b from-brand-50 via-white to-gray-50"></div>
     <div class="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.35),transparent_55%)]"></div>
     <div class="absolute inset-0 opacity-[0.36] bg-[linear-gradient(rgba(15,23,42,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.06)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_72%)]"></div>
@@ -93,7 +93,7 @@
                         out += (i ? ' ' : '') + esc;
                     }
                 });
-                this.html = out + '<span class="inline-block w-[3px] h-[0.85em] bg-brand-500 align-middle ml-1 animate-caret"></span>';
+                this.html = out;
             }
         };
 
@@ -118,7 +118,7 @@
         })();
     </script>
 
-    <div class="relative w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
+    <div class="relative w-full max-w-[88rem] mx-auto px-6 sm:px-8 lg:px-12 text-center">
         <p class="animate-fade-up inline-flex items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-1.5 text-[11px] sm:text-xs font-semibold tracking-widest uppercase text-brand-600 shadow-sm">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21c5.5 0 8-3.5 8-9V5.25c0-.14-.11-.25-.25-.25H12C6.5 5 4 8.5 4 14s2.5 7 8 7z"/></svg>
             Kashmir's Finest Agritech Company

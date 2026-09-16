@@ -49,13 +49,6 @@
             opacity: 0;
             animation: fade-up .7s cubic-bezier(.22,1,.36,1) forwards;
         }
-        @keyframes caret-blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-        .animate-caret {
-            animation: caret-blink 1s steps(1) infinite;
-        }
         .rain-drop {
             background: linear-gradient(to bottom, transparent, rgba(5, 150, 105, 0.55));
             animation: rain-fall 4s linear infinite;
