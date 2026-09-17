@@ -2,8 +2,21 @@
 
 namespace App\Providers;
 
+use App\Models\GalleryImage;
+use App\Models\HomeSection;
+use App\Models\ImpactStat;
+use App\Models\LeadFormField;
+use App\Models\Partner;
+use App\Models\Post;
+use App\Models\PostCategory;
+use App\Models\Project;
+use App\Models\Service;
+use App\Models\ServiceItem;
+use App\Models\ServiceStage;
+use App\Models\Testimonial;
 use App\Services\MailSettingsService;
 use App\Services\ShopSettingsService;
+use App\Support\ContentCache;
 use App\Support\Phone;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -34,10 +47,37 @@ class AppServiceProvider extends ServiceProvider
         }
     }
 
+    /**
+     * Bust the cached front-end payload whenever content that feeds it changes.
+     */
+    protected function registerFrontendCacheInvalidation(): void
+    {
+        $models = [
+            HomeSection::class,
+            Service::class,
+            ServiceItem::class,
+            ServiceStage::class,
+            Partner::class,
+            GalleryImage::class,
+            ImpactStat::class,
+            Project::class,
+            Post::class,
+            PostCategory::class,
+            Testimonial::class,
+            LeadFormField::class,
+        ];
+
+        foreach ($models as $model) {
+            $model::saved(fn () => ContentCache::bump());
+            $model::deleted(fn () => ContentCache::bump());
+        }
+    }
+
     public function boot(): void
     {
         $this->loadShopSettings();
         $this->applyMailSettings();
+        $this->registerFrontendCacheInvalidation();
 
         RateLimiter::for('leads', function (Request $request) {
             return Limit::perMinute(5)->by('lead-form:'.$request->ip());
@@ -73,7 +113,7 @@ class AppServiceProvider extends ServiceProvider
             });
         });
 
-        View::composer('*', function ($view) {
+        View::composer(['landing.layout', 'admin.layout', 'admin.auth.*'], function ($view) {
             $paletteName = config('shop.theme_palette', 'emerald');
             $palettes = config('theme.palettes', []);
             $palette = $palettes[$paletteName]['colors'] ?? $palettes['emerald']['colors'];

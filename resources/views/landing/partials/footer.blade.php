@@ -24,7 +24,7 @@
             <div class="lg:col-span-2">
                 <div class="flex items-center gap-2 mb-4">
                     @if($logo)
-                        <img src="{{ \App\Support\Media::url($logo) }}" alt="{{ $siteName }}" class="h-10 w-auto object-contain">
+                        <img src="{{ \App\Support\Media::url($logo) }}" alt="{{ $siteName }}" loading="lazy" decoding="async" class="h-10 w-auto object-contain">
                     @else
                         <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 flex items-center justify-center">
                             <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9-2-9-2-9 2 9 2zm0 0V5m0 0L3 7m9-2l9 2M3 7v6l9 2 9-2V7"/></svg>

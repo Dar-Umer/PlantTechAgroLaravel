@@ -12,6 +12,7 @@
                     <div class="relative h-48 overflow-hidden bg-gradient-to-br from-brand-800 to-brand-700">
                         @if($service->image && \App\Support\Media::exists($service->image))
                             <img src="{{ \App\Support\Media::url($service->image) }}" alt="{{ $service->name }}"
+                                 loading="lazy" decoding="async"
                                  class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                         @else
                             <div class="w-full h-full flex items-center justify-center">

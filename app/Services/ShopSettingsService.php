@@ -3,10 +3,14 @@
 namespace App\Services;
 
 use App\Models\Setting;
+use App\Support\ContentCache;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 
 class ShopSettingsService
 {
+    protected const CACHE_KEY = 'shop.settings.config';
+
     public function set(array $settings, string $namespace = ''): void
     {
         $rows = [];
@@ -21,20 +25,47 @@ class ShopSettingsService
         }
 
         Setting::upsert($rows, ['key'], ['value']);
+
+        Cache::forget(self::CACHE_KEY);
+        ContentCache::bump();
     }
 
     public function mergeIntoConfig(): void
     {
-        try {
-            if (! Schema::hasTable('settings')) {
-                return;
-            }
-        } catch (\Throwable) {
-            return;
+        foreach ($this->all() as $key => $value) {
+            config([$key => $value]);
         }
+    }
 
-        foreach (Setting::query()->get() as $setting) {
-            config([$setting->key => $setting->value]);
+    /**
+     * All stored settings, keyed by their config path. Cached because this runs
+     * on every request during bootstrap.
+     *
+     * @return array<string, mixed>
+     */
+    public function all(): array
+    {
+        try {
+            $cached = Cache::get(self::CACHE_KEY);
+
+            if (is_array($cached)) {
+                return $cached;
+            }
+
+            if (! Schema::hasTable('settings')) {
+                // Don't cache the transient pre-migration state.
+                return [];
+            }
+
+            $settings = Setting::query()->get()
+                ->mapWithKeys(fn (Setting $setting) => [$setting->key => $setting->value])
+                ->all();
+
+            Cache::forever(self::CACHE_KEY, $settings);
+
+            return $settings;
+        } catch (\Throwable) {
+            return [];
         }
     }
 

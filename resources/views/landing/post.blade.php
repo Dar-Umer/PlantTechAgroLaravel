@@ -59,7 +59,7 @@
                         <a href="{{ route('post.show', $item) }}" class="group rounded-2xl border border-gray-100 bg-white overflow-hidden shadow-sm hover:shadow-lg transition">
                             <div class="h-32 bg-gradient-to-br from-brand-800 to-brand-700 overflow-hidden">
                                 @if($item->featured_image && \App\Support\Media::exists($item->featured_image))
-                                    <img src="{{ \App\Support\Media::url($item->featured_image) }}" alt="{{ $item->title }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                    <img src="{{ \App\Support\Media::url($item->featured_image) }}" alt="{{ $item->title }}" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                                 @endif
                             </div>
                             <div class="p-4">

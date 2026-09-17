@@ -11,7 +11,7 @@
             @foreach($partners->merge($partners) as $partner)
                 <div class="flex-shrink-0 flex items-center justify-center h-14 px-6 bg-white rounded-xl border border-gray-100 shadow-sm">
                     @if($partner->logo && \App\Support\Media::exists($partner->logo))
-                        <img src="{{ \App\Support\Media::url($partner->logo) }}" alt="{{ $partner->name }}" class="h-8 w-auto object-contain grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition">
+                        <img src="{{ \App\Support\Media::url($partner->logo) }}" alt="{{ $partner->name }}" loading="lazy" decoding="async" class="h-8 w-auto object-contain grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition">
                     @else
                         <span class="text-sm font-bold text-gray-400">{{ $partner->name }}</span>
                     @endif

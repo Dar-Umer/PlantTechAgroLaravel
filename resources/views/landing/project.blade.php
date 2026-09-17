@@ -73,7 +73,7 @@
                                         <svg class="w-10 h-10 text-white/70 group-hover:scale-110 transition" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                                     </div>
                                 @elseif($item->featured_image && \App\Support\Media::exists($item->featured_image))
-                                    <img src="{{ \App\Support\Media::url($item->featured_image) }}" alt="{{ $item->title }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                    <img src="{{ \App\Support\Media::url($item->featured_image) }}" alt="{{ $item->title }}" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                                 @endif
                             </div>
                             <div class="p-4">

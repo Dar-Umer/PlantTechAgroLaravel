@@ -13,6 +13,7 @@
                     <div class="h-44 bg-gradient-to-br from-brand-800 to-brand-700 overflow-hidden">
                         @if($post->featured_image && \App\Support\Media::exists($post->featured_image))
                             <img src="{{ \App\Support\Media::url($post->featured_image) }}" alt="{{ $post->title }}"
+                                 loading="lazy" decoding="async"
                                  class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                         @endif
                     </div>

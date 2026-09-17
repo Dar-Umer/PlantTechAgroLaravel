@@ -15,6 +15,7 @@
                 <div class="relative rounded-2xl overflow-hidden bg-brand-900 {{ $index === 0 ? 'col-span-2 row-span-2' : '' }} aspect-{{ $index === 0 ? '[4/3]' : 'square' }} group">
                     @if(\App\Support\Media::exists($image->image))
                         <img src="{{ \App\Support\Media::url($image->image) }}" alt="{{ $image->caption ?? 'Gallery image' }}"
+                             loading="lazy" decoding="async"
                              class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                     @else
                         <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-800 to-brand-700">

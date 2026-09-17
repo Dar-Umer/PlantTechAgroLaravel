@@ -22,6 +22,7 @@
                                     class="w-full h-full"></iframe>
                         @elseif($project->featured_image && \App\Support\Media::exists($project->featured_image))
                             <img src="{{ \App\Support\Media::url($project->featured_image) }}" alt="{{ $project->title }}"
+                                 loading="lazy" decoding="async"
                                  class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                         @endif
                     </div>
