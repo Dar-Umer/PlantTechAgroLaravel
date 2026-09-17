@@ -54,6 +54,11 @@
     }
 @endphp
 
+@php $faviconUrl = \App\Support\Media::url(config('shop.favicon_url')); @endphp
+@if($faviconUrl)
+<link rel="icon" href="{{ $faviconUrl }}">
+@endif
+
 @if($metaDescription)
 <meta name="description" content="{{ $metaDescription }}">
 @endif

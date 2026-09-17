@@ -29,6 +29,7 @@ class SettingController extends Controller
             'sidebar_style' => config('shop.sidebar_style', 'dark'),
             'font_family' => config('shop.font_family', 'Inter'),
             'logo_url' => config('shop.logo_url', ''),
+            'favicon_url' => config('shop.favicon_url', ''),
             'social_facebook' => config('shop.social_facebook', ''),
             'social_instagram' => config('shop.social_instagram', ''),
             'social_youtube' => config('shop.social_youtube', ''),
@@ -132,6 +133,7 @@ class SettingController extends Controller
             'seo_yandex_verification' => 'nullable|string|max:255',
             'seo_schema_enabled' => 'nullable|in:0,1',
             'logo_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
+            'favicon_file' => 'nullable|file|mimes:png,jpg,jpeg,webp,gif,svg,ico|max:1024',
             'invoice_company_name' => ['required', 'string', 'max:255'],
             'invoice_address' => ['nullable', 'string', 'max:1000'],
             'invoice_gst_no' => ['nullable', 'string', 'max:64'],
@@ -144,7 +146,7 @@ class SettingController extends Controller
         $shopSettings = config('shop', []);
 
         foreach ($validated as $key => $value) {
-            if (str_starts_with($key, 'seo_')) {
+            if (str_starts_with($key, 'seo_') || str_ends_with($key, '_file')) {
                 continue;
             }
 
@@ -160,6 +162,13 @@ class SettingController extends Controller
             $shopSettings['logo_url'] = '/storage/'.$path;
         } elseif ($request->input('remove_logo') === '1') {
             $shopSettings['logo_url'] = '';
+        }
+
+        if ($request->hasFile('favicon_file')) {
+            $path = $request->file('favicon_file')->store('favicons', 'public');
+            $shopSettings['favicon_url'] = '/storage/'.$path;
+        } elseif ($request->input('remove_favicon') === '1') {
+            $shopSettings['favicon_url'] = '';
         }
 
         app(ShopSettingsService::class)->set($shopSettings, 'shop');

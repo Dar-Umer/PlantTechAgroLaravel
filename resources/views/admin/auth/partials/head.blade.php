@@ -3,6 +3,9 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="robots" content="noindex, nofollow">
 <title>{{ $title ?? 'Sign in' }} - {{ config('shop.site_name', config('app.name', 'PTA Admin')) }}</title>
+@if(config('shop.favicon_url'))
+<link rel="icon" href="{{ \App\Support\Media::url(config('shop.favicon_url')) }}">
+@endif
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family={{ $theme['fontGoogle'] }}&display=swap" rel="stylesheet">

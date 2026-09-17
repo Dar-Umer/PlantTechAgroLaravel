@@ -177,6 +177,46 @@
                                 @endif
                             </div>
                         </div>
+
+                        {{-- Favicon Upload --}}
+                        <div class="mt-6 pt-6 border-t border-gray-100" x-data="{ faviconPreview: '{{ $settings['favicon_url'] ?? '' }}', hasFavicon: '{{ $settings['favicon_url'] ?? '' }}' !== '' }">
+                            <h4 class="text-sm font-semibold text-gray-900 mb-1">Favicon</h4>
+                            <p class="text-sm text-gray-500 mb-4">The small icon shown on the browser tab and bookmarks.</p>
+
+                            <div class="flex items-start gap-6">
+                                {{-- Preview --}}
+                                <div class="shrink-0">
+                                    <div class="w-16 h-16 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden">
+                                        <template x-if="hasFavicon">
+                                            <img :src="faviconPreview" alt="Favicon" class="w-full h-full object-contain p-2">
+                                        </template>
+                                        <template x-if="!hasFavicon">
+                                            <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118L2.077 10.1c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                {{-- Upload --}}
+                                <div class="flex-1 space-y-3">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Upload Favicon</label>
+                                        <input type="file" name="favicon_file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,image/x-icon,image/vnd.microsoft.icon,.ico"
+                                               class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 transition file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                                               onchange="if(this.files[0]){const r=new FileReader();r.onload=e=>{faviconPreview=e.target.result;hasFavicon=true};r.readAsDataURL(this.files[0])}">
+                                        <p class="mt-1.5 text-xs text-gray-400">PNG, JPG, SVG, or ICO. Square, 32×32 or 64×64. Max 1MB.</p>
+                                        @error('favicon_file')
+                                            <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                    @if(!empty($settings['favicon_url']))
+                                        <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                                            <input type="checkbox" name="remove_favicon" value="1" class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500">
+                                            Remove current favicon
+                                        </label>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                 </div>

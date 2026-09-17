@@ -12,6 +12,7 @@ return [
     'sidebar_style' => 'dark',
     'font_family' => 'Inter',
     'logo_url' => '',
+    'favicon_url' => '',
     'social_facebook' => '',
     'social_instagram' => '',
     'social_youtube' => '',
