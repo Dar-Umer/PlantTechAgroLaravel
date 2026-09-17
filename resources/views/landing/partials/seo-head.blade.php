@@ -9,7 +9,8 @@
     $ogType = config('seo.og_type') ?: 'website';
     $ogTitle = trim((string) config('seo.og_title', ''));
     $ogDescription = trim((string) config('seo.og_description', ''));
-    $ogImage = trim((string) (config('seo.og_image') ?: config('shop.seo_og_image', ''))) ?: \App\Support\Media::url(config('shop.logo_url'));
+    $ogImage = trim((string) (config('seo.og_image') ?: config('shop.seo_og_image', '')))
+        ?: (trim((string) config('seo.search_image', '')) ?: config('shop.logo_url'));
     $twitterCard = config('seo.twitter_card') ?: 'summary_large_image';
     $twitterSite = trim((string) config('seo.twitter_site', ''));
     $twitterTitle = trim((string) config('seo.twitter_title', ''));
@@ -33,6 +34,10 @@
     $organizationLogo = $imageUrl(config('shop.logo_url'));
     if ($organizationLogo) {
         $schema['logo'] = $organizationLogo;
+    }
+    $organizationImage = $imageUrl(config('seo.search_image') ?: config('shop.logo_url'));
+    if ($organizationImage) {
+        $schema['image'] = $organizationImage;
     }
     $phone = trim((string) config('shop.site_phone', ''));
     if ($phone) {

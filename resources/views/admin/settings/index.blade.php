@@ -166,7 +166,7 @@
                                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Upload Logo</label>
                                     <input type="file" name="logo_file" accept="image/png,image/jpeg,image/svg+xml"
                                            class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 transition file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
-                                           onchange="if(this.files[0]){const r=new FileReader();r.onload=e=>{preview=e.target.result;hasLogo=true};r.readAsDataURL(this.files[0])}">
+                                           x-on:change="const f = $event.target.files[0]; if (f) { const r = new FileReader(); r.onload = e => { preview = e.target.result; hasLogo = true }; r.readAsDataURL(f) }">
                                     <p class="mt-1.5 text-xs text-gray-400">PNG, JPG, or SVG. Max 2MB.</p>
                                 </div>
                                 @if(!empty($settings['logo_url']))
@@ -202,7 +202,7 @@
                                         <label class="block text-sm font-medium text-gray-700 mb-1.5">Upload Favicon</label>
                                         <input type="file" name="favicon_file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,image/x-icon,image/vnd.microsoft.icon,.ico"
                                                class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 transition file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
-                                               onchange="if(this.files[0]){const r=new FileReader();r.onload=e=>{faviconPreview=e.target.result;hasFavicon=true};r.readAsDataURL(this.files[0])}">
+                                               x-on:change="const f = $event.target.files[0]; if (f) { const r = new FileReader(); r.onload = e => { faviconPreview = e.target.result; hasFavicon = true }; r.readAsDataURL(f) }">
                                         <p class="mt-1.5 text-xs text-gray-400">PNG, JPG, SVG, or ICO. Square, 32×32 or 64×64. Max 1MB.</p>
                                         @error('favicon_file')
                                             <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
@@ -328,7 +328,10 @@
                             <x-admin.textarea name="seo_og_description" label="Share Description" :value="$seoSettings['og_description'] ?? ''" rows="2" placeholder="Blank uses the meta description." />
                         </div>
                         <div class="md:col-span-2">
-                            <x-admin.input name="seo_og_image" label="Share Image" :value="$seoSettings['og_image'] ?? ''" placeholder="https://plantechagro.com/og-image.jpg or /storage/logos/xxx.png" helptext="1200×630 recommended. Full URL or a /storage/... path. Blank falls back to the store logo." />
+                            <x-admin.input name="seo_og_image" label="Share Image URL" :value="$seoSettings['og_image'] ?? ''" placeholder="https://plantechagro.com/og-image.jpg or /storage/seo/xxx.jpg" helptext="Optional. Paste an external URL, or upload an image below. Blank falls back to the search image, then the store logo." />
+                        </div>
+                        <div class="md:col-span-2">
+                            <x-admin.image-upload name="seo_og_image_file" label="Upload Share Image" :value="$seoSettings['og_image'] ?? ''" remove-name="remove_seo_og_image_file" helptext="1200×630 recommended (JPG, PNG, WebP). Max 4MB. Uploading replaces the URL above." />
                         </div>
                     </div>
                 </div>
@@ -354,7 +357,10 @@
                             <x-admin.textarea name="seo_twitter_description" label="Card Description" :value="$seoSettings['twitter_description'] ?? ''" rows="2" placeholder="Blank uses the meta description." />
                         </div>
                         <div class="md:col-span-2">
-                            <x-admin.input name="seo_twitter_image" label="Card Image" :value="$seoSettings['twitter_image'] ?? ''" placeholder="https://plantechagro.com/tw-image.jpg or /storage/logos/xxx.png" helptext="Full URL or /storage/... path. Blank falls back to the Open Graph image." />
+                            <x-admin.input name="seo_twitter_image" label="Card Image URL" :value="$seoSettings['twitter_image'] ?? ''" placeholder="https://plantechagro.com/tw-image.jpg or /storage/seo/xxx.jpg" helptext="Optional. Paste an external URL, or upload an image below. Blank falls back to the Open Graph image." />
+                        </div>
+                        <div class="md:col-span-2">
+                            <x-admin.image-upload name="seo_twitter_image_file" label="Upload Card Image" :value="$seoSettings['twitter_image'] ?? ''" remove-name="remove_seo_twitter_image_file" helptext="1200×600 recommended (JPG, PNG, WebP). Max 4MB. Uploading replaces the URL above." />
                         </div>
                     </div>
                 </div>
@@ -366,6 +372,9 @@
                         <x-admin.input name="seo_google_site_verification" label="Google Site Verification" :value="$seoSettings['google_site_verification'] ?? ''" placeholder="Google code from Search Console" helptext="Paste the content between the Google meta tag quotes." />
                         <x-admin.input name="seo_bing_site_verification" label="Bing Site Verification" :value="$seoSettings['bing_site_verification'] ?? ''" placeholder="Bing code from Webmaster Tools" helptext="Paste the content between the msvalidate.01 meta tag quotes." />
                         <x-admin.input name="seo_yandex_verification" label="Yandex Site Verification" :value="$seoSettings['yandex_verification'] ?? ''" placeholder="Yandex code from Webmaster" helptext="Paste the content between the yandex-verification meta tag quotes." />
+                        <div class="md:col-span-2">
+                            <x-admin.image-upload name="seo_search_image_file" label="Search Engine Image" :value="$seoSettings['search_image'] ?? ''" remove-name="remove_seo_search_image_file" helptext="Used in structured data (schema.org) and as a fallback for link previews in search results. 1200×630 recommended (JPG, PNG, WebP). Max 4MB." />
+                        </div>
                         <div class="md:col-span-2">
                             <x-admin.checkbox name="seo_schema_enabled" label="Enable Organization structured data" :checked="$seoSettings['schema_enabled'] ?? true" help="Emits schema.org JSON-LD built from store details" />
                         </div>

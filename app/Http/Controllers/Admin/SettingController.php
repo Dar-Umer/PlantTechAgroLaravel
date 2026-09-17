@@ -51,6 +51,7 @@ class SettingController extends Controller
             'og_title' => config('seo.og_title', ''),
             'og_description' => config('seo.og_description', ''),
             'og_image' => config('seo.og_image', config('shop.seo_og_image', '')),
+            'search_image' => config('seo.search_image', ''),
             'twitter_enabled' => (bool) config('seo.twitter_enabled', true),
             'twitter_card' => config('seo.twitter_card', 'summary_large_image'),
             'twitter_site' => config('seo.twitter_site', ''),
@@ -134,6 +135,9 @@ class SettingController extends Controller
             'seo_schema_enabled' => 'nullable|in:0,1',
             'logo_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
             'favicon_file' => 'nullable|file|mimes:png,jpg,jpeg,webp,gif,svg,ico|max:1024',
+            'seo_og_image_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:4096',
+            'seo_twitter_image_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:4096',
+            'seo_search_image_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:4096',
             'invoice_company_name' => ['required', 'string', 'max:255'],
             'invoice_address' => ['nullable', 'string', 'max:1000'],
             'invoice_gst_no' => ['nullable', 'string', 'max:64'],
@@ -193,8 +197,17 @@ class SettingController extends Controller
         $seoSettings = config('seo', []);
 
         foreach ($validated as $key => $value) {
-            if (str_starts_with($key, 'seo_')) {
+            if (str_starts_with($key, 'seo_') && ! str_ends_with($key, '_file')) {
                 $seoSettings[substr($key, 4)] = $value;
+            }
+        }
+
+        foreach (['og_image' => 'seo_og_image_file', 'twitter_image' => 'seo_twitter_image_file', 'search_image' => 'seo_search_image_file'] as $seoKey => $input) {
+            if ($request->hasFile($input)) {
+                $path = $request->file($input)->store('seo', 'public');
+                $seoSettings[$seoKey] = '/storage/'.$path;
+            } elseif ($request->input('remove_'.$input) === '1') {
+                $seoSettings[$seoKey] = '';
             }
         }
 

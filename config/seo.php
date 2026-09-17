@@ -14,6 +14,7 @@ return [
     'og_title' => '',
     'og_description' => '',
     'og_image' => '',
+    'search_image' => '',
     'twitter_enabled' => true,
     'twitter_card' => 'summary_large_image',
     'twitter_site' => '',
