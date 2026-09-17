@@ -9,7 +9,7 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach($posts as $post)
-                <article class="group rounded-2xl border border-gray-100 bg-white overflow-hidden shadow-sm hover:shadow-lg transition flex flex-col">
+                <a href="{{ route('post.show', $post) }}" class="group rounded-2xl border border-gray-100 bg-white overflow-hidden shadow-sm hover:shadow-lg transition flex flex-col">
                     <div class="h-44 bg-gradient-to-br from-brand-800 to-brand-700 overflow-hidden">
                         @if($post->featured_image && \App\Support\Media::exists($post->featured_image))
                             <img src="{{ \App\Support\Media::url($post->featured_image) }}" alt="{{ $post->title }}"
@@ -23,8 +23,12 @@
                         <h3 class="mt-3 font-bold text-gray-900 group-hover:text-brand-700 transition leading-snug">{{ $post->title }}</h3>
                         <p class="mt-2 text-sm text-gray-500 leading-relaxed flex-1">{{ $post->excerpt }}</p>
                         <p class="mt-4 text-xs text-gray-400">{{ $post->published_at?->format('d M Y') }}</p>
+                        <span class="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand-600 group-hover:text-brand-700 transition">
+                            Read More
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                        </span>
                     </div>
-                </article>
+                </a>
             @endforeach
         </div>
     </div>

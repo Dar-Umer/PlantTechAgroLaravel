@@ -20,6 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => AdminMiddleware::class,
         ]);
+
+        $middleware->redirectUsersTo(fn () => route('admin.dashboard'));
     })
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('invoices:process-overdue')->dailyAt('00:15');

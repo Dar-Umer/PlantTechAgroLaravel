@@ -2,12 +2,15 @@
 
 use App\Http\Controllers\Site\LandingController;
 use App\Http\Controllers\Site\LeadController;
+use App\Http\Controllers\Site\PostController;
 use App\Http\Controllers\Site\ProjectController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [LandingController::class, 'index'])->name('landing');
 
 Route::get('projects/{project:slug}', [ProjectController::class, 'show'])->name('project.show');
+
+Route::get('blog/{post:slug}', [PostController::class, 'show'])->name('post.show');
 
 Route::post('leads', [LeadController::class, 'store'])
     ->middleware('throttle:leads')
