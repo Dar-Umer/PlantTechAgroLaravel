@@ -29,7 +29,17 @@
                     <tbody class="divide-y divide-gray-100">
                         @forelse($testimonials as $testimonial)
                             <tr class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 font-medium text-gray-900">{{ $testimonial->name }}</td>
+                                <td class="px-6 py-4 font-medium text-gray-900">
+                                    <div class="flex items-center gap-2">
+                                        {{ $testimonial->name }}
+                                        @if($testimonial->video_url || $testimonial->video)
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-brand-50 text-brand-700" title="Has a video">
+                                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
+                                                Video
+                                            </span>
+                                        @endif
+                                    </div>
+                                </td>
                                 <td class="px-6 py-4 text-gray-600">{{ $testimonial->role }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-0.5">

@@ -27,6 +27,8 @@ class TestimonialController extends Controller
             'role' => ['nullable', 'string', 'max:255'],
             'content' => ['required', 'string'],
             'avatar' => ['nullable', 'image', 'max:1024'],
+            'video_url' => ['nullable', 'url', 'max:500'],
+            'video' => ['nullable', 'file', 'mimetypes:video/mp4,video/webm,video/ogg,video/quicktime', 'max:32768'],
             'rating' => ['nullable', 'integer', 'min:1', 'max:5'],
             'is_active' => ['boolean'],
             'sort_order' => ['nullable', 'integer'],
@@ -34,6 +36,10 @@ class TestimonialController extends Controller
 
         if (isset($data['avatar']) && $data['avatar']) {
             $data['avatar'] = $request->file('avatar')->store('testimonials', 'public');
+        }
+
+        if ($request->hasFile('video')) {
+            $data['video'] = $request->file('video')->store('testimonials/videos', 'public');
         }
 
         Testimonial::create($data);
@@ -53,6 +59,9 @@ class TestimonialController extends Controller
             'role' => ['nullable', 'string', 'max:255'],
             'content' => ['required', 'string'],
             'avatar' => ['nullable', 'image', 'max:1024'],
+            'video_url' => ['nullable', 'url', 'max:500'],
+            'video' => ['nullable', 'file', 'mimetypes:video/mp4,video/webm,video/ogg,video/quicktime', 'max:32768'],
+            'remove_video' => ['nullable', 'boolean'],
             'rating' => ['nullable', 'integer', 'min:1', 'max:5'],
             'is_active' => ['boolean'],
             'sort_order' => ['nullable', 'integer'],
@@ -63,6 +72,14 @@ class TestimonialController extends Controller
         } else {
             unset($data['avatar']);
         }
+
+        if ($request->hasFile('video')) {
+            $data['video'] = $request->file('video')->store('testimonials/videos', 'public');
+        } elseif (! empty($data['remove_video'])) {
+            $data['video'] = null;
+        }
+
+        unset($data['remove_video']);
 
         $testimonial->update($data);
 

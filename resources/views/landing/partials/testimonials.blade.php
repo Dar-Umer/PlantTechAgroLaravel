@@ -9,7 +9,28 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach($testimonials as $testimonial)
+                @php
+                    $hasVideoFile = $testimonial->video && \App\Support\Media::exists($testimonial->video);
+                    $videoEmbed = $hasVideoFile ? null : \App\Support\YouTube::embedUrl($testimonial->video_url);
+                @endphp
                 <figure class="rounded-2xl border border-gray-100 bg-gray-50 p-7 flex flex-col hover:border-brand-200 transition">
+                    @if($hasVideoFile)
+                        <div class="relative aspect-video rounded-xl overflow-hidden bg-black mb-5">
+                            <video controls preload="metadata" playsinline class="absolute inset-0 w-full h-full object-contain">
+                                <source src="{{ \App\Support\Media::url($testimonial->video) }}">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    @elseif($videoEmbed)
+                        <div class="relative aspect-video rounded-xl overflow-hidden bg-black mb-5">
+                            <iframe src="{{ $videoEmbed }}?rel=0&modestbranding=1"
+                                    title="Video testimonial from {{ $testimonial->name }}"
+                                    loading="lazy"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowfullscreen
+                                    class="absolute inset-0 w-full h-full"></iframe>
+                        </div>
+                    @endif
                     <div class="flex gap-0.5 mb-4">
                         @for($i = 1; $i <= 5; $i++)
                             <svg class="w-4 h-4 {{ $i <= $testimonial->rating ? 'text-amber-400' : 'text-gray-300' }}" fill="currentColor" viewBox="0 0 20 20">
@@ -19,9 +40,14 @@
                     </div>
                     <blockquote class="text-sm text-gray-600 leading-relaxed flex-1">"{{ $testimonial->content }}"</blockquote>
                     <figcaption class="mt-6 flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-600 to-brand-500 flex items-center justify-center text-white font-bold text-sm">
-                            {{ substr($testimonial->name, 0, 1) }}
-                        </div>
+                        @if($testimonial->avatar && \App\Support\Media::exists($testimonial->avatar))
+                            <img src="{{ \App\Support\Media::url($testimonial->avatar) }}" alt="{{ $testimonial->name }}"
+                                 loading="lazy" decoding="async" class="w-10 h-10 rounded-full object-cover border border-gray-200 flex-shrink-0">
+                        @else
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-600 to-brand-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                {{ substr($testimonial->name, 0, 1) }}
+                            </div>
+                        @endif
                         <div>
                             <p class="text-sm font-semibold text-gray-900">{{ $testimonial->name }}</p>
                             <p class="text-xs text-gray-400">{{ $testimonial->role }}</p>

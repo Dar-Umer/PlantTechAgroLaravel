@@ -40,6 +40,16 @@
                             <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
                         @enderror
                     </div>
+                    <x-admin.input name="video_url" label="YouTube Video Link" :value="old('video_url')" placeholder="https://www.youtube.com/watch?v=..." helptext="Optional. If set, the video is shown on the testimonial card." />
+                    <div>
+                        <label for="video" class="block text-sm font-medium text-gray-700 mb-1.5">Upload Video</label>
+                        <input type="file" name="video" id="video" accept="video/mp4,video/webm,video/ogg,video/quicktime"
+                               class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 transition file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                        <p class="mt-1.5 text-xs text-gray-400">Optional. MP4, WebM, OGG or MOV up to 32 MB. For larger videos, use a YouTube link above. Uploaded video takes priority.</p>
+                        @error('video')
+                            <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
+                        @enderror
+                    </div>
                     <x-admin.checkbox name="is_active" label="Active" :checked="old('is_active', true)" help="Visible on the landing page when active." />
                 </div>
             </div>

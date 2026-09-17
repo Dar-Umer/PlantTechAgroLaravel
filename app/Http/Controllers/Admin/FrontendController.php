@@ -75,6 +75,12 @@ class FrontendController extends Controller
             'sections.*.subtitle' => ['nullable', 'string', 'max:1000'],
             'sections.*.description' => ['nullable', 'string'],
             'sections.*.is_active' => ['nullable', 'boolean'],
+            'sections.*.points' => ['nullable', 'array'],
+            'sections.*.points.*' => ['nullable', 'string', 'max:255'],
+            'sections.*.image_1' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:4096'],
+            'sections.*.image_2' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:4096'],
+            'sections.*.remove_image_1' => ['nullable', 'boolean'],
+            'sections.*.remove_image_2' => ['nullable', 'boolean'],
             'stats' => ['nullable', 'array'],
             'stats.*.label' => ['nullable', 'string', 'max:255'],
             'stats.*.value' => ['nullable', 'string', 'max:255'],
@@ -87,6 +93,21 @@ class FrontendController extends Controller
             }
 
             $content = $section->content ?? [];
+
+            foreach (['image_1', 'image_2'] as $imageKey) {
+                if (! empty($input['remove_'.$imageKey])) {
+                    $content[$imageKey] = null;
+                } elseif ($request->hasFile("sections.{$id}.{$imageKey}")) {
+                    $content[$imageKey] = $request->file("sections.{$id}.{$imageKey}")->store('sections', 'public');
+                }
+            }
+
+            if (array_key_exists('points', $input)) {
+                $content['points'] = array_values(array_filter(
+                    array_map('trim', (array) $input['points'])
+                ));
+            }
+
             if (array_key_exists('description', $input)) {
                 $content['description'] = $input['description'];
             }
