@@ -3,7 +3,7 @@
     $ctaVisible = (! $cta || $cta->is_active);
 @endphp
 @if($ctaVisible)
-<section id="cta" class="py-24 bg-gradient-to-br from-brand-700 via-brand-800 to-brand-900 relative overflow-hidden">
+<section id="cta" class="py-16 sm:py-24 bg-gradient-to-br from-brand-700 via-brand-800 to-brand-900 relative overflow-hidden">
     <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_70%_30%,rgba(255,255,255,0.6),transparent_40%)]"></div>
     <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">

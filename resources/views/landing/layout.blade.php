@@ -8,9 +8,7 @@
             var root = document.documentElement;
             var stored = null;
             try { stored = localStorage.getItem('pta-theme'); } catch (e) {}
-            var media = window.matchMedia('(prefers-color-scheme: dark)');
-            var dark = stored ? stored === 'dark' : media.matches;
-            root.classList.toggle('dark', dark);
+            root.classList.toggle('dark', stored === 'dark');
 
             window.ptaTheme = {
                 isDark: function () { return root.classList.contains('dark'); },
@@ -20,12 +18,6 @@
                 },
                 toggle: function () { this.apply(! this.isDark()); }
             };
-
-            media.addEventListener('change', function (e) {
-                var choice = null;
-                try { choice = localStorage.getItem('pta-theme'); } catch (err) {}
-                if (! choice) { root.classList.toggle('dark', e.matches); }
-            });
         })();
     </script>
     <title>@yield('title', config('seo.meta_title') ?: config('shop.site_name', 'Plant Tech Agro'))</title>
@@ -113,7 +105,7 @@
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="font-sans antialiased text-gray-800 dark:text-gray-300 bg-white dark:bg-gray-950">
+<body class="font-sans antialiased overflow-x-hidden text-gray-800 dark:text-gray-300 bg-white dark:bg-gray-950">
     @include('landing.partials.header')
 
     <main>

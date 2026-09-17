@@ -1,7 +1,7 @@
 @if($posts->isNotEmpty())
-<section id="blog" class="py-24 bg-gray-50 dark:bg-gray-900/50">
+<section id="blog" class="py-16 sm:py-24 bg-gray-50 dark:bg-gray-900/50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="max-w-2xl mb-14">
+        <div class="max-w-2xl mb-10 sm:mb-14">
             <p class="text-sm font-semibold tracking-widest uppercase text-brand-600 dark:text-brand-400 mb-3">From the Blog</p>
             <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">Latest <span class="text-brand-600 dark:text-brand-400">Articles</span></h2>
             <p class="mt-4 text-gray-500 dark:text-gray-400 leading-relaxed">Expert insights on apple cultivation, orchard management, and modern farming techniques.</p>

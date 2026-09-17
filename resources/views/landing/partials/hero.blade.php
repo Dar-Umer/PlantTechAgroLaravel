@@ -10,7 +10,7 @@
     $headline = count($words) > 1 ? implode(' ', array_slice($words, 0, -1)) : '';
 @endphp
 @if($heroActive)
-<section id="hero-section" class="hero-cursor relative flex items-center overflow-hidden bg-white dark:bg-gray-950 min-h-[80vh] pt-24 pb-8 sm:pt-28 sm:pb-10">
+<section id="hero-section" class="hero-cursor relative flex items-center overflow-hidden bg-white dark:bg-gray-950 min-h-[68vh] sm:min-h-[80vh] pt-20 pb-10 sm:pt-28 sm:pb-10">
     <div class="absolute inset-0 bg-gradient-to-b from-brand-50 via-white to-gray-50 dark:from-brand-900/40 dark:via-gray-950 dark:to-gray-950"></div>
     <div class="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.35),transparent_55%)]"></div>
     <div class="absolute inset-0 opacity-[0.36] bg-[linear-gradient(rgba(15,23,42,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.06)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(148,163,184,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.10)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_72%)]"></div>
@@ -154,7 +154,7 @@
             </a>
         </div>
 
-        <div class="animate-fade-up [animation-delay:400ms] mt-10 hidden sm:flex items-center justify-center gap-5 text-sm text-gray-500 dark:text-gray-400">
+        <div class="animate-fade-up [animation-delay:400ms] mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:gap-5 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
             @foreach($stats->take(3) as $stat)
                 <span class="flex items-center gap-2"><strong class="text-gray-900 dark:text-white">{{ $stat->value }}{{ $stat->suffix }}</strong> {{ $stat->label }}</span>
                 @if(! $loop->last) <span class="w-px h-4 bg-gray-200 dark:bg-gray-700"></span> @endif

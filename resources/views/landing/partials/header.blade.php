@@ -11,14 +11,14 @@
         class="fixed top-0 inset-x-0 z-40 border-b transition-all duration-300 ease-out">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="relative flex items-center justify-between h-16">
-            <a href="{{ url('/') }}" class="absolute left-1/2 -translate-x-1/2 lg:static lg:left-auto lg:translate-x-0 flex items-center gap-2">
+            <a href="{{ url('/') }}" class="flex items-center gap-2 min-w-0">
                 @if($logo)
-                    <img src="{{ \App\Support\Media::url($logo) }}" alt="{{ $siteName }}" class="h-14 w-auto">
+                    <img src="{{ \App\Support\Media::url($logo) }}" alt="{{ $siteName }}" class="h-11 w-auto max-w-[150px] object-contain sm:h-14 sm:max-w-none">
                 @else
-                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 flex items-center justify-center">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9-2-9-2-9 2 9 2zm0 0V5m0 0L3 7m9-2l9 2M3 7v6l9 2 9-2V7"/></svg>
+                    <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-brand-600 to-brand-500 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9-2-9-2-9 2 9 2zm0 0V5m0 0L3 7m9-2l9 2M3 7v6l9 2 9-2V7"/></svg>
                     </div>
-                    <span class="text-3xl font-extrabold text-gray-900 dark:text-white">{{ $brandParts[0] }}<span class="font-light text-gray-600 dark:text-gray-400">{{ $brandParts[1] ?? '' }}</span></span>
+                    <span class="text-xl sm:text-2xl lg:text-3xl font-extrabold text-gray-900 dark:text-white truncate">{{ $brandParts[0] }}<span class="font-light text-gray-600 dark:text-gray-400">{{ $brandParts[1] ?? '' }}</span></span>
                 @endif
             </a>
 
@@ -31,7 +31,7 @@
                 <a href="#contact" class="hover:text-brand-700 dark:hover:text-brand-400 transition">Contact</a>
             </nav>
 
-            <div class="flex items-center gap-3 ml-auto lg:ml-0">
+            <div class="flex items-center gap-1.5 sm:gap-3 ml-auto lg:ml-0">
                 <button type="button" onclick="window.ptaTheme.toggle()" aria-label="Toggle dark mode"
                         class="w-10 h-10 inline-flex items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 hover:border-brand-200 dark:hover:border-brand-700 transition">
                     <svg class="w-5 h-5 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
@@ -56,5 +56,7 @@
         <a href="#projects" @click="mobileOpen = false" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">Projects</a>
         <a href="#blog" @click="mobileOpen = false" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">Knowledge</a>
         <a href="#contact" @click="mobileOpen = false" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">Contact</a>
+        <button type="button" onclick="mobileOpen = false; openBookModal()"
+                class="mt-2 w-full inline-flex items-center justify-center px-5 py-3 rounded-xl bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 transition">Book Now</button>
     </div>
 </header>

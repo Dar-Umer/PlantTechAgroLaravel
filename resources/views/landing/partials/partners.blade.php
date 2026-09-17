@@ -1,7 +1,7 @@
 @if($partners->isNotEmpty())
-<section id="partners" class="py-16 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-800 overflow-hidden">
+<section id="partners" class="py-12 sm:py-16 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-800 overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between gap-6 mb-10">
+        <div class="flex items-center justify-between gap-6 mb-6 sm:mb-10">
             <h2 class="text-sm font-semibold tracking-widest uppercase text-gray-500 dark:text-gray-400">Trusted Partners</h2>
             <p class="text-3xl font-extrabold text-gray-900 dark:text-white">{{ $partners->count() }}<span class="text-brand-600 dark:text-brand-400">+</span><span class="block text-xs font-medium text-gray-400 dark:text-gray-500 tracking-wide mt-1">PARTNERS</span></p>
         </div>

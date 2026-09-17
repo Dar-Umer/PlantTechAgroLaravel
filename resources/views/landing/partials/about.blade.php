@@ -21,7 +21,7 @@
     $stat = $stats->first();
 @endphp
 @if($aboutVisible)
-<section id="about" class="py-24 bg-white dark:bg-gray-950 overflow-hidden">
+<section id="about" class="py-16 sm:py-24 bg-white dark:bg-gray-950 overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-center">
             {{-- Content --}}
@@ -90,9 +90,9 @@
 
                 {{-- Floating stat badge --}}
                 @if($stat)
-                    <div class="absolute -bottom-7 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-800 rounded-2xl px-7 py-4 shadow-xl border border-gray-800 dark:border-gray-700 text-center whitespace-nowrap">
-                        <p class="text-3xl font-extrabold text-brand-400">{{ $stat->value }}{{ $stat->suffix ?? '+' }}</p>
-                        <p class="text-xs text-gray-400 mt-0.5">{{ $stat->label }}</p>
+                    <div class="absolute -bottom-6 sm:-bottom-7 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-800 rounded-2xl px-5 py-3 sm:px-7 sm:py-4 shadow-xl border border-gray-800 dark:border-gray-700 text-center whitespace-nowrap">
+                        <p class="text-2xl sm:text-3xl font-extrabold text-brand-400">{{ $stat->value }}{{ $stat->suffix ?? '+' }}</p>
+                        <p class="text-[11px] sm:text-xs text-gray-400 mt-0.5">{{ $stat->label }}</p>
                     </div>
                 @endif
 

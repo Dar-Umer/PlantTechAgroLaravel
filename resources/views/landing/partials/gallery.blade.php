@@ -3,9 +3,9 @@
     $galleryVisible = (! $gallerySection || $gallerySection->is_active);
 @endphp
 @if($galleryVisible && $gallery->isNotEmpty())
-<section id="gallery" class="py-24 bg-gray-50 dark:bg-gray-900/50">
+<section id="gallery" class="py-16 sm:py-24 bg-gray-50 dark:bg-gray-900/50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="max-w-2xl mb-12">
+        <div class="max-w-2xl mb-8 sm:mb-12">
             <p class="text-sm font-semibold tracking-widest uppercase text-brand-600 dark:text-brand-400 mb-3">Gallery</p>
             <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">{{ $gallerySection->title ?? "From Kashmir's Fields" }}</h2>
         </div>
@@ -23,7 +23,7 @@
                         </div>
                     @endif
                     @if($image->caption)
-                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-gray-900/70 to-transparent p-4 opacity-0 group-hover:opacity-100 transition">
+                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-gray-900/70 to-transparent p-4 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
                             <p class="text-sm text-white font-medium">{{ $image->caption }}</p>
                         </div>
                     @endif

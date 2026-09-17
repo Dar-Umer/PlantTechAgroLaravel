@@ -3,7 +3,7 @@
 @section('title', $project->title . ' — ' . config('shop.site_name', 'Plant Tech Agro'))
 
 @section('content')
-<section class="pt-28 pb-20 bg-gray-50 dark:bg-gray-950 min-h-screen">
+<section class="pt-24 sm:pt-28 pb-16 sm:pb-20 bg-gray-50 dark:bg-gray-950 min-h-screen">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <a href="{{ url('/') }}#projects"
            class="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition mb-8">

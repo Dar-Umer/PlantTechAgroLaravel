@@ -1,7 +1,7 @@
 @if($projects->isNotEmpty())
-<section id="projects" class="py-24 bg-white dark:bg-gray-950">
+<section id="projects" class="py-16 sm:py-24 bg-white dark:bg-gray-950">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="max-w-2xl mb-14">
+        <div class="max-w-2xl mb-10 sm:mb-14">
             <p class="text-sm font-semibold tracking-widest uppercase text-brand-600 dark:text-brand-400 mb-3">Our Work</p>
             <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">Featured <span class="text-brand-600 dark:text-brand-400">Projects</span></h2>
             <p class="mt-4 text-gray-500 dark:text-gray-400 leading-relaxed">From high-density orchards to drip irrigation systems — explore how we've transformed farms across Kashmir.</p>
