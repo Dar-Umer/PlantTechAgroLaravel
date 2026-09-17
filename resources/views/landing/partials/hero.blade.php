@@ -10,10 +10,10 @@
     $headline = count($words) > 1 ? implode(' ', array_slice($words, 0, -1)) : '';
 @endphp
 @if($heroActive)
-<section id="hero-section" class="hero-cursor relative flex items-center overflow-hidden bg-white min-h-[80vh] pt-24 pb-8 sm:pt-28 sm:pb-10">
-    <div class="absolute inset-0 bg-gradient-to-b from-brand-50 via-white to-gray-50"></div>
+<section id="hero-section" class="hero-cursor relative flex items-center overflow-hidden bg-white dark:bg-gray-950 min-h-[80vh] pt-24 pb-8 sm:pt-28 sm:pb-10">
+    <div class="absolute inset-0 bg-gradient-to-b from-brand-50 via-white to-gray-50 dark:from-brand-900/40 dark:via-gray-950 dark:to-gray-950"></div>
     <div class="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.35),transparent_55%)]"></div>
-    <div class="absolute inset-0 opacity-[0.36] bg-[linear-gradient(rgba(15,23,42,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.06)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_72%)]"></div>
+    <div class="absolute inset-0 opacity-[0.36] bg-[linear-gradient(rgba(15,23,42,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.06)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(148,163,184,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.10)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_72%)]"></div>
     <div id="hero-glow" class="hero-glow pointer-events-none absolute inset-0 opacity-0"></div>
 
     {{-- Subtle tilted rain (desktop only) --}}
@@ -119,17 +119,17 @@
     </script>
 
     <div class="relative w-full max-w-[88rem] mx-auto px-6 sm:px-8 lg:px-12 text-center">
-        <p class="animate-fade-up inline-flex items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-1.5 text-[11px] sm:text-xs font-semibold tracking-widest uppercase text-brand-600 shadow-sm">
+        <p class="animate-fade-up inline-flex items-center justify-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-1.5 text-[11px] sm:text-xs font-semibold tracking-widest uppercase text-brand-600 dark:text-brand-400 shadow-sm">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21c5.5 0 8-3.5 8-9V5.25c0-.14-.11-.25-.25-.25H12C6.5 5 4 8.5 4 14s2.5 7 8 7z"/></svg>
             Kashmir's Finest Agritech Company
         </p>
 
-        <h1 class="animate-fade-up [animation-delay:100ms] mt-6 text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-[1.08] tracking-tight text-balance min-h-[1.4em]"
+        <h1 class="animate-fade-up [animation-delay:100ms] mt-6 text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white leading-[1.08] tracking-tight text-balance min-h-[1.4em]"
             x-data="window.heroTyping.state">
             <span x-html="html"></span>
         </h1>
         <noscript>
-            <h2 class="mt-6 text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-[1.08] tracking-tight text-center">
+            <h2 class="mt-6 text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white leading-[1.08] tracking-tight text-center">
                 @if($headline && $highlight)
                     {{ $headline }}
                     <span class="bg-gradient-to-r from-brand-500 via-brand-600 to-emerald-600 bg-clip-text text-transparent">{{ $highlight }}</span>
@@ -139,7 +139,7 @@
             </h2>
         </noscript>
 
-        <p class="animate-fade-up [animation-delay:200ms] mt-6 text-base sm:text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto">
+        <p class="animate-fade-up [animation-delay:200ms] mt-6 text-base sm:text-lg text-gray-600 dark:text-gray-400 leading-relaxed max-w-2xl mx-auto">
             {{ $subtitle }}
         </p>
 
@@ -149,15 +149,15 @@
                 Book Now
             </button>
             <a href="#contact"
-               class="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3.5 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-400 transition">
+               class="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-500 transition">
                 Contact Us
             </a>
         </div>
 
-        <div class="animate-fade-up [animation-delay:400ms] mt-10 hidden sm:flex items-center justify-center gap-5 text-sm text-gray-500">
+        <div class="animate-fade-up [animation-delay:400ms] mt-10 hidden sm:flex items-center justify-center gap-5 text-sm text-gray-500 dark:text-gray-400">
             @foreach($stats->take(3) as $stat)
-                <span class="flex items-center gap-2"><strong class="text-gray-900">{{ $stat->value }}{{ $stat->suffix }}</strong> {{ $stat->label }}</span>
-                @if(! $loop->last) <span class="w-px h-4 bg-gray-200"></span> @endif
+                <span class="flex items-center gap-2"><strong class="text-gray-900 dark:text-white">{{ $stat->value }}{{ $stat->suffix }}</strong> {{ $stat->label }}</span>
+                @if(! $loop->last) <span class="w-px h-4 bg-gray-200 dark:bg-gray-700"></span> @endif
             @endforeach
         </div>
     </div>

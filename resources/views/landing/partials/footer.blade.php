@@ -17,7 +17,7 @@
         'x' => ['#ffffff', 'M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z'],
     ];
 @endphp
-<footer id="contact" class="bg-gray-950 text-gray-400">
+<footer id="contact" class="bg-gray-950 dark:bg-black text-gray-400">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
             {{-- Brand --}}
@@ -81,7 +81,7 @@
         </div>
     </div>
 
-    <div class="border-t border-gray-900">
+    <div class="border-t border-gray-900 dark:border-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
             <p>© {{ date('Y') }} {{ $siteName }}. All rights reserved.</p>
             <div class="flex gap-6">

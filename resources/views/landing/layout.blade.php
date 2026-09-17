@@ -3,6 +3,31 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        (function () {
+            var root = document.documentElement;
+            var stored = null;
+            try { stored = localStorage.getItem('pta-theme'); } catch (e) {}
+            var media = window.matchMedia('(prefers-color-scheme: dark)');
+            var dark = stored ? stored === 'dark' : media.matches;
+            root.classList.toggle('dark', dark);
+
+            window.ptaTheme = {
+                isDark: function () { return root.classList.contains('dark'); },
+                apply: function (isDark) {
+                    root.classList.toggle('dark', isDark);
+                    try { localStorage.setItem('pta-theme', isDark ? 'dark' : 'light'); } catch (e) {}
+                },
+                toggle: function () { this.apply(! this.isDark()); }
+            };
+
+            media.addEventListener('change', function (e) {
+                var choice = null;
+                try { choice = localStorage.getItem('pta-theme'); } catch (err) {}
+                if (! choice) { root.classList.toggle('dark', e.matches); }
+            });
+        })();
+    </script>
     <title>@yield('title', config('seo.meta_title') ?: config('shop.site_name', 'Plant Tech Agro'))</title>
     @include('landing.partials.seo-head')
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -12,6 +37,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
@@ -34,6 +60,9 @@
         }
     </script>
     <style>
+        html { color-scheme: light; }
+        html.dark { color-scheme: dark; }
+        body { transition: background-color .3s ease, color .3s ease; }
         @keyframes marquee {
             from { transform: translateX(0); }
             to { transform: translateX(-50%); }
@@ -84,7 +113,7 @@
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="font-sans antialiased text-gray-800 bg-white">
+<body class="font-sans antialiased text-gray-800 dark:text-gray-300 bg-white dark:bg-gray-950">
     @include('landing.partials.header')
 
     <main>

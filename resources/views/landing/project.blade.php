@@ -3,17 +3,17 @@
 @section('title', $project->title . ' — ' . config('shop.site_name', 'Plant Tech Agro'))
 
 @section('content')
-<section class="pt-28 pb-20 bg-gray-50 min-h-screen">
+<section class="pt-28 pb-20 bg-gray-50 dark:bg-gray-950 min-h-screen">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <a href="{{ url('/') }}#projects"
-           class="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700 transition mb-8">
+           class="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition mb-8">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
             Back to Projects
         </a>
 
         {{-- Media --}}
         @php $embedSrc = \App\Support\YouTube::embedSrc($project->video_url); @endphp
-        <div class="rounded-2xl overflow-hidden shadow-xl border border-gray-100 bg-gray-950 aspect-video">
+        <div class="rounded-2xl overflow-hidden shadow-xl border border-gray-100 dark:border-gray-800 bg-gray-950 aspect-video">
             @if($embedSrc)
                 <iframe src="{{ $embedSrc }}"
                         title="{{ $project->title }}"
@@ -32,7 +32,7 @@
 
         {{-- Header --}}
         <div class="mt-8">
-            <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+            <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                 @if($project->location)
                     <span class="inline-flex items-center gap-1.5">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -46,15 +46,15 @@
                     </span>
                 @endif
             </div>
-            <h1 class="mt-3 text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">{{ $project->title }}</h1>
+            <h1 class="mt-3 text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">{{ $project->title }}</h1>
             @if($project->description)
-                <p class="mt-4 text-lg text-gray-600 leading-relaxed">{{ $project->description }}</p>
+                <p class="mt-4 text-lg text-gray-600 dark:text-gray-400 leading-relaxed">{{ $project->description }}</p>
             @endif
         </div>
 
         {{-- Content --}}
         @if($project->content)
-            <div class="mt-8 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8 prose prose-green max-w-none">
+            <div class="mt-8 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 sm:p-8 prose prose-green dark:prose-invert max-w-none">
                 {!! $project->content !!}
             </div>
         @endif
@@ -62,11 +62,11 @@
         {{-- Related --}}
         @if($related->isNotEmpty())
             <div class="mt-14">
-                <h2 class="text-xl font-bold text-gray-900 mb-5">More Projects</h2>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-5">More Projects</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
                     @foreach($related as $item)
                         @php $itemEmbed = \App\Support\YouTube::embedSrc($item->video_url); @endphp
-                        <a href="{{ route('project.show', $item) }}" class="group rounded-2xl border border-gray-100 bg-white overflow-hidden shadow-sm hover:shadow-lg transition">
+                        <a href="{{ route('project.show', $item) }}" class="group rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden shadow-sm dark:shadow-none hover:shadow-lg transition">
                             <div class="h-32 bg-gradient-to-br from-brand-800 to-brand-700 overflow-hidden">
                                 @if($itemEmbed)
                                     <div class="w-full h-full flex items-center justify-center">
@@ -77,9 +77,9 @@
                                 @endif
                             </div>
                             <div class="p-4">
-                                <h3 class="font-semibold text-gray-900 group-hover:text-brand-700 transition text-sm leading-snug">{{ $item->title }}</h3>
+                                <h3 class="font-semibold text-gray-900 dark:text-white group-hover:text-brand-700 dark:group-hover:text-brand-400 transition text-sm leading-snug">{{ $item->title }}</h3>
                                 @if($item->location)
-                                    <p class="mt-1 text-xs text-gray-400">{{ $item->location }}</p>
+                                    <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ $item->location }}</p>
                                 @endif
                             </div>
                         </a>

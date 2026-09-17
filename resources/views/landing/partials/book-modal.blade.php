@@ -30,7 +30,7 @@
     {{-- Modal --}}
     <div x-show="open" class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
         <div class="min-h-full flex items-end sm:items-center justify-center p-4">
-            <div class="relative w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden"
+            <div class="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden"
                  x-transition:enter="transition ease-out duration-200"
                  x-transition:enter-start="opacity-0 translate-y-6 sm:translate-y-0 sm:scale-95"
                  x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100">
@@ -39,21 +39,21 @@
                 <div class="h-1 bg-gradient-to-r from-brand-500 to-emerald-400"></div>
                 <div class="px-5 sm:px-6 pt-5 pb-1 flex items-start justify-between gap-4">
                     <div>
-                        <h2 class="text-lg font-bold text-gray-900" x-show="!submitted">{{ $leadFormHeading }}</h2>
-                        <h2 class="text-lg font-bold text-gray-900" x-show="submitted" x-cloak>Request Received!</h2>
-                        <p class="mt-1 text-xs text-gray-500" x-show="!submitted" x-cloak>{{ $leadFormDescription }}</p>
+                        <h2 class="text-lg font-bold text-gray-900 dark:text-white" x-show="!submitted">{{ $leadFormHeading }}</h2>
+                        <h2 class="text-lg font-bold text-gray-900 dark:text-white" x-show="submitted" x-cloak>Request Received!</h2>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400" x-show="!submitted" x-cloak>{{ $leadFormDescription }}</p>
                     </div>
-                    <button type="button" @click="open = false; submitted = false" class="text-gray-400 hover:text-gray-600 transition p-1 -mt-1 -mr-1" aria-label="Close">
+                    <button type="button" @click="open = false; submitted = false" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition p-1 -mt-1 -mr-1" aria-label="Close">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
 
                 {{-- Success Panel --}}
                 <div x-show="submitted" x-cloak class="px-6 py-10 text-center">
-                    <div class="w-14 h-14 mx-auto rounded-full bg-brand-50 flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <div class="w-14 h-14 mx-auto rounded-full bg-brand-50 dark:bg-brand-900/40 flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     </div>
-                    <p class="text-sm text-gray-600 leading-relaxed">{{ $leadFormSuccessMessage }}</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{{ $leadFormSuccessMessage }}</p>
                     <button type="button" @click="open = false; submitted = false"
                             class="mt-6 inline-flex items-center px-5 py-2.5 rounded-lg bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 transition">
                         Done
@@ -72,9 +72,9 @@
                     <div>
                         <div class="relative">
                             <input type="text" name="name" id="lead-name" value="{{ old('name') }}" required placeholder=" " autocomplete="name"
-                                   class="peer w-full rounded-lg border border-gray-200 bg-gray-50 px-3.5 pt-5 pb-1.5 text-sm text-gray-900 transition focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                                   class="peer w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3.5 pt-5 pb-1.5 text-sm text-gray-900 dark:text-gray-100 transition focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40">
                             <label for="lead-name"
-                                   class="pointer-events-none absolute left-3.5 top-2 text-xs text-gray-400 transition-all duration-150 peer-focus:text-brand-600 peer-focus:top-2 peer-focus:translate-y-0 peer-focus:text-xs peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500">
+                                   class="pointer-events-none absolute left-3.5 top-2 text-xs text-gray-400 dark:text-gray-500 transition-all duration-150 peer-focus:text-brand-600 dark:peer-focus:text-brand-400 peer-focus:top-2 peer-focus:translate-y-0 peer-focus:text-xs peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 dark:peer-placeholder-shown:text-gray-400">
                                 Name <span class="text-red-500">*</span>
                             </label>
                         </div>
@@ -87,9 +87,9 @@
                             <input type="tel" name="phone" id="lead-phone" value="{{ old('phone') }}" required placeholder=" " autocomplete="tel"
                                    inputmode="numeric" pattern="[0-9]*" maxlength="10"
                                    oninput="this.value = this.value.replace(/\D/g, '').slice(0, 10)"
-                                   class="peer w-full rounded-lg border border-gray-200 bg-gray-50 px-3.5 pt-5 pb-1.5 text-sm text-gray-900 transition focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                                   class="peer w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3.5 pt-5 pb-1.5 text-sm text-gray-900 dark:text-gray-100 transition focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40">
                             <label for="lead-phone"
-                                   class="pointer-events-none absolute left-3.5 top-2 text-xs text-gray-400 transition-all duration-150 peer-focus:text-brand-600 peer-focus:top-2 peer-focus:translate-y-0 peer-focus:text-xs peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500">
+                                   class="pointer-events-none absolute left-3.5 top-2 text-xs text-gray-400 dark:text-gray-500 transition-all duration-150 peer-focus:text-brand-600 dark:peer-focus:text-brand-400 peer-focus:top-2 peer-focus:translate-y-0 peer-focus:text-xs peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 dark:peer-placeholder-shown:text-gray-400">
                                 Phone Number <span class="text-red-500">*</span>
                             </label>
                         </div>
@@ -100,14 +100,14 @@
                     <div>
                         <div class="relative">
                             <select name="service_id" id="lead-service" x-model="service" required
-                                    class="peer w-full rounded-lg border border-gray-200 bg-gray-50 px-3.5 pt-5 pb-1.5 text-sm text-gray-900 transition focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                                    class="peer w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3.5 pt-5 pb-1.5 text-sm text-gray-900 dark:text-gray-100 transition focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40">
                                 <option value="">Select a service</option>
                                 @foreach($services as $serviceOption)
                                     <option value="{{ $serviceOption->id }}">{{ $serviceOption->name }}</option>
                                 @endforeach
                             </select>
                             <label for="lead-service"
-                                   class="pointer-events-none absolute left-3.5 top-2 text-xs text-gray-400 transition-colors duration-150 peer-focus:text-brand-600">
+                                   class="pointer-events-none absolute left-3.5 top-2 text-xs text-gray-400 dark:text-gray-500 transition-colors duration-150 peer-focus:text-brand-600 dark:peer-focus:text-brand-400">
                                 Service <span class="text-red-500">*</span>
                             </label>
                         </div>
@@ -122,7 +122,7 @@
                                 class="w-full inline-flex items-center justify-center px-6 py-3 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 transition shadow-sm shadow-brand-600/25">
                             {{ $leadFormButtonText }}
                         </button>
-                        <p class="mt-3 text-[11px] text-center text-gray-400">Our team will call you back to confirm the details.</p>
+                        <p class="mt-3 text-[11px] text-center text-gray-400 dark:text-gray-500">Our team will call you back to confirm the details.</p>
                     </div>
                 </form>
             </div>
