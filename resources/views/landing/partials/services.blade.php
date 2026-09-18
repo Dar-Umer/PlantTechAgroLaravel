@@ -1,4 +1,4 @@
-<section id="services" class="py-16 sm:py-24 bg-white dark:bg-gray-950">
+<section id="services" class="pt-4 pb-8 sm:pt-8 sm:pb-12 bg-white dark:bg-gray-950">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="max-w-2xl mb-10 sm:mb-16">
             <p class="text-sm font-semibold tracking-widest uppercase text-brand-600 dark:text-brand-400 mb-3">What We Offer</p>

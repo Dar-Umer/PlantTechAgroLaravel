@@ -10,7 +10,7 @@
     $headline = count($words) > 1 ? implode(' ', array_slice($words, 0, -1)) : '';
 @endphp
 @if($heroActive)
-<section id="hero-section" class="hero-cursor relative flex items-center overflow-hidden bg-white dark:bg-gray-950 min-h-[68vh] sm:min-h-[80vh] pt-20 pb-10 sm:pt-28 sm:pb-10">
+<section id="hero-section" class="hero-cursor relative flex items-center overflow-hidden bg-white dark:bg-gray-950 min-h-[68vh] sm:min-h-[80vh] pt-20 pb-10 sm:pt-28 sm:pb-12 lg:pb-16">
     <div class="absolute inset-0 bg-gradient-to-b from-brand-50 via-white to-gray-50 dark:from-brand-900/40 dark:via-gray-950 dark:to-gray-950"></div>
     <div class="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.35),transparent_55%)]"></div>
     <div class="absolute inset-0 opacity-[0.36] bg-[linear-gradient(rgba(15,23,42,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.06)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(148,163,184,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.10)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_72%)]"></div>
@@ -160,6 +160,13 @@
                 @if(! $loop->last) <span class="w-px h-4 bg-gray-200 dark:bg-gray-700"></span> @endif
             @endforeach
         </div>
+    </div>
+
+    {{-- Curved wave edge that flows into the next section --}}
+    <div class="pointer-events-none absolute inset-x-0 -bottom-px text-white dark:text-gray-950 overflow-hidden">
+        <svg viewBox="0 0 2880 100" preserveAspectRatio="none" class="animate-wave block w-[200%] h-10 sm:h-12 lg:h-16">
+            <path fill="currentColor" d="M0,50 C240,50 200,10 360,26 C520,42 560,74 720,50 C880,26 920,10 1080,26 C1240,42 1200,50 1440,50 C1680,50 1640,10 1800,26 C1960,42 2000,74 2160,50 C2320,26 2360,10 2520,26 C2680,42 2640,50 2880,50 L2880,100 L0,100 Z"/>
+        </svg>
     </div>
 </section>
 @endif

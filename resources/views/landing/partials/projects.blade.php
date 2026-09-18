@@ -1,5 +1,5 @@
 @if($projects->isNotEmpty())
-<section id="projects" class="py-16 sm:py-24 bg-white dark:bg-gray-950">
+<section id="projects" class="py-8 sm:py-12 bg-white dark:bg-gray-950">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="max-w-2xl mb-10 sm:mb-14">
             <p class="text-sm font-semibold tracking-widest uppercase text-brand-600 dark:text-brand-400 mb-3">Our Work</p>

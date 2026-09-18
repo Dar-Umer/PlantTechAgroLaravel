@@ -1,5 +1,5 @@
 @if($stats->isNotEmpty())
-<section id="impact" class="py-16 sm:py-24 bg-gray-950 relative overflow-hidden">
+<section id="impact" class="py-8 sm:py-12 bg-gray-950 relative overflow-hidden">
     <div class="absolute inset-0 opacity-15 bg-[radial-gradient(circle_at_20%_50%,rgba(16,185,129,0.5),transparent_50%),radial-gradient(circle_at_80%_50%,rgba(5,150,105,0.4),transparent_45%)]"></div>
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="max-w-2xl mb-10 sm:mb-14">

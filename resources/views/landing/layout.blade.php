@@ -70,6 +70,14 @@
             opacity: 0;
             animation: fade-up .7s cubic-bezier(.22,1,.36,1) forwards;
         }
+        @keyframes wave-move {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+        .animate-wave {
+            animation: wave-move 14s linear infinite;
+            will-change: transform;
+        }
         .rain-drop {
             background: linear-gradient(to bottom, transparent, rgba(5, 150, 105, 0.55));
             animation: rain-fall 4s linear infinite;
@@ -93,6 +101,7 @@
         }
         @media (prefers-reduced-motion: reduce) {
             .animate-fade-up { animation: none; opacity: 1; transform: none; }
+            .animate-wave { animation: none; }
             .rain-drop { animation: none; opacity: 0; }
         }
     </style>

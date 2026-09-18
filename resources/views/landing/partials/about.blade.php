@@ -21,7 +21,7 @@
     $stat = $stats->first();
 @endphp
 @if($aboutVisible)
-<section id="about" class="py-16 sm:py-24 bg-white dark:bg-gray-950 overflow-hidden">
+<section id="about" class="py-8 sm:py-12 bg-white dark:bg-gray-950 overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-center">
             {{-- Content --}}
