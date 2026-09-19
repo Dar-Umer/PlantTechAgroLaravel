@@ -2,15 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Events\NewLeadReceived;
 use App\Models\Admin;
 use App\Models\Lead;
-use App\Models\Service;
 use App\Notifications\NewLeadAlert;
 use Database\Seeders\AdminSeeder;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
 class LeadPopupTest extends TestCase
@@ -89,22 +86,6 @@ class LeadPopupTest extends TestCase
     public function test_latest_endpoint_requires_admin_auth(): void
     {
         $this->getJson(route('admin.notifications.latest'))->assertRedirect(route('admin.login'));
-    }
-
-    public function test_lead_booking_broadcasts_push_event(): void
-    {
-        Event::fake([NewLeadReceived::class]);
-
-        $service = Service::factory()->create();
-
-        $this->post('/leads', [
-            'name' => 'Farooq Ahmad',
-            'phone' => '9999999999',
-            'service_id' => $service->id,
-            'loaded_at' => time() - 10,
-        ])->assertRedirect('/?submitted=1');
-
-        Event::assertDispatched(NewLeadReceived::class);
     }
 
     public function test_automation_settings_save_popup_controls(): void

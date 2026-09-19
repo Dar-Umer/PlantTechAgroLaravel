@@ -514,52 +514,16 @@
             </div>
         </div>
     </div>
-    @if(filled(config('broadcasting.connections.reverb.key')))
-    <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.4.0/dist/web/pusher.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.19.0/dist/echo.iife.js"></script>
-    @endif
     <script>
         function leadPopup(pollSeconds) {
             return {
                 seen: [],
-                seenLeads: [],
                 queue: [],
                 current: null,
                 timer: null,
                 start() {
                     this.check();
                     this.timer = setInterval(() => this.check(), Math.max(15, pollSeconds) * 1000);
-                    this.connect();
-                },
-                // Instant push via Reverb. Any failure is silent — the poller above is the fallback.
-                connect() {
-                    try {
-                        if (typeof window.Echo !== 'undefined' && window.Echo.connector) return; // already connected
-                        if (typeof window.Echo === 'undefined' || typeof window.Pusher === 'undefined') return;
-                        window.Echo = new window.Echo({
-                            broadcaster: 'reverb',
-                            key: '{{ config('broadcasting.connections.reverb.key') }}',
-                            wsHost: '{{ config('broadcasting.connections.reverb.options.host', '127.0.0.1') }}',
-                            wsPort: {{ (int) config('broadcasting.connections.reverb.options.port', 8080) }},
-                            wssPort: {{ (int) config('broadcasting.connections.reverb.options.port', 8080) }},
-                            forceTLS: '{{ config('broadcasting.connections.reverb.options.scheme', 'http') }}' === 'https',
-                            enabledTransports: ['ws', 'wss'],
-                        });
-                        window.Echo.private('admin.leads').listen('.lead.received', (e) => this.pushed(e));
-                    } catch (err) {}
-                },
-                pushed(e) {
-                    if (!e || !e.lead_id || this.seenLeads.includes(e.lead_id)) return;
-                    this.seenLeads.push(e.lead_id);
-                    this.queue.push({
-                        notification_id: null,
-                        lead_id: e.lead_id,
-                        name: e.name || 'New lead',
-                        phone: e.phone || '',
-                        service: e.service || '',
-                        url: e.url || null,
-                    });
-                    if (!this.current) this.next();
                 },
                 check() {
                     if (document.hidden) return;
@@ -570,7 +534,6 @@
                             data.leads.forEach((lead) => {
                                 if (!lead.notification_id || this.seen.includes(lead.notification_id)) return;
                                 this.seen.push(lead.notification_id);
-                                if (lead.lead_id) this.seenLeads.push(lead.lead_id);
                                 this.queue.push(lead);
                             });
                             if (!this.current && this.queue.length) this.next();
