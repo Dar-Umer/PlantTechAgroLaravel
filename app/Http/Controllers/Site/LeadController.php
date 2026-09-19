@@ -59,6 +59,13 @@ class LeadController extends Controller
             AdminNotifier::send(new NewLeadAlert($lead));
         }
 
+        // Instant push to open admin tabs. Must never break the booking
+        // if the Reverb server is down — the 60s poller is the fallback.
+        try {
+            \App\Events\NewLeadReceived::dispatch($lead);
+        } catch (\Throwable) {
+        }
+
         return redirect()->to('/?submitted=1');
     }
 

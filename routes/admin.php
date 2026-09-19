@@ -159,5 +159,7 @@ Route::middleware('admin')->group(function () {
     Route::delete('stages/{stage}/products/{stageProduct}', [ServiceStageProductController::class, 'destroy'])->name('admin.stage-products.destroy');
 
     // Notifications
+    Route::get('notifications/latest', [NotificationController::class, 'latest'])->name('admin.notifications.latest');
+    Route::post('notifications/{notification}/read', [NotificationController::class, 'read'])->name('admin.notifications.read');
     Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('admin.notifications.read-all');
 });

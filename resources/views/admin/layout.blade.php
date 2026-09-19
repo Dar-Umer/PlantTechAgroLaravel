@@ -489,6 +489,150 @@
         .html-preview img { max-width: 100%; border-radius: 0.5rem; margin: 0.5rem 0; }
     </style>
 
+    {{-- New-lead popup + tone (polls for unread lead alerts) --}}
+    <div x-data="leadPopup({{ max(15, (int) config('automation.new_lead_popup_interval', 60)) }})" x-init="start()">
+        <div x-show="current" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-gray-900/60"></div>
+            <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-center"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100">
+                <div class="w-14 h-14 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900">New Lead Received</h3>
+                <p class="text-sm text-gray-500 mt-1" x-text="current ? ('Just now · ' + (current.service || 'General enquiry')) : ''"></p>
+                <div class="mt-4 rounded-xl bg-gray-50 border border-gray-100 px-4 py-3">
+                    <p class="text-lg font-semibold text-gray-900" x-text="current ? current.name : ''"></p>
+                    <p class="text-sm text-gray-500" x-text="current ? current.phone : ''"></p>
+                </div>
+                <div class="mt-5 grid grid-cols-2 gap-3">
+                    <button type="button" @click="dismiss()" class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition">Dismiss</button>
+                    <button type="button" @click="view()" class="px-4 py-2.5 rounded-xl bg-brand-600 text-sm font-semibold text-white hover:bg-brand-700 transition">View Lead</button>
+                </div>
+                <p class="mt-3 text-xs text-gray-400" x-show="queue.length > 0" x-text="queue.length + ' more waiting'"></p>
+            </div>
+        </div>
+    </div>
+    @if(filled(config('broadcasting.connections.reverb.key')))
+    <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.4.0/dist/web/pusher.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.19.0/dist/echo.iife.js"></script>
+    @endif
+    <script>
+        function leadPopup(pollSeconds) {
+            return {
+                seen: [],
+                seenLeads: [],
+                queue: [],
+                current: null,
+                timer: null,
+                start() {
+                    this.check();
+                    this.timer = setInterval(() => this.check(), Math.max(15, pollSeconds) * 1000);
+                    this.connect();
+                },
+                // Instant push via Reverb. Any failure is silent — the poller above is the fallback.
+                connect() {
+                    try {
+                        if (typeof window.Echo !== 'undefined' && window.Echo.connector) return; // already connected
+                        if (typeof window.Echo === 'undefined' || typeof window.Pusher === 'undefined') return;
+                        window.Echo = new window.Echo({
+                            broadcaster: 'reverb',
+                            key: '{{ config('broadcasting.connections.reverb.key') }}',
+                            wsHost: '{{ config('broadcasting.connections.reverb.options.host', '127.0.0.1') }}',
+                            wsPort: {{ (int) config('broadcasting.connections.reverb.options.port', 8080) }},
+                            wssPort: {{ (int) config('broadcasting.connections.reverb.options.port', 8080) }},
+                            forceTLS: '{{ config('broadcasting.connections.reverb.options.scheme', 'http') }}' === 'https',
+                            enabledTransports: ['ws', 'wss'],
+                        });
+                        window.Echo.private('admin.leads').listen('.lead.received', (e) => this.pushed(e));
+                    } catch (err) {}
+                },
+                pushed(e) {
+                    if (!e || !e.lead_id || this.seenLeads.includes(e.lead_id)) return;
+                    this.seenLeads.push(e.lead_id);
+                    this.queue.push({
+                        notification_id: null,
+                        lead_id: e.lead_id,
+                        name: e.name || 'New lead',
+                        phone: e.phone || '',
+                        service: e.service || '',
+                        url: e.url || null,
+                    });
+                    if (!this.current) this.next();
+                },
+                check() {
+                    if (document.hidden) return;
+                    fetch('{{ route('admin.notifications.latest') }}', { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+                        .then(function (r) { return r.ok ? r.json() : null; })
+                        .then((data) => {
+                            if (!data || !data.popup_enabled || !Array.isArray(data.leads)) return;
+                            data.leads.forEach((lead) => {
+                                if (!lead.notification_id || this.seen.includes(lead.notification_id)) return;
+                                this.seen.push(lead.notification_id);
+                                if (lead.lead_id) this.seenLeads.push(lead.lead_id);
+                                this.queue.push(lead);
+                            });
+                            if (!this.current && this.queue.length) this.next();
+                        })
+                        .catch(function () {});
+                },
+                next() {
+                    this.current = this.queue.length ? this.queue.shift() : null;
+                    if (this.current) this.tone();
+                },
+                dismiss() {
+                    this.ack();
+                    this.next();
+                },
+                view() {
+                    var url = this.current ? this.current.url : null;
+                    this.ack();
+                    this.next();
+                    if (url) window.location.href = url;
+                },
+                ack() {
+                    // Mark read so this lead never pops up again (any tab/page).
+                    if (!this.current || !this.current.notification_id) return;
+                    var token = document.querySelector('meta[name="csrf-token"]');
+                    fetch('{{ url('admin/notifications') }}/' + this.current.notification_id + '/read', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': token ? token.content : ''
+                        }
+                    }).catch(function () {});
+                },
+                tone() {
+                    try {
+                        var Ctx = window.AudioContext || window.webkitAudioContext;
+                        if (!Ctx) return;
+                        // Resume suspended contexts (browser autoplay policy) so the
+                        // chime is audible even on quiet tabs.
+                        var ctx = new Ctx();
+                        if (ctx.state === 'suspended') ctx.resume();
+                        // Loud, urgent triple-beep: bright triangle waves at full gain.
+                        var notes = [987.77, 987.77, 1318.51];
+                        notes.forEach(function (freq, i) {
+                            var osc = ctx.createOscillator();
+                            var gain = ctx.createGain();
+                            osc.type = 'triangle';
+                            osc.frequency.value = freq;
+                            var t = ctx.currentTime + i * 0.28;
+                            gain.gain.setValueAtTime(0.0001, t);
+                            gain.gain.exponentialRampToValueAtTime(0.9, t + 0.02);
+                            gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.26);
+                            osc.connect(gain).connect(ctx.destination);
+                            osc.start(t);
+                            osc.stop(t + 0.3);
+                        });
+                    } catch (e) {}
+                }
+            };
+        }
+    </script>
+
     @stack('scripts')
 </body>
 </html>

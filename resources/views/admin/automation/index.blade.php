@@ -84,6 +84,16 @@
                     <x-admin.checkbox name="new_lead_alerts_enabled" label="Alert admins on every new lead"
                         :checked="$settings['new_lead_alerts_enabled'] ?? true"
                         help="Sends a notification whenever a lead submits the landing page form." />
+
+                    <x-admin.checkbox name="new_lead_popup_enabled" label="Pop up new leads on screen with a tone"
+                        :checked="$settings['new_lead_popup_enabled'] ?? true"
+                        help="Shows a blocking popup and plays a chime in open admin tabs." />
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pl-7">
+                        <x-admin.input name="new_lead_popup_interval" label="Popup Check (seconds)"
+                            type="number" min="15" value="{{ $settings['new_lead_popup_interval'] ?? 60 }}"
+                            helptext="How often open admin tabs check for new leads (15–300)." />
+                    </div>
                 </div>
             </div>
 

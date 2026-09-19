@@ -28,6 +28,8 @@ class AutomationController extends Controller
             'lead_escalation_enabled' => ['sometimes', 'in:0,1,on'],
             'lead_stale_days' => ['nullable', 'integer', 'min:1', 'max:365'],
             'new_lead_alerts_enabled' => ['sometimes', 'in:0,1,on'],
+            'new_lead_popup_enabled' => ['sometimes', 'in:0,1,on'],
+            'new_lead_popup_interval' => ['nullable', 'integer', 'min:15', 'max:300'],
             'channel' => ['required', Rule::in(['both', 'database', 'email'])],
         ]);
 
@@ -44,6 +46,11 @@ class AutomationController extends Controller
                 continue;
             }
 
+            if ($key === 'new_lead_popup_interval') {
+                $settings[$key] = max(15, min(300, (int) ($value ?: 60)));
+                continue;
+            }
+
             if (in_array($key, [
                 'auto_invoice_on_completion',
                 'overdue_enabled',
@@ -51,6 +58,7 @@ class AutomationController extends Controller
                 'work_order_reminders_enabled',
                 'lead_escalation_enabled',
                 'new_lead_alerts_enabled',
+                'new_lead_popup_enabled',
             ], true)) {
                 $settings[$key] = in_array($value, ['1', 'on'], true);
             }

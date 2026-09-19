@@ -53,4 +53,12 @@ return [
     */
 
     'new_lead_alerts_enabled' => true,
+
+    /*
+    | On-screen popup + tone when a new lead arrives. The admin layout
+    | polls for unread lead notifications every N seconds.
+    */
+
+    'new_lead_popup_enabled' => true,
+    'new_lead_popup_interval' => 60,
 ];
