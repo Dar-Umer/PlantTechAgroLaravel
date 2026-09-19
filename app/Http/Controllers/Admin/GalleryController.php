@@ -35,9 +35,9 @@ class GalleryController extends Controller
         return redirect()->route('admin.gallery.index')->with('success', 'Image uploaded.');
     }
 
-    public function destroy(GalleryImage $image)
+    public function destroy(GalleryImage $gallery)
     {
-        $image->delete();
+        $gallery->delete();
 
         return redirect()->route('admin.gallery.index')->with('success', 'Image deleted.');
     }
