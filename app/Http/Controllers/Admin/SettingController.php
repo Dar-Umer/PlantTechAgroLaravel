@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Services\MailSettingsService;
 use App\Services\ShopSettingsService;
+use App\Services\WeatherService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
@@ -88,7 +89,40 @@ class SettingController extends Controller
             'has_password' => filled(config('mail.smtp_password') ?? config('mail.mailers.smtp.password')),
         ];
 
-        return view('admin.settings.index', compact('settings', 'seoSettings', 'invoiceSettings', 'mailSettings', 'palettes', 'fonts', 'sidebarStyles'));
+        $weatherDistricts = WeatherService::districts();
+
+        $weatherSettings = [
+            'enabled' => (bool) config('weather.enabled', true),
+            'admin_preview' => (bool) config('weather.admin_preview', true),
+            'default_district' => config('weather.default_district', 'srinagar'),
+            'cache_ttl_minutes' => config('weather.cache_ttl_minutes', 60),
+            'timeout_seconds' => config('weather.timeout_seconds', 5),
+            'retries' => config('weather.retries', 2),
+            'units' => config('weather.units', 'metric'),
+            'timezone' => config('weather.timezone', 'auto'),
+            'include_current' => (bool) config('weather.include_current', true),
+            'forecast_days' => config('weather.forecast_days', 7),
+            'include_hourly' => (bool) config('weather.include_hourly', false),
+            'advisory_enabled' => (bool) config('weather.advisory_enabled', true),
+            'frost_threshold_c' => config('weather.frost_threshold_c', 2),
+            'spray_wind_kmh' => config('weather.spray_wind_kmh', 20),
+            'spray_rain_prob' => config('weather.spray_rain_prob', 50),
+            'heat_threshold_c' => config('weather.heat_threshold_c', 30),
+            'show_admin_card' => (bool) config('weather.show_admin_card', true),
+            'show_api_dashboard' => (bool) config('weather.show_api_dashboard', true),
+            'show_app_config' => (bool) config('weather.show_app_config', true),
+            'api_endpoint_enabled' => (bool) config('weather.api_endpoint_enabled', true),
+        ];
+
+        // Never expose the reCAPTCHA secret to the view — only whether one is saved.
+        $apisSettings = [
+            'recaptcha_enabled' => (bool) config('apis.recaptcha_enabled', false),
+            'recaptcha_site_key' => config('apis.recaptcha_site_key', ''),
+            'has_secret_key' => filled(config('apis.recaptcha_secret_key')),
+            'recaptcha_min_score' => config('apis.recaptcha_min_score', 0.5),
+        ];
+
+        return view('admin.settings.index', compact('settings', 'seoSettings', 'invoiceSettings', 'mailSettings', 'palettes', 'fonts', 'sidebarStyles', 'weatherSettings', 'weatherDistricts', 'apisSettings'));
     }
 
     public function update(Request $request)
@@ -134,7 +168,7 @@ class SettingController extends Controller
             'seo_yandex_verification' => 'nullable|string|max:255',
             'seo_schema_enabled' => 'nullable|in:0,1',
             'logo_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
-            'favicon_file' => 'nullable|file|mimes:png,jpg,jpeg,webp,gif,svg,ico|max:1024',
+            'favicon_file' => 'nullable|file|mimes:png,jpg,jpeg,webp,gif,ico|max:1024',
             'seo_og_image_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:4096',
             'seo_twitter_image_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:4096',
             'seo_search_image_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:4096',
@@ -145,12 +179,46 @@ class SettingController extends Controller
             'invoice_email' => ['nullable', 'email', 'max:255'],
             'invoice_prefix' => ['required', 'string', 'max:16', 'regex:/^[A-Za-z0-9\-]+$/'],
             'invoice_terms' => ['nullable', 'string', 'max:2000'],
+            'weather_enabled' => ['nullable', 'in:0,1'],
+            'weather_admin_preview' => ['nullable', 'in:0,1'],
+            'weather_default_district' => ['nullable', Rule::in(array_keys(WeatherService::districts()))],
+            'weather_cache_ttl_minutes' => ['nullable', 'integer', 'min:15', 'max:180'],
+            'weather_timeout_seconds' => ['nullable', 'integer', 'min:2', 'max:15'],
+            'weather_retries' => ['nullable', 'integer', 'min:0', 'max:3'],
+            'weather_units' => ['nullable', Rule::in(['metric', 'imperial'])],
+            'weather_timezone' => ['nullable', 'string', 'max:64'],
+            'weather_include_current' => ['nullable', 'in:0,1'],
+            'weather_forecast_days' => ['nullable', Rule::in([0, 3, 7, 16])],
+            'weather_include_hourly' => ['nullable', 'in:0,1'],
+            'weather_advisory_enabled' => ['nullable', 'in:0,1'],
+            'weather_frost_threshold_c' => ['nullable', 'numeric', 'min:-10', 'max:10'],
+            'weather_spray_wind_kmh' => ['nullable', 'numeric', 'min:5', 'max:60'],
+            'weather_spray_rain_prob' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'weather_heat_threshold_c' => ['nullable', 'numeric', 'min:20', 'max:45'],
+            'weather_show_admin_card' => ['nullable', 'in:0,1'],
+            'weather_show_api_dashboard' => ['nullable', 'in:0,1'],
+            'weather_show_app_config' => ['nullable', 'in:0,1'],
+            'weather_api_endpoint_enabled' => ['nullable', 'in:0,1'],
+            'apis_recaptcha_enabled' => ['nullable', 'in:0,1'],
+            'apis_recaptcha_site_key' => ['nullable', 'string', 'max:255'],
+            'apis_recaptcha_secret_key' => ['nullable', 'string', 'max:255'],
+            'apis_recaptcha_min_score' => ['nullable', 'numeric', 'min:0', 'max:1'],
         ]);
+
+        // Per-district coordinate overrides: weather_district_{key}_lat/lon.
+        $districtRules = [];
+        foreach (array_keys(WeatherService::districts()) as $districtKey) {
+            $districtRules["weather_district_{$districtKey}_lat"] = ['nullable', 'numeric', 'between:-90,90'];
+            $districtRules["weather_district_{$districtKey}_lon"] = ['nullable', 'numeric', 'between:-180,180'];
+        }
+
+        $districtCoords = $request->validate($districtRules);
+        $validated = array_merge($validated, $districtCoords);
 
         $shopSettings = config('shop', []);
 
         foreach ($validated as $key => $value) {
-            if (str_starts_with($key, 'seo_') || str_ends_with($key, '_file')) {
+            if (str_starts_with($key, 'seo_') || str_starts_with($key, 'weather_') || str_starts_with($key, 'apis_') || str_ends_with($key, '_file')) {
                 continue;
             }
 
@@ -212,6 +280,59 @@ class SettingController extends Controller
         }
 
         app(ShopSettingsService::class)->set($seoSettings, 'seo');
+
+        $weatherBools = [
+            'enabled', 'admin_preview', 'include_current', 'include_hourly',
+            'advisory_enabled', 'show_admin_card', 'show_api_dashboard',
+            'show_app_config', 'api_endpoint_enabled',
+        ];
+
+        $weather = [];
+        foreach ($validated as $key => $value) {
+            if (! str_starts_with($key, 'weather_') || preg_match('/^weather_district_.+_(lat|lon)$/', $key)) {
+                continue;
+            }
+            $short = substr($key, 8);
+            $weather[$short] = in_array($short, $weatherBools, true)
+                ? (($value ?? '0') === '1')
+                : $value;
+        }
+
+        $districts = WeatherService::districts();
+        foreach ($districts as $districtKey => $district) {
+            $latKey = "weather_district_{$districtKey}_lat";
+            $lonKey = "weather_district_{$districtKey}_lon";
+            if (array_key_exists($latKey, $validated) && $validated[$latKey] !== null) {
+                $districts[$districtKey]['lat'] = (float) $validated[$latKey];
+            }
+            if (array_key_exists($lonKey, $validated) && $validated[$lonKey] !== null) {
+                $districts[$districtKey]['lon'] = (float) $validated[$lonKey];
+            }
+        }
+        $weather['districts'] = $districts;
+        $weather['default_district'] ??= config('weather.default_district', 'srinagar');
+
+        app(ShopSettingsService::class)->set($weather, 'weather');
+
+        $apis = [];
+        foreach ($validated as $key => $value) {
+            if (! str_starts_with($key, 'apis_')) {
+                continue;
+            }
+            $short = substr($key, 5);
+            $apis[$short] = $short === 'recaptcha_enabled'
+                ? (($value ?? '0') === '1')
+                : $value;
+        }
+
+        // Blank secret preserves the saved one (never cleared from this form).
+        if (array_key_exists('recaptcha_secret_key', $apis) && ! filled($apis['recaptcha_secret_key'])) {
+            unset($apis['recaptcha_secret_key']);
+        }
+
+        if ($apis !== []) {
+            app(ShopSettingsService::class)->set($apis, 'apis');
+        }
 
         $tab = $request->input('tab', 'general');
 

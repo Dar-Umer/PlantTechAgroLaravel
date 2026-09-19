@@ -22,10 +22,17 @@ class InvoiceController extends Controller
         $query = Invoice::query()->with('customer')->latest('invoice_date');
 
         if ($status = $request->query('status')) {
+            abort_unless(in_array($status, array_keys(Invoice::STATUSES), true), 422, 'Invalid status filter.');
             $query->where('status', $status);
         }
 
+        if ($customerId = $request->query('customer_id')) {
+            abort_unless(is_numeric($customerId), 422, 'Invalid customer filter.');
+            $query->where('customer_id', (int) $customerId);
+        }
+
         if ($search = trim((string) $request->query('q'))) {
+            $search = addcslashes($search, '%_\\');
             $query->where(function ($q) use ($search) {
                 $q->where('number', 'like', "%{$search}%")
                     ->orWhere('customer_name', 'like', "%{$search}%");
@@ -134,36 +141,42 @@ class InvoiceController extends Controller
 
     public function addPayment(Request $request, Invoice $invoice)
     {
-        if ($invoice->isCancelled()) {
-            return back()->with('error', 'Payments cannot be recorded against a cancelled invoice.');
-        }
+        $saved = DB::transaction(function () use ($request, $invoice) {
+            $locked = Invoice::whereKey($invoice->id)->lockForUpdate()->firstOrFail();
 
-        $data = $request->validate([
-            'amount' => ['required', 'numeric', 'min:0.01', 'max:'.$invoice->balanceDue()],
-            'method' => ['required', Rule::in(array_keys(Payment::METHODS))],
-            'paid_at' => ['required', 'date'],
-            'reference' => ['nullable', 'string', 'max:255'],
-            'note' => ['nullable', 'string', 'max:1000'],
-        ]);
+            if ($locked->isCancelled()) {
+                return back()->with('error', 'Payments cannot be recorded against a cancelled invoice.');
+            }
 
-        $invoice->payments()->create($data + [
-            'received_by' => $request->user('admin')->id ?? null,
-        ]);
+            $data = $request->validate([
+                'amount' => ['required', 'numeric', 'min:0.01', 'max:'.$locked->balanceDue()],
+                'method' => ['required', Rule::in(array_keys(Payment::METHODS))],
+                'paid_at' => ['required', 'date', 'before_or_equal:today'],
+                'reference' => ['nullable', 'string', 'max:255'],
+                'note' => ['nullable', 'string', 'max:1000'],
+            ]);
 
-        $invoice->amount_paid = round((float) $invoice->payments()->sum('amount'), 2);
+            $locked->payments()->create($data + [
+                'received_by' => $request->user('admin')->id ?? null,
+            ]);
 
-        if (bccomp((string) $invoice->amount_paid, (string) $invoice->grand_total, 2) >= 0) {
-            $invoice->status = 'paid';
-        } elseif ($invoice->status === 'overdue') {
-            // Keep the overdue marker until fully settled.
-            $invoice->status = 'overdue';
-        } else {
-            $invoice->status = 'partial';
-        }
+            $locked->amount_paid = round((float) $locked->payments()->sum('amount'), 2);
 
-        $invoice->save();
+            if (bccomp((string) $locked->amount_paid, (string) $locked->grand_total, 2) >= 0) {
+                $locked->status = 'paid';
+            } elseif ($locked->status === 'overdue') {
+                // Keep the overdue marker until fully settled.
+                $locked->status = 'overdue';
+            } else {
+                $locked->status = 'partial';
+            }
 
-        return back()->with('success', 'Payment of ₹'.number_format((float) $data['amount'], 2).' recorded.');
+            $locked->save();
+
+            return back()->with('success', 'Payment of ₹'.number_format((float) $data['amount'], 2).' recorded.');
+        });
+
+        return $saved;
     }
 
     public function cancel(Invoice $invoice)

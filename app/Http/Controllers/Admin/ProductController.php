@@ -25,6 +25,7 @@ class ProductController extends Controller
         }
 
         if ($search = trim((string) $request->query('q'))) {
+            $search = addcslashes($search, '%_\\');
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('sku', 'like', "%{$search}%");
@@ -135,6 +136,7 @@ class ProductController extends Controller
             'low_stock_threshold' => ['nullable', 'numeric', 'min:0'],
             'supplier_id' => ['nullable', Rule::exists('suppliers', 'id')],
             'is_active' => ['nullable', 'boolean'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:2048'],
         ]);
     }
 

@@ -38,26 +38,26 @@
                         {{ $theme['brand_first'] }}@if($theme['brand_rest']) <span class="text-white/70">{{ $theme['brand_rest'] }}</span>@endif
                     </h1>
                     <p class="text-brand-100 text-lg max-w-md leading-relaxed">
-                        Manage your leads, work orders, inventory and invoices from one secure place.
+                        Leads, customers, work orders, inventory, invoices and farm weather — everything for your agritech business in one secure place.
                     </p>
                     <ul class="space-y-3 text-sm text-white/90">
                         <li class="flex items-center gap-3">
                             <span class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
                                 <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                             </span>
-                            Track work orders and service stages in real time
+                            Lead capture to customer conversion with auto-created work orders
                         </li>
                         <li class="flex items-center gap-3">
                             <span class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
                                 <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                             </span>
-                            Invoicing, payments and stock control
+                            Orchard services, farm weather advisories and stage tracking
                         </li>
                         <li class="flex items-center gap-3">
                             <span class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
                                 <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.213 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                             </span>
-                            Automatic reminders and overdue alerts
+                            Invoices, payments, stock control and overdue automation
                         </li>
                     </ul>
                 </div>
@@ -102,8 +102,12 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('admin.login.submit') }}" class="space-y-5" autocomplete="on">
+                    <form id="admin-login-form" method="POST" action="{{ route('admin.login.submit') }}" class="space-y-5" autocomplete="on">
                         @csrf
+
+                        @if(\App\Support\Recaptcha::enabled())
+                            <input type="hidden" name="g-recaptcha-response" id="admin-recaptcha-token">
+                        @endif
 
                         <div>
                             <label for="email" class="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
@@ -113,7 +117,7 @@
                                 </span>
                                 <input type="email" name="email" id="email" value="{{ old('email') }}" required autofocus
                                        class="w-full rounded-xl border @error('email') border-red-300 @else border-gray-200 @enderror bg-gray-50 pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 transition focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
-                                       placeholder="admin@pta.com">
+                                        placeholder="example@gmail.com">
                             </div>
                             @error('email')
                                 <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
@@ -182,5 +186,21 @@
             </div>
         </div>
     </div>
+    @if(\App\Support\Recaptcha::enabled())
+        <script src="https://www.google.com/recaptcha/api.js?render={{ config('apis.recaptcha_site_key') }}"></script>
+        <script>
+            document.getElementById('admin-login-form').addEventListener('submit', function (e) {
+                var tokenInput = document.getElementById('admin-recaptcha-token');
+                if (tokenInput.value) return;
+                e.preventDefault();
+                grecaptcha.ready(function () {
+                    grecaptcha.execute('{{ config('apis.recaptcha_site_key') }}', {action: 'admin_login'}).then(function (token) {
+                        tokenInput.value = token;
+                        e.target.submit();
+                    });
+                });
+            });
+        </script>
+    @endif
 </body>
 </html>

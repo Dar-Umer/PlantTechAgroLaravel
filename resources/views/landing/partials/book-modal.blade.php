@@ -61,8 +61,13 @@
                 </div>
 
                 {{-- Form --}}
-                <form x-show="!submitted" action="{{ route('leads.store') }}" method="POST" class="px-5 sm:px-6 py-5 space-y-3.5 max-h-[72vh] overflow-y-auto">
+                <form id="lead-form" x-show="!submitted" action="{{ route('leads.store') }}" method="POST" class="px-5 sm:px-6 py-5 space-y-3.5 max-h-[72vh] overflow-y-auto">
                     @csrf
+
+                    @if(\App\Support\Recaptcha::enabled())
+                        <input type="hidden" name="g-recaptcha-response" id="lead-recaptcha-token">
+                        @error('g-recaptcha-response')<p class="text-xs text-red-500">{{ $message }}</p>@enderror
+                    @endif
 
                     {{-- Honeypot + time-trap (anti-bot) --}}
                     <input type="text" name="website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true">
@@ -129,3 +134,19 @@
         </div>
     </div>
 </div>
+@if(\App\Support\Recaptcha::enabled())
+    <script src="https://www.google.com/recaptcha/api.js?render={{ config('apis.recaptcha_site_key') }}"></script>
+    <script>
+        document.getElementById('lead-form').addEventListener('submit', function (e) {
+            var tokenInput = document.getElementById('lead-recaptcha-token');
+            if (tokenInput.value) return;
+            e.preventDefault();
+            grecaptcha.ready(function () {
+                grecaptcha.execute('{{ config('apis.recaptcha_site_key') }}', {action: 'lead'}).then(function (token) {
+                    tokenInput.value = token;
+                    e.target.submit();
+                });
+            });
+        });
+    </script>
+@endif

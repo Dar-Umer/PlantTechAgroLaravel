@@ -138,5 +138,26 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with('theme', $theme);
         });
+
+        // Farm weather for the admin top navbar. Cached per district upstream,
+        // so this is a cheap cache hit on every admin page. Never throws and
+        // never fires HTTP in the test environment.
+        View::composer('admin.layout', function ($view) {
+            $headerWeather = null;
+            $headerWeatherDisabled = ! (bool) config('weather.enabled', true);
+
+            if (! $headerWeatherDisabled
+                && (bool) config('weather.show_admin_card', true)
+                && ! app()->environment('testing')) {
+                try {
+                    $headerWeather = \App\Services\WeatherService::forArea(null);
+                } catch (\Throwable) {
+                    $headerWeather = null;
+                }
+            }
+
+            $view->with('headerWeather', $headerWeather);
+            $view->with('headerWeatherDisabled', $headerWeatherDisabled);
+        });
     }
 }

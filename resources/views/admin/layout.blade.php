@@ -132,12 +132,12 @@
                         [
                             'label' => null,
                             'items' => [
-                                ['route' => 'admin.dashboard', 'label' => 'Dashboard', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>'],
+                                ['route' => 'admin.dashboard', 'label' => 'Dashboard', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>'],
                             ],
                         ],
                         [
                             'label' => 'Content',
-                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>',
+                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>',
                             'items' => [
                                 ['route' => 'admin.posts.index', 'label' => 'Posts'],
                                 ['route' => 'admin.testimonials.index', 'label' => 'Testimonials'],
@@ -147,7 +147,7 @@
                         ],
                         [
                             'label' => 'Services & Projects',
-                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>',
+                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0"/>',
                             'items' => [
                                 ['route' => 'admin.services.index', 'label' => 'Services'],
                                 ['route' => 'admin.projects.index', 'label' => 'Projects'],
@@ -155,14 +155,14 @@
                         ],
                         [
                             'label' => 'Website',
-                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>',
+                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/>',
                             'items' => [
                                 ['route' => 'admin.frontend.index', 'label' => 'Frontend'],
                             ],
                         ],
                         [
                             'label' => 'Sales',
-                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>',
+                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>',
                             'items' => [
                                 ['route' => 'admin.leads.index', 'label' => 'Leads'],
                                 ['route' => 'admin.customers.index', 'label' => 'Customers'],
@@ -171,21 +171,21 @@
                         ],
                         [
                             'label' => 'Apps',
-                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>',
+                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"/>',
                             'items' => [
                                 ['route' => 'admin.mobile-apps.index', 'label' => 'Mobile Apps'],
                             ],
                         ],
                         [
                             'label' => 'Operations',
-                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>',
+                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 9.75h4.5m-4.5 3h4.5m-4.5 3h4.5m-5.625 3.75h6.75a4.5 4.5 0 004.5-4.5v-3a4.5 4.5 0 00-4.5-4.5H16.5a3 3 0 00-3-3h-3a3 3 0 00-3 3H7.125a4.5 4.5 0 00-4.5 4.5v3a4.5 4.5 0 004.5 4.5h6.75M12 3h.008v.008H12V3z"/>',
                             'items' => [
                                 ['route' => 'admin.work-orders.index', 'label' => 'Work Orders'],
                             ],
                         ],
                         [
                             'label' => 'Inventory',
-                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>',
+                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/>',
                             'items' => [
                                 ['route' => 'admin.products.index', 'label' => 'Products'],
                                 ['route' => 'admin.suppliers.index', 'label' => 'Suppliers'],
@@ -194,7 +194,7 @@
                         ],
                         [
                             'label' => 'Administration',
-                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>',
+                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>',
                             'items' => [
                                 ['route' => 'admin.staff.index', 'label' => 'Staff'],
                                 ['route' => 'admin.automation.index', 'label' => 'Automation'],
@@ -205,11 +205,15 @@
                 @endphp
 
                 @php
-                    // Super Admin bypasses all permission checks.
                     $currentAdmin = Auth::guard('admin')->user();
-                    $canView = function ($route) use ($currentAdmin) {
+                    $superOnlyRoutes = ['admin.staff.index', 'admin.automation.index', 'admin.settings.index', 'admin.mobile-apps.index'];
+                    $canView = function ($route) use ($currentAdmin, $superOnlyRoutes) {
                         if (!$currentAdmin) return false;
-                        return Route::has($route);
+                        if (!Route::has($route)) return false;
+                        if (in_array($route, $superOnlyRoutes, true)) {
+                            return $currentAdmin->hasRole('Super Admin');
+                        }
+                        return true;
                     };
                 @endphp
 
@@ -280,6 +284,71 @@
                 </h1>
 
                 <div class="flex items-center space-x-4">
+                    {{-- Farm weather --}}
+                    @if(!empty($headerWeather ?? null))
+                        @php
+                            $hwCurrent = $headerWeather['current'] ?? [];
+                            $hwDaily = array_slice($headerWeather['daily'] ?? [], 0, 3);
+                            $hwAdvisory = $headerWeather['advisory'] ?? null;
+                            $hwDot = ['alert' => 'bg-red-500', 'caution' => 'bg-amber-500', 'good' => 'bg-emerald-500'][$hwAdvisory['level'] ?? 'good'] ?? 'bg-emerald-500';
+                            $hwWind = isset($hwCurrent['wind']) ? ' · Wind ' . $hwCurrent['wind'] . ' km/h' : '';
+                        @endphp
+                        <div x-data="{ open: false }" class="relative">
+                            <button @click="open = !open" class="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 p-1.5 rounded-lg hover:bg-gray-100 focus:outline-none" title="Farm weather — {{ $headerWeather['location']['label'] ?? '' }}">
+                                <svg class="w-5 h-5 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z"/></svg>
+                                <span class="font-semibold text-gray-800">{{ $hwCurrent['temp'] ?? '–' }}°</span>
+                                <span class="hidden xl:inline text-xs text-gray-400">{{ $headerWeather['location']['label'] ?? '' }}</span>
+                                <span class="w-2 h-2 rounded-full {{ $hwDot }}"></span>
+                            </button>
+
+                            <div x-show="open" @click.away="open = false" x-cloak
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="transform opacity-0 scale-95"
+                                 x-transition:enter-end="transform opacity-100 scale-100"
+                                 class="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-lg z-50 border border-gray-200 overflow-hidden">
+                                <div class="px-4 py-3 border-b border-gray-100">
+                                    <p class="text-sm font-semibold text-gray-900">{{ $headerWeather['location']['label'] ?? 'Farm Weather' }} · {{ $hwCurrent['temp'] ?? '–' }}°C</p>
+                                    <p class="text-xs text-gray-500">{{ $hwCurrent['label'] ?? '' }}{{ $hwWind }}</p>
+                                </div>
+                                @if($hwAdvisory && !empty($hwAdvisory['messages']))
+                                    <div class="px-4 py-3 border-b border-gray-100 space-y-1">
+                                        @foreach(array_slice($hwAdvisory['messages'], 0, 2) as $message)
+                                            <p class="text-xs text-gray-600">• {{ $message }}</p>
+                                        @endforeach
+                                    </div>
+                                @endif
+                                @if(!empty($hwDaily))
+                                    <div class="flex divide-x divide-gray-100">
+                                        @foreach($hwDaily as $day)
+                                            <div class="flex-1 px-2 py-2.5 text-center">
+                                                <p class="text-[10px] font-medium text-gray-500">{{ \Carbon\Carbon::parse($day['date'])->format('D') }}</p>
+                                                <p class="text-sm font-bold text-gray-900">{{ $day['temp_max'] ?? '–' }}°</p>
+                                                <p class="text-[10px] text-sky-600">{{ $day['rain_prob_max'] ?? 0 }}%</p>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+                                @if(auth('admin')->user()?->hasRole('Super Admin'))
+                                    <a href="{{ route('admin.settings.index', ['tab' => 'weather']) }}" class="block px-4 py-2.5 text-xs font-medium text-brand-600 hover:bg-gray-50 border-t border-gray-100">Manage weather settings</a>
+                                @endif
+                            </div>
+                        </div>
+                    @else
+                        @if(!empty($headerWeatherDisabled ?? false))
+                            @if(auth('admin')->user()?->hasRole('Super Admin'))
+                                <a href="{{ route('admin.settings.index', ['tab' => 'weather']) }}" class="hidden sm:inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100" title="Weather service is disabled — open settings">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z"/></svg>
+                                    <span>Weather off</span>
+                                </a>
+                            @endif
+                        @endif
+                    @endif
+                    {{-- Live clock (IST) --}}
+                    <div x-data="{ now: new Date(), tick() { this.now = new Date(); }, timeFmt: new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }), dateFmt: new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', weekday: 'short', day: 'numeric', month: 'short' }) }" x-init="setInterval(() => tick(), 1000)" class="hidden md:flex items-center gap-1.5 text-gray-600 p-1.5" title="India Standard Time">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span class="text-sm font-semibold text-gray-800 tabular-nums" x-text="timeFmt.format(now)"></span>
+                        <span class="text-xs text-gray-400" x-text="dateFmt.format(now)"></span>
+                    </div>
                     {{-- Notifications --}}
                     @php $unreadNotifications = Auth::guard('admin')->user()?->unreadNotifications ?? collect(); @endphp
                     <div x-data="{ open: false }" class="relative">
@@ -315,6 +384,8 @@
                                                 @if(isset($data['supplier'])) · Supplier: {{ $data['supplier'] }}@endif
                                             @elseif(isset($data['number']))
                                                 {{ $data['number'] }} — {{ $data['customer'] }} · {{ $data['service'] }}
+                                            @elseif(isset($data['lead_id']))
+                                                {{ $data['name'] }} ({{ $data['phone'] }}) · {{ $data['service'] }}
                                             @else
                                                 {{ json_encode($data) }}
                                             @endif

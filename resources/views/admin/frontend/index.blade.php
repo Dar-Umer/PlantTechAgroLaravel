@@ -29,6 +29,12 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     Footer
                 </button>
+                <button @click="activeTab = 'notice'"
+                    :class="activeTab === 'notice' ? 'bg-brand-50 text-brand-700 border-brand-200' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+                    Notice Bar
+                </button>
             </nav>
         </div>
 
@@ -378,6 +384,52 @@
 
                 <div class="flex justify-end">
                     <x-admin.button type="submit">Save Footer</x-admin.button>
+                </div>
+            </form>
+        </div>
+
+        {{-- Notice Bar Tab --}}
+        <div x-show="activeTab === 'notice'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-cloak class="space-y-6">
+            <form action="{{ route('admin.frontend.notice.update') }}" method="POST" class="space-y-6">
+                @csrf
+                @method('PUT')
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Scrolling Notice Bar</h3>
+                    <p class="text-sm text-gray-500 mb-5">Pinned above the site header on the front page. Add up to 5 notices — they scroll one after another.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <x-admin.checkbox name="notice_enabled" label="Show notice bar" :checked="$notice['enabled'] ?? false" help="Master on/off switch" />
+                        <x-admin.input name="notice_speed" label="Scroll Speed (seconds per loop)" type="number" :value="$notice['speed'] ?? 40" helptext="10–120. Lower is faster. Default 40." />
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6" x-data="{ items: @js($notice['items'] ?? []) }">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Notices</h3>
+                    <p class="text-sm text-gray-500 mb-5">Each notice scrolls in turn. Empty rows are ignored.</p>
+                    <div class="space-y-3">
+                        <template x-for="(item, i) in items" :key="i">
+                            <div class="flex items-center gap-2">
+                                <input type="text" name="notice_items[]" x-model="items[i]" maxlength="255"
+                                       class="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 transition focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                                       placeholder="Type a notice for farmers...">
+                                <button type="button" @click="items.splice(i, 1)" class="p-2 text-gray-400 hover:text-red-600 transition" title="Remove">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                </button>
+                            </div>
+                        </template>
+                        <template x-if="items.length === 0">
+                            <p class="text-sm text-gray-400 py-2">No notices yet — add one below.</p>
+                        </template>
+                    </div>
+                    <button type="button" @click="if (items.length < 5) items.push('')"
+                            class="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        Add notice (max 5)
+                    </button>
+                </div>
+
+                <div class="flex justify-end">
+                    <x-admin.button type="submit">Save Notice Bar</x-admin.button>
                 </div>
             </form>
         </div>

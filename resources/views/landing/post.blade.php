@@ -46,7 +46,7 @@
         {{-- Content --}}
         @if($post->content)
             <div class="mt-8 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 sm:p-8 prose prose-green dark:prose-invert max-w-none">
-                {!! $post->content !!}
+                {!! \App\Support\HtmlSanitizer::clean($post->content) !!}
             </div>
         @endif
 

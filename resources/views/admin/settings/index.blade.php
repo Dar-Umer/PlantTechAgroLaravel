@@ -35,6 +35,18 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.1-4.4a5.5 5.5 0 11-11 0 5.5 5.5 0 0111 0z"/></svg>
                     SEO
                 </button>
+                <button @click="activeTab = 'weather'"
+                    :class="activeTab === 'weather' ? 'bg-brand-50 text-brand-700 border-brand-200' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z"/></svg>
+                    Weather
+                </button>
+                <button @click="activeTab = 'apis'"
+                    :class="activeTab === 'apis' ? 'bg-brand-50 text-brand-700 border-brand-200' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    APIs
+                </button>
                 <button @click="activeTab = 'smtp'"
                     :class="activeTab === 'smtp' ? 'bg-brand-50 text-brand-700 border-brand-200' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'"
                     class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all whitespace-nowrap">
@@ -378,6 +390,122 @@
                         <div class="md:col-span-2">
                             <x-admin.checkbox name="seo_schema_enabled" label="Enable Organization structured data" :checked="$seoSettings['schema_enabled'] ?? true" help="Emits schema.org JSON-LD built from store details" />
                         </div>
+                    </div>
+                </div>
+
+            </div>
+
+            {{-- Weather Tab --}}
+            <div x-show="activeTab === 'weather'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-cloak class="space-y-6">
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Weather Service</h3>
+                    <p class="text-sm text-gray-500 mb-5">Free Open-Meteo forecasts for farmers. Switching the service off stops all upstream calls and hides weather everywhere.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <x-admin.checkbox name="weather_enabled" label="Enable weather service" :checked="$weatherSettings['enabled'] ?? true" help="Master kill switch — off hides all farmer-facing weather immediately" />
+                        <x-admin.checkbox name="weather_admin_preview" label="Admin preview when disabled" :checked="$weatherSettings['admin_preview'] ?? true" help="Show a live preview in this tab even while disabled for farmers" />
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Location</h3>
+                    <p class="text-sm text-gray-500 mb-5">Farmers are matched to districts by their profile area. Blank or unknown areas use the default district.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <x-admin.select name="weather_default_district" label="Default District"
+                            :options="collect($weatherDistricts)->mapWithKeys(fn ($d, $k) => [$k => $d['label']])->all()"
+                            :value="$weatherSettings['default_district'] ?? 'srinagar'" />
+                    </div>
+                    <div class="mt-5">
+                        <p class="text-sm font-medium text-gray-700 mb-3">District Coordinates</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            @foreach($weatherDistricts as $districtKey => $district)
+                                <div class="rounded-xl border border-gray-100 bg-gray-50/50 p-4">
+                                    <p class="text-sm font-semibold text-gray-800 mb-2">{{ $district['label'] }}</p>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <x-admin.input name="weather_district_{{ $districtKey }}_lat" label="Latitude" type="number" step="any" :value="$district['lat']" />
+                                        <x-admin.input name="weather_district_{{ $districtKey }}_lon" label="Longitude" type="number" step="any" :value="$district['lon']" />
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Fetching</h3>
+                    <p class="text-sm text-gray-500 mb-5">How forecasts are pulled from Open-Meteo. One cached entry per district is shared by all farmers.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <x-admin.input name="weather_cache_ttl_minutes" label="Cache (minutes)" type="number" :value="$weatherSettings['cache_ttl_minutes'] ?? 60" helptext="15–180. Shared per district." />
+                        <x-admin.input name="weather_timeout_seconds" label="Request Timeout (seconds)" type="number" :value="$weatherSettings['timeout_seconds'] ?? 5" helptext="2–15." />
+                        <x-admin.input name="weather_retries" label="Retries" type="number" :value="$weatherSettings['retries'] ?? 2" helptext="0–3." />
+                        <x-admin.select name="weather_units" label="Units"
+                            :options="['metric' => 'Metric (°C, km/h)', 'imperial' => 'Imperial (°F, mph)']"
+                            :value="$weatherSettings['units'] ?? 'metric'" />
+                        <div class="md:col-span-2">
+                            <x-admin.input name="weather_timezone" label="Timezone" :value="$weatherSettings['timezone'] ?? 'auto'" helptext="Upstream timezone parameter. Keep auto." />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Forecast Content</h3>
+                    <p class="text-sm text-gray-500 mb-5">Which blocks are included in the payload sent to farmers.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <x-admin.checkbox name="weather_include_current" label="Include current conditions" :checked="$weatherSettings['include_current'] ?? true" />
+                        <x-admin.select name="weather_forecast_days" label="Forecast Days"
+                            :options="['0' => 'Current only', '3' => '3 days', '7' => '7 days', '16' => '16 days']"
+                            :value="(string) ($weatherSettings['forecast_days'] ?? 7)" />
+                        <div class="md:col-span-2">
+                            <x-admin.checkbox name="weather_include_hourly" label="Include next-24h hourly strip" :checked="$weatherSettings['include_hourly'] ?? false" help="Temperature + rain probability. Increases payload size." />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Orchard Advisory</h3>
+                    <p class="text-sm text-gray-500 mb-5">Rule-based spray, frost and irrigation hints. Shown as indicative guidance, not agronomist advice.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="md:col-span-2">
+                            <x-admin.checkbox name="weather_advisory_enabled" label="Enable advisory block" :checked="$weatherSettings['advisory_enabled'] ?? true" />
+                        </div>
+                        <x-admin.input name="weather_frost_threshold_c" label="Frost Threshold (°C)" type="number" step="any" :value="$weatherSettings['frost_threshold_c'] ?? 2" helptext="-10 to 10." />
+                        <x-admin.input name="weather_spray_wind_kmh" label="Spray Wind Limit (km/h)" type="number" step="any" :value="$weatherSettings['spray_wind_kmh'] ?? 20" helptext="Above this, spraying is discouraged." />
+                        <x-admin.input name="weather_spray_rain_prob" label="Spray Rain Limit (%)" type="number" :value="$weatherSettings['spray_rain_prob'] ?? 50" helptext="Above this, spraying is discouraged." />
+                        <x-admin.input name="weather_heat_threshold_c" label="Heat Threshold (°C)" type="number" step="any" :value="$weatherSettings['heat_threshold_c'] ?? 30" helptext="Above this with no rain, irrigation is suggested." />
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Where Weather Appears</h3>
+                    <p class="text-sm text-gray-500 mb-5">Stage the rollout per surface — e.g. test on the admin card before enabling mobile.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <x-admin.checkbox name="weather_show_admin_card" label="Admin dashboard card" :checked="$weatherSettings['show_admin_card'] ?? true" />
+                        <x-admin.checkbox name="weather_show_api_dashboard" label="Customer app dashboard" :checked="$weatherSettings['show_api_dashboard'] ?? true" />
+                        <x-admin.checkbox name="weather_show_app_config" label="App config snapshot" :checked="$weatherSettings['show_app_config'] ?? true" />
+                        <x-admin.checkbox name="weather_api_endpoint_enabled" label="Standalone /api/weather endpoint" :checked="$weatherSettings['api_endpoint_enabled'] ?? true" />
+                    </div>
+                </div>
+
+            </div>
+
+            {{-- APIs Tab --}}
+            <div x-show="activeTab === 'apis'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-cloak class="space-y-6">
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">API Integrations</h3>
+                    <p class="text-sm text-gray-500 mb-5">Third-party keys used across the platform. New integrations will appear here as additional cards.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <x-admin.checkbox name="apis_recaptcha_enabled" label="Enable Google reCAPTCHA v3" :checked="$apisSettings['recaptcha_enabled'] ?? false" help="Invisible bot protection on the lead form and admin login" />
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Google reCAPTCHA v3</h3>
+                    <p class="text-sm text-gray-500 mb-5">Invisible score-based protection. Get keys from the Google reCAPTCHA admin console (v3). Submissions scoring below the threshold are rejected.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <x-admin.input name="apis_recaptcha_site_key" label="Site Key" :value="$apisSettings['recaptcha_site_key'] ?? ''" placeholder="6Lc..." helptext="Public key — embedded in the lead form and login page." />
+                        <x-admin.input name="apis_recaptcha_secret_key" label="Secret Key" type="password" :value="''" placeholder="{{ ($apisSettings['has_secret_key'] ?? false) ? 'Saved — leave blank to keep it' : '6Lc...' }}" helptext="{{ ($apisSettings['has_secret_key'] ?? false) ? 'A secret is already saved. Leave blank to keep it.' : 'Private key — never shown again after saving.' }}" />
+                        <x-admin.input name="apis_recaptcha_min_score" label="Minimum Score (0–1)" type="number" step="0.1" :value="$apisSettings['recaptcha_min_score'] ?? 0.5" helptext="0.5 recommended. Higher is stricter." />
                     </div>
                 </div>
 

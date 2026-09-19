@@ -13,6 +13,7 @@ class SupplierController extends Controller
         $query = Supplier::query()->withCount('products')->orderBy('name');
 
         if ($search = trim((string) $request->query('q'))) {
+            $search = addcslashes($search, '%_\\');
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('phone', 'like', "%{$search}%")

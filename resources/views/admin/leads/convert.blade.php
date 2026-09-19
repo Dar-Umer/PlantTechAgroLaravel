@@ -13,6 +13,26 @@
             You are converting <span class="font-semibold">{{ $lead->name }}</span> ({{ $lead->phone }}). Review the details below — they become the customer's login credentials for the Customer App. The customer will log in with their phone number and the password you set here.
         </div>
 
+        @if(!empty($serviceUsable))
+            <div class="bg-sky-50 border border-sky-100 rounded-2xl p-4 text-sm text-sky-800">
+                Confirming will also open a <span class="font-semibold">pending work order for {{ $service->name }}</span> from this lead's submitted details — no stock is deducted. You will be redirected to the new work order.
+            </div>
+        @else
+            <div class="bg-red-50 border border-red-200 rounded-2xl p-4 text-sm text-red-700">
+                This lead's service is missing or inactive, so conversion is blocked until a valid service is attached to the lead.
+            </div>
+        @endif
+
+        @if(!empty($existingCustomer))
+            <div class="bg-sky-50 border border-sky-100 rounded-2xl p-5">
+                <p class="text-sm font-semibold text-sky-800">This number already belongs to customer {{ $existingCustomer->name }} ({{ $existingCustomer->phone }}).</p>
+                <p class="text-sm text-sky-600 mt-1">Conversion is not available — open a work order for the existing customer instead.</p>
+                <form action="{{ route('admin.leads.work-order', $lead) }}" method="POST" class="mt-4">
+                    @csrf
+                    <x-admin.button type="submit" variant="primary">New Work Order for {{ $existingCustomer->name }}</x-admin.button>
+                </form>
+            </div>
+        @else
         <form action="{{ route('admin.leads.convert.store', $lead) }}" method="POST" class="space-y-6">
             @csrf
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
@@ -45,5 +65,6 @@
                 <x-admin.button type="submit">Confirm & Create Customer</x-admin.button>
             </div>
         </form>
+        @endif
     </div>
 @endsection

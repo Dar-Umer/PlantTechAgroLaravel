@@ -27,10 +27,17 @@ class WorkOrderController extends Controller
         $query = WorkOrder::query()->with(['agent', 'invoice'])->latest();
 
         if ($status = $request->query('status')) {
+            abort_unless(in_array($status, array_keys(WorkOrder::STATUSES), true), 422, 'Invalid status filter.');
             $query->where('status', $status);
         }
 
+        if ($customerId = $request->query('customer_id')) {
+            abort_unless(is_numeric($customerId), 422, 'Invalid customer filter.');
+            $query->where('customer_id', (int) $customerId);
+        }
+
         if ($search = trim((string) $request->query('q'))) {
+            $search = addcslashes($search, '%_\\');
             $query->where(function ($q) use ($search) {
                 $q->where('number', 'like', "%{$search}%")
                     ->orWhere('customer_name', 'like', "%{$search}%");
@@ -45,12 +52,26 @@ class WorkOrderController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        // Prefill support for the existing-customer lead handoff
+        // (?customer_id=&service_id=). Invalid ids fall back to blank.
+        $preselectCustomer = $request->query('customer_id');
+        $preselectCustomer = is_numeric($preselectCustomer)
+            && Customer::whereKey((int) $preselectCustomer)->exists()
+            ? (int) $preselectCustomer : null;
+
+        $preselectService = $request->query('service_id');
+        $preselectService = is_numeric($preselectService)
+            && Service::whereKey((int) $preselectService)->exists()
+            ? (int) $preselectService : null;
+
         return view('admin.work_orders.create', [
             'customers' => Customer::where('status', 'active')->orderBy('name')->get(['id', 'name', 'phone']),
             'services' => Service::active()->with(['stages.products.product'])->orderBy('sort_order')->get(),
             'agents' => Admin::where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'preselectCustomer' => $preselectCustomer,
+            'preselectService' => $preselectService,
         ]);
     }
 

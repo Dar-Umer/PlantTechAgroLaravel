@@ -40,8 +40,15 @@ class FrontendController extends Controller
         $stats = ImpactStat::query()->orderBy('sort_order')->get();
         $activeServicesCount = Service::active()->count();
 
+        $noticeBar = config('frontend.notice_bar', []);
+        $notice = [
+            'enabled' => (bool) ($noticeBar['enabled'] ?? false),
+            'items' => array_values(array_filter(array_map('trim', (array) ($noticeBar['items'] ?? [])))),
+            'speed' => max(10, min(120, (int) ($noticeBar['speed'] ?? 40))),
+        ];
+
         return view('admin.frontend.index', compact(
-            'tab', 'settings', 'fields', 'sections', 'stats', 'activeServicesCount'
+            'tab', 'settings', 'fields', 'sections', 'stats', 'activeServicesCount', 'notice'
         ));
     }
 
@@ -169,5 +176,28 @@ class FrontendController extends Controller
 
         return redirect()->route('admin.frontend.index', ['tab' => 'footer'])
             ->with('success', 'Footer settings updated.');
+    }
+
+    public function updateNotice(Request $request, ShopSettingsService $settingsService)
+    {
+        $validated = $request->validate([
+            'notice_enabled' => ['nullable', 'in:0,1'],
+            'notice_items' => ['nullable', 'array', 'max:5'],
+            'notice_items.*' => ['nullable', 'string', 'max:255'],
+            'notice_speed' => ['nullable', 'integer', 'min:10', 'max:120'],
+        ]);
+
+        $items = array_values(array_filter(array_map('trim', (array) ($validated['notice_items'] ?? []))));
+
+        $settingsService->set([
+            'notice_bar' => [
+                'enabled' => ($validated['notice_enabled'] ?? '0') === '1',
+                'items' => $items,
+                'speed' => max(10, min(120, (int) ($validated['notice_speed'] ?? 40))),
+            ],
+        ], 'frontend');
+
+        return redirect()->route('admin.frontend.index', ['tab' => 'notice'])
+            ->with('success', 'Notice bar updated.');
     }
 }

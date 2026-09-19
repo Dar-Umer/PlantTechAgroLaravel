@@ -7,9 +7,12 @@ use App\Models\Customer;
 use App\Models\PasswordOtp;
 use App\Notifications\CustomerOtp;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class ForgotPasswordController extends Controller
@@ -22,11 +25,24 @@ class ForgotPasswordController extends Controller
 
         $customer = Customer::findByPhoneDigits($data['phone']);
 
+        // Generic response to prevent phone-number enumeration.
+        $generic = [
+            'message' => 'If an account exists for this phone number, an OTP has been sent.',
+            'expires_in_minutes' => (int) config('api.otp_expires_minutes', 10),
+        ];
+
         if (! $customer) {
-            throw ValidationException::withMessages([
-                'phone' => 'No account found with this phone number.',
-            ]);
+            return response()->json($generic);
         }
+
+        // Invalidate any previous unconsumed OTPs so only the latest is valid.
+        PasswordOtp::query()
+            ->where('phone', $customer->phone)
+            ->where('purpose', 'password_reset')
+            ->whereNull('consumed_at')
+            ->update(['consumed_at' => now()]);
+
+        Cache::forget($this->attemptKey($customer->phone));
 
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
@@ -34,21 +50,17 @@ class ForgotPasswordController extends Controller
             'phone' => $customer->phone,
             'code' => $code,
             'purpose' => 'password_reset',
-            'expires_at' => now()->addMinutes((int) config('api.otp_expires_minutes', 15)),
+            'expires_at' => now()->addMinutes((int) config('api.otp_expires_minutes', 10)),
         ]);
 
         $this->deliver($customer, $code);
 
-        $payload = [
-            'message' => 'OTP sent successfully.',
-            'expires_in_minutes' => (int) config('api.otp_expires_minutes', 15),
-        ];
-
-        if (config('mobile.echo_otp', config('api.echo_otp', false))) {
-            $payload['debug_otp'] = $code;
+        // Double-gated debug helper: config flag AND local env only. Never in production.
+        if (app()->environment('local') && config('mobile.echo_otp', config('api.echo_otp', false))) {
+            $generic['debug_otp'] = $code;
         }
 
-        return response()->json($payload);
+        return response()->json($generic);
     }
 
     public function verifyOtp(Request $request)
@@ -60,7 +72,7 @@ class ForgotPasswordController extends Controller
 
         $customer = Customer::findByPhoneDigits($data['phone']);
 
-        if (! $customer || ! $this->resolveOtp($customer, $data['code'])) {
+        if (! $customer || ! $this->checkOtpAttempt($customer, $data['code'])) {
             throw ValidationException::withMessages([
                 'code' => 'Invalid or expired OTP.',
             ]);
@@ -74,20 +86,21 @@ class ForgotPasswordController extends Controller
         $data = $request->validate([
             'phone' => ['required', 'string', 'max:20', 'regex:/^[0-9+\-\s()]{7,20}$/'],
             'code' => ['required', 'string', 'size:6'],
-            'password' => ['required', 'string', 'min:6', 'max:64', 'confirmed'],
+            'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()->max(64)],
         ]);
 
         $customer = Customer::findByPhoneDigits($data['phone']);
 
         if (! $customer) {
             throw ValidationException::withMessages([
-                'phone' => 'No account found with this phone number.',
+                'code' => 'Invalid or expired OTP.',
             ]);
         }
 
         $otp = $this->resolveOtp($customer, $data['code']);
 
         if (! $otp) {
+            $this->recordFailedAttempt($customer->phone);
             throw ValidationException::withMessages([
                 'code' => 'Invalid or expired OTP.',
             ]);
@@ -100,6 +113,8 @@ class ForgotPasswordController extends Controller
             $otp->forceFill(['consumed_at' => now()])->save();
         });
 
+        Cache::forget($this->attemptKey($customer->phone));
+
         return response()->json(['message' => 'Password updated. You can now sign in.']);
     }
 
@@ -111,7 +126,58 @@ class ForgotPasswordController extends Controller
             Notification::route('mail', $customer->email)->notify(new CustomerOtp($code));
         }
 
-        \Illuminate\Support\Facades\Log::info('Customer OTP issued for '.$customer->phone.': '.$code);
+        // Never log the OTP value itself — only that one was issued.
+        Log::info('Customer OTP issued for phone ending in '.substr(preg_replace('/\D/', '', $customer->phone), -4));
+    }
+
+    private function attemptKey(string $phone): string
+    {
+        return 'otp_attempts:'.sha1($phone);
+    }
+
+    private function checkOtpAttempt(Customer $customer, string $code): bool
+    {
+        $key = $this->attemptKey($customer->phone);
+        $attempts = (int) Cache::get($key, 0);
+        $max = (int) config('api.otp_max_attempts', 5);
+
+        if ($attempts >= $max) {
+            // Lock out: invalidate outstanding OTPs to stop brute force.
+            PasswordOtp::query()
+                ->where('phone', $customer->phone)
+                ->where('purpose', 'password_reset')
+                ->whereNull('consumed_at')
+                ->update(['consumed_at' => now()]);
+
+            return false;
+        }
+
+        $otp = $this->resolveOtp($customer, $code);
+
+        if (! $otp) {
+            $this->recordFailedAttempt($customer->phone);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private function recordFailedAttempt(string $phone): void
+    {
+        $key = $this->attemptKey($phone);
+        $attempts = (int) Cache::get($key, 0) + 1;
+        $max = (int) config('api.otp_max_attempts', 5);
+
+        Cache::put($key, $attempts, now()->addMinutes((int) config('api.otp_expires_minutes', 10)));
+
+        if ($attempts >= $max) {
+            PasswordOtp::query()
+                ->where('phone', $phone)
+                ->where('purpose', 'password_reset')
+                ->whereNull('consumed_at')
+                ->update(['consumed_at' => now()]);
+        }
     }
 
     private function resolveOtp(Customer $customer, string $code): ?PasswordOtp

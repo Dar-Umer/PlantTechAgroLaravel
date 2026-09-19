@@ -9,6 +9,7 @@
         @scroll.passive.window="updateTint()"
         :class="scrolled ? 'bg-white dark:bg-gray-900 shadow-md shadow-gray-900/[0.04] border-gray-100 dark:border-gray-800' : 'bg-transparent border-transparent'"
         class="fixed top-0 inset-x-0 z-40 border-b transition-all duration-300 ease-out">
+    @include('landing.partials.notice-bar')
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="relative flex items-center justify-between h-16">
             <a href="{{ url('/') }}" class="flex items-center gap-2 min-w-0">

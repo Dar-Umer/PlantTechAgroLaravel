@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\WorkOrder;
+use App\Services\WeatherService;
 use App\Support\AppConfig;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -63,6 +64,9 @@ class DashboardController extends Controller
             'recent_work_orders' => $recentWorkOrders->map(fn (WorkOrder $wo) => WorkOrderController::summary($wo))->values(),
             'recent_invoices' => $recentInvoices->map(fn (Invoice $invoice) => InvoiceController::summary($invoice))->values(),
             'support' => $appConfig['support'],
+            'weather' => ((bool) config('weather.enabled', true) && (bool) config('weather.show_api_dashboard', true))
+                ? WeatherService::forArea($customer->area)
+                : null,
             'app_config' => $appConfig,
         ]);
     }

@@ -54,7 +54,7 @@ class MobileAppController extends Controller
             'release_notes' => ['nullable', 'string', 'max:2000'],
             'maintenance_mode' => ['nullable', 'in:0,1'],
             'echo_otp' => ['nullable', 'in:0,1'],
-            'app_logo_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif,svg', 'max:2048'],
+            'app_logo_file' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:2048'],
         ]);
 
         $settings = [

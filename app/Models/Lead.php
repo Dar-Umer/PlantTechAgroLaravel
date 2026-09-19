@@ -47,4 +47,13 @@ class Lead extends Model
     {
         return $this->belongsTo(Customer::class, 'converted_customer_id');
     }
+
+    /**
+     * A converted lead is a historical record: read-only, never
+     * re-convertible, never deletable, status locked.
+     */
+    public function isConverted(): bool
+    {
+        return $this->status === 'converted';
+    }
 }

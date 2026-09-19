@@ -35,5 +35,5 @@ return [
 
     // General app behaviour.
     'maintenance_mode' => false,    // shows a maintenance screen inside the app
-    'echo_otp' => true,             // dev helper: echo OTP in the API response
+    'echo_otp' => false,            // SECURITY: dev helper — must stay false in production
 ];

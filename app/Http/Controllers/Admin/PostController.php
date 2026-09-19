@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use App\Models\PostCategory;
+use App\Support\HtmlSanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -31,7 +32,7 @@ class PostController extends Controller
             'category_id' => ['nullable', 'exists:post_categories,id'],
             'excerpt' => ['nullable', 'string'],
             'content' => ['nullable', 'string'],
-            'featured_image' => ['nullable', 'image', 'max:2048'],
+            'featured_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:2048'],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string'],
             'is_published' => ['boolean'],
@@ -40,6 +41,8 @@ class PostController extends Controller
 
         $data['slug'] = Str::slug($data['title']);
         $data['author_id'] = auth()->guard('admin')->id();
+        $data['content'] = HtmlSanitizer::clean($data['content'] ?? null);
+        $data['excerpt'] = strip_tags((string) ($data['excerpt'] ?? ''));
 
         if (isset($data['featured_image']) && $data['featured_image']) {
             $data['featured_image'] = $request->file('featured_image')->store('posts', 'public');
@@ -68,7 +71,7 @@ class PostController extends Controller
             'category_id' => ['nullable', 'exists:post_categories,id'],
             'excerpt' => ['nullable', 'string'],
             'content' => ['nullable', 'string'],
-            'featured_image' => ['nullable', 'image', 'max:2048'],
+            'featured_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:2048'],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string'],
             'is_published' => ['boolean'],
@@ -79,6 +82,11 @@ class PostController extends Controller
             $data['featured_image'] = $request->file('featured_image')->store('posts', 'public');
         } else {
             unset($data['featured_image']);
+        }
+
+        $data['content'] = HtmlSanitizer::clean($data['content'] ?? $post->content);
+        if (array_key_exists('excerpt', $data)) {
+            $data['excerpt'] = strip_tags((string) $data['excerpt']);
         }
 
         $post->update($data);

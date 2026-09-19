@@ -29,6 +29,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('dashboard', [DashboardController::class, 'index']);
 
+    Route::get('weather', [\App\Http\Controllers\Api\Customer\WeatherController::class, 'show']);
+
     Route::get('services', [ServiceController::class, 'index']);
 
     Route::get('work-orders', [WorkOrderController::class, 'index']);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Service;
+use App\Support\HtmlSanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -30,12 +31,14 @@ class ServiceController extends Controller
             'content' => ['nullable', 'string'],
             'icon' => ['nullable', 'string', 'max:255'],
             'book_url' => ['nullable', 'string', 'max:255'],
-            'image' => ['nullable', 'image', 'max:2048'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:2048'],
             'sort_order' => ['nullable', 'integer'],
             'is_active' => ['boolean'],
         ]);
 
         $data['slug'] = Str::slug($data['name']);
+        $data['content'] = HtmlSanitizer::clean($data['content'] ?? null);
+        $data['description'] = strip_tags((string) ($data['description'] ?? ''));
 
         if (isset($data['image']) && $data['image']) {
             $data['image'] = $request->file('image')->store('services', 'public');
@@ -60,7 +63,7 @@ class ServiceController extends Controller
             'content' => ['nullable', 'string'],
             'icon' => ['nullable', 'string', 'max:255'],
             'book_url' => ['nullable', 'string', 'max:255'],
-            'image' => ['nullable', 'image', 'max:2048'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:2048'],
             'sort_order' => ['nullable', 'integer'],
             'is_active' => ['boolean'],
         ]);
@@ -69,6 +72,11 @@ class ServiceController extends Controller
             $data['image'] = $request->file('image')->store('services', 'public');
         } else {
             unset($data['image']);
+        }
+
+        $data['content'] = HtmlSanitizer::clean($data['content'] ?? $service->content);
+        if (array_key_exists('description', $data)) {
+            $data['description'] = strip_tags((string) $data['description']);
         }
 
         $service->update($data);

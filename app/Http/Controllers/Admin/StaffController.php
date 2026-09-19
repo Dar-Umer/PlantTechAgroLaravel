@@ -7,6 +7,7 @@ use App\Models\Admin;
 use App\Models\WorkOrder;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 use Spatie\Permission\Models\Role;
 
 class StaffController extends Controller
@@ -25,7 +26,9 @@ class StaffController extends Controller
 
     public function store(Request $request)
     {
+        $this->ensureSuperAdmin();
         $data = $this->validated($request);
+        $this->ensureCanAssignRole($data['role']);
 
         $staff = Admin::create([
             'name' => $data['name'],
@@ -53,7 +56,22 @@ class StaffController extends Controller
 
     public function update(Request $request, Admin $admin)
     {
+        $this->ensureSuperAdmin();
         $data = $this->validated($request, $admin->id, false);
+        $this->ensureCanAssignRole($data['role']);
+
+        // Prevent demoting/deactivating your own Super Admin account (lockout).
+        if ($admin->id === auth('admin')->id()) {
+            if ($data['role'] !== 'Super Admin' || ! isset($data['is_active'])) {
+                return back()->with('error', 'You cannot demote or deactivate your own Super Admin account.');
+            }
+        }
+
+        // Prevent demoting the last Super Admin.
+        if ($admin->hasRole('Super Admin') && $data['role'] !== 'Super Admin'
+            && Admin::role('Super Admin')->count() <= 1) {
+            return back()->with('error', 'There must be at least one Super Admin.');
+        }
 
         $admin->name = $data['name'];
         $admin->email = $data['email'];
@@ -72,6 +90,8 @@ class StaffController extends Controller
 
     public function destroy(Admin $admin)
     {
+        $this->ensureSuperAdmin();
+
         if ($admin->id === auth('admin')->id()) {
             return back()->with('error', 'You cannot delete your own account.');
         }
@@ -83,6 +103,22 @@ class StaffController extends Controller
         $admin->delete();
 
         return redirect()->route('admin.staff.index')->with('success', 'Staff member deleted.');
+    }
+
+    private function ensureSuperAdmin(): void
+    {
+        if (! auth('admin')->user()?->hasRole('Super Admin')) {
+            abort(403, 'Only Super Admins can manage staff.');
+        }
+    }
+
+    private function ensureCanAssignRole(string $role): void
+    {
+        // Route middleware already restricts to Super Admin, but double-check
+        // so a future route change cannot be used for privilege escalation.
+        if ($role === 'Super Admin' && ! auth('admin')->user()?->hasRole('Super Admin')) {
+            abort(403, 'Only Super Admins can assign the Super Admin role.');
+        }
     }
 
     private function validated(Request $request, ?int $ignoreId = null, bool $passwordRequired = true): array
@@ -100,7 +136,7 @@ class StaffController extends Controller
             'is_active' => ['nullable', 'boolean'],
         ];
 
-        $passwordRules = ['string', 'min:8', 'max:64', 'regex:/[a-zA-Z]/', 'regex:/[0-9]/'];
+        $passwordRules = ['string', 'max:64', Password::min(8)->letters()->numbers()->symbols()];
 
         $rules['password'] = $passwordRequired
             ? array_merge(['required'], $passwordRules)

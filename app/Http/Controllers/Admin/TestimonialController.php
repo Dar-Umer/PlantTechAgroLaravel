@@ -26,7 +26,7 @@ class TestimonialController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'role' => ['nullable', 'string', 'max:255'],
             'content' => ['required', 'string'],
-            'avatar' => ['nullable', 'image', 'max:1024'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:1024'],
             'video_url' => ['nullable', 'url', 'max:500'],
             'video' => ['nullable', 'file', 'mimetypes:video/mp4,video/webm,video/ogg,video/quicktime', 'max:32768'],
             'rating' => ['nullable', 'integer', 'min:1', 'max:5'],
@@ -41,6 +41,8 @@ class TestimonialController extends Controller
         if ($request->hasFile('video')) {
             $data['video'] = $request->file('video')->store('testimonials/videos', 'public');
         }
+
+        $data['content'] = \App\Support\HtmlSanitizer::clean($data['content'] ?? null);
 
         Testimonial::create($data);
 
@@ -58,7 +60,7 @@ class TestimonialController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'role' => ['nullable', 'string', 'max:255'],
             'content' => ['required', 'string'],
-            'avatar' => ['nullable', 'image', 'max:1024'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:1024'],
             'video_url' => ['nullable', 'url', 'max:500'],
             'video' => ['nullable', 'file', 'mimetypes:video/mp4,video/webm,video/ogg,video/quicktime', 'max:32768'],
             'remove_video' => ['nullable', 'boolean'],
@@ -80,6 +82,8 @@ class TestimonialController extends Controller
         }
 
         unset($data['remove_video']);
+
+        $data['content'] = \App\Support\HtmlSanitizer::clean($data['content'] ?? $testimonial->content);
 
         $testimonial->update($data);
 

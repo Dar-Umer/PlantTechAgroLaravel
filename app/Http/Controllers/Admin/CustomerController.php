@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class CustomerController extends Controller
 {
@@ -14,10 +16,12 @@ class CustomerController extends Controller
         $query = Customer::query()->latest();
 
         if ($status = $request->query('status')) {
+            abort_unless(in_array($status, ['active', 'inactive'], true), 422, 'Invalid status filter.');
             $query->where('status', $status);
         }
 
         if ($search = trim((string) $request->query('q'))) {
+            $search = addcslashes($search, '%_\\');
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('phone', 'like', "%{$search}%")
@@ -48,9 +52,49 @@ class CustomerController extends Controller
 
     public function show(Customer $customer)
     {
+        $customer->loadMissing('lead');
+
+        $workOrders = $customer->workOrders()
+            ->with(['service:id,name', 'agent:id,name', 'invoice:id,number,status,grand_total,amount_paid'])
+            ->latest()
+            ->paginate(6, ['*'], 'work_orders');
+
+        $invoices = $customer->invoices()
+            ->with(['workOrder:id,number', 'payments'])
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        $servicesAvailed = $customer->workOrders()
+            ->selectRaw('service_id, service_name, COUNT(*) as total, MAX(created_at) as last_booked')
+            ->whereNotNull('service_name')
+            ->groupBy('service_id', 'service_name')
+            ->orderByDesc('total')
+            ->limit(8)
+            ->get()
+            ->map(fn ($row) => [
+                'name' => $row->service_name,
+                'total' => (int) $row->total,
+                'last_booked' => $row->last_booked ? \Illuminate\Support\Carbon::parse($row->last_booked)->format('d M Y') : null,
+            ]);
+
+        $workOrdersTotal = $customer->workOrders()->count();
+        $workOrdersActive = $customer->workOrders()->whereIn('status', ['pending', 'assigned', 'in_progress'])->count();
+        $workOrdersCompleted = $customer->workOrders()->where('status', 'completed')->count();
+
+        $totalPaid = (float) $customer->invoices()->sum('amount_paid');
+        $outstanding = (float) $customer->invoices()
+            ->whereNotIn('status', ['paid', 'cancelled'])
+            ->sum(DB::raw('grand_total - amount_paid'));
+        $overdueInvoices = $customer->invoices()->where('status', 'overdue')->count();
+
         $lead = $customer->lead;
 
-        return view('admin.customers.show', compact('customer', 'lead'));
+        return view('admin.customers.show', compact(
+            'customer', 'lead', 'workOrders', 'invoices', 'servicesAvailed',
+            'workOrdersTotal', 'workOrdersActive', 'workOrdersCompleted',
+            'totalPaid', 'outstanding', 'overdueInvoices'
+        ));
     }
 
     public function edit(Customer $customer)
@@ -96,8 +140,8 @@ class CustomerController extends Controller
         ];
 
         $rules['password'] = $passwordRequired
-            ? ['required', 'string', 'min:6', 'max:64']
-            : ['nullable', 'string', 'min:6', 'max:64'];
+            ? ['required', 'string', 'max:64', Password::min(8)->letters()->numbers()]
+            : ['nullable', 'string', 'max:64', Password::min(8)->letters()->numbers()];
 
         return $request->validate($rules);
     }

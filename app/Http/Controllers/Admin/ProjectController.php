@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Project;
+use App\Support\HtmlSanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -27,9 +28,9 @@ class ProjectController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'content' => ['nullable', 'string'],
-            'featured_image' => ['nullable', 'image', 'max:2048'],
+            'featured_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:2048'],
             'gallery' => ['nullable', 'array'],
-            'gallery.*' => ['image', 'max:2048'],
+            'gallery.*' => ['image', 'mimes:jpeg,png,jpg,webp,gif', 'max:2048'],
             'video_url' => ['nullable', 'url', 'max:255'],
             'location' => ['nullable', 'string', 'max:255'],
             'completed_at' => ['nullable', 'date'],
@@ -38,6 +39,8 @@ class ProjectController extends Controller
         ]);
 
         $data['slug'] = Str::slug($data['title']);
+        $data['content'] = HtmlSanitizer::clean($data['content'] ?? null);
+        $data['description'] = strip_tags((string) ($data['description'] ?? ''));
 
         if (isset($data['featured_image']) && $data['featured_image']) {
             $data['featured_image'] = $request->file('featured_image')->store('projects', 'public');
@@ -67,7 +70,7 @@ class ProjectController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'content' => ['nullable', 'string'],
-            'featured_image' => ['nullable', 'image', 'max:2048'],
+            'featured_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:2048'],
             'video_url' => ['nullable', 'url', 'max:255'],
             'location' => ['nullable', 'string', 'max:255'],
             'completed_at' => ['nullable', 'date'],
@@ -79,6 +82,11 @@ class ProjectController extends Controller
             $data['featured_image'] = $request->file('featured_image')->store('projects', 'public');
         } else {
             unset($data['featured_image']);
+        }
+
+        $data['content'] = HtmlSanitizer::clean($data['content'] ?? $project->content);
+        if (array_key_exists('description', $data)) {
+            $data['description'] = strip_tags((string) $data['description']);
         }
 
         $project->update($data);

@@ -45,7 +45,7 @@
                     <h3 class="text-lg font-semibold text-gray-900 mb-1">Publishing</h3>
                     <p class="text-sm text-gray-500 mb-5">Control when and how this post appears.</p>
                     <div class="space-y-5">
-                        <x-admin.select name="category_id" label="Category" :options="$categories" :value="$post->category_id" placeholder="Select a category" required />
+                        <x-admin.select name="category_id" label="Category" :options="$categories->pluck('name', 'id')->all()" :value="$post->category_id" placeholder="Select a category" required />
                         <x-admin.input name="published_at" label="Publish Date" type="datetime-local" :value="$post->published_at ? $post->published_at->format('Y-m-d\TH:i') : ''" />
                         <x-admin.checkbox name="is_published" label="Published" :checked="$post->is_published" help="Make this post visible on the site" />
                     </div>

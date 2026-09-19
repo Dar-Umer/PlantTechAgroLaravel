@@ -99,15 +99,28 @@
                                 <td class="px-6 py-4 text-gray-500 text-xs">{{ $lead->created_at->format('d M Y, h:i A') }}</td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        @if($lead->status !== 'converted')
-                                            <x-admin.button href="{{ route('admin.leads.convert', $lead) }}" variant="primary" size="sm">Convert</x-admin.button>
+                                        @if(! $lead->isConverted())
+                                            @if(isset($leadsWithCustomer[$lead->id]))
+                                                <form action="{{ route('admin.leads.work-order', $lead) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    <x-admin.button type="submit" variant="primary" size="sm" title="This number belongs to an existing customer — open a work order directly.">Work Order</x-admin.button>
+                                                </form>
+                                            @else
+                                                <x-admin.button href="{{ route('admin.leads.convert', $lead) }}" variant="primary" size="sm">Convert</x-admin.button>
+                                            @endif
                                         @endif
                                         <x-admin.button href="{{ route('admin.leads.show', $lead) }}" variant="secondary" size="sm">View</x-admin.button>
-                                        <form action="{{ route('admin.leads.destroy', $lead) }}" method="POST" onsubmit="return confirm('Delete this lead?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <x-admin.button type="submit" variant="danger" size="sm">Delete</x-admin.button>
-                                        </form>
+                                        @if($lead->isConverted())
+                                            <span title="Converted leads cannot be deleted — kept as the customer source record.">
+                                                <x-admin.button type="button" variant="danger" size="sm" disabled class="opacity-50 cursor-not-allowed">Delete</x-admin.button>
+                                            </span>
+                                        @else
+                                            <form action="{{ route('admin.leads.destroy', $lead) }}" method="POST" onsubmit="return confirm('Delete this lead?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <x-admin.button type="submit" variant="danger" size="sm">Delete</x-admin.button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

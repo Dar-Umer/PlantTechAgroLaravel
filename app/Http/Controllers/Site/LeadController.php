@@ -7,8 +7,10 @@ use App\Models\Lead;
 use App\Models\LeadFormField;
 use App\Notifications\NewLeadAlert;
 use App\Services\AdminNotifier;
+use App\Support\Recaptcha;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class LeadController extends Controller
 {
@@ -36,6 +38,12 @@ class LeadController extends Controller
 
         if (! $request->filled('loaded_at') || $loadedAt <= 0 || $loadedAt > time() + 60 || (time() - $loadedAt) < $minSeconds) {
             return redirect()->to('/?submitted=1');
+        }
+
+        if (Recaptcha::enabled() && ! Recaptcha::verify($request->input('g-recaptcha-response'), $request->ip())) {
+            throw ValidationException::withMessages([
+                'g-recaptcha-response' => 'Bot verification failed. Please refresh the page and try again.',
+            ]);
         }
 
         $lead = Lead::create([

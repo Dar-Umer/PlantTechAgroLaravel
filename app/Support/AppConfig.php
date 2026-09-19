@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use App\Services\WeatherService;
+
 class AppConfig
 {
     public static function toArray(): array
@@ -61,6 +63,25 @@ class AppConfig
                 'gst_no' => config('invoice.gst_no', ''),
                 'terms' => config('invoice.terms', ''),
             ],
+            'weather' => static::weather(),
         ];
+    }
+
+    /**
+     * Global farm-weather snapshot for the default district.
+     * Null when the service or the app-config surface is disabled.
+     */
+    public static function weather(): ?array
+    {
+        if (! (bool) config('weather.enabled', true)
+            || ! (bool) config('weather.show_app_config', true)) {
+            return null;
+        }
+
+        try {
+            return WeatherService::forArea(null);
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

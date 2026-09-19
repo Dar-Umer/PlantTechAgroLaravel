@@ -48,21 +48,33 @@ Route::post('logout', [LoginController::class, 'logout'])->name('admin.logout');
 // Authenticated admin routes
 Route::middleware('admin')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
-Route::get('settings', [SettingController::class, 'index'])->name('admin.settings.index');
 
-    Route::put('settings', [SettingController::class, 'update'])->name('admin.settings.update');
+    // Sensitive system administration — Super Admin only.
+    Route::middleware('role:Super Admin')->group(function () {
+        Route::get('settings', [SettingController::class, 'index'])->name('admin.settings.index');
 
-    Route::get('mobile-apps', [MobileAppController::class, 'index'])->name('admin.mobile-apps.index');
+        Route::put('settings', [SettingController::class, 'update'])->name('admin.settings.update');
 
-    Route::put('mobile-apps', [MobileAppController::class, 'update'])->name('admin.mobile-apps.update');
+        Route::get('mobile-apps', [MobileAppController::class, 'index'])->name('admin.mobile-apps.index');
 
-    Route::post('settings/mail', [SettingController::class, 'smtpUpdate'])->name('admin.settings.mail.update');
+        Route::put('mobile-apps', [MobileAppController::class, 'update'])->name('admin.mobile-apps.update');
 
-    Route::post('settings/mail/test', [SettingController::class, 'smtpTest'])->name('admin.settings.mail.test');
+        Route::post('settings/mail', [SettingController::class, 'smtpUpdate'])->name('admin.settings.mail.update');
 
-    Route::get('automation', [AutomationController::class, 'index'])->name('admin.automation.index');
+        Route::post('settings/mail/test', [SettingController::class, 'smtpTest'])->middleware('throttle:6,1')->name('admin.settings.mail.test');
 
-    Route::put('automation', [AutomationController::class, 'update'])->name('admin.automation.update');
+        Route::get('automation', [AutomationController::class, 'index'])->name('admin.automation.index');
+
+        Route::put('automation', [AutomationController::class, 'update'])->name('admin.automation.update');
+
+        // Staff
+        Route::get('staff', [StaffController::class, 'index'])->name('admin.staff.index');
+        Route::get('staff/create', [StaffController::class, 'create'])->name('admin.staff.create');
+        Route::post('staff', [StaffController::class, 'store'])->name('admin.staff.store');
+        Route::get('staff/{admin}/edit', [StaffController::class, 'edit'])->name('admin.staff.edit');
+        Route::put('staff/{admin}', [StaffController::class, 'update'])->name('admin.staff.update');
+        Route::delete('staff/{admin}', [StaffController::class, 'destroy'])->name('admin.staff.destroy');
+    });
 
     // Content management
     Route::resource('posts', PostController::class)->except('show')->names('admin.posts');
@@ -77,6 +89,7 @@ Route::get('settings', [SettingController::class, 'index'])->name('admin.setting
     // Website / Frontend management
     Route::get('frontend', [FrontendController::class, 'index'])->name('admin.frontend.index');
     Route::put('frontend/lead-form', [FrontendController::class, 'updateLeadForm'])->name('admin.frontend.lead-form.update');
+    Route::put('frontend/notice', [FrontendController::class, 'updateNotice'])->name('admin.frontend.notice.update');
     Route::put('frontend/home-sections', [FrontendController::class, 'updateHomeSections'])->name('admin.frontend.home-sections.update');
     Route::put('frontend/footer', [FrontendController::class, 'updateFooter'])->name('admin.frontend.footer.update');
     Route::post('frontend/lead-form/fields', [LeadFormFieldController::class, 'store'])->name('admin.lead-form-fields.store');
@@ -92,6 +105,7 @@ Route::get('settings', [SettingController::class, 'index'])->name('admin.setting
     Route::patch('leads/{lead}/status', [LeadController::class, 'updateStatus'])->name('admin.leads.status');
     Route::get('leads/{lead}/convert', [LeadController::class, 'showConvert'])->name('admin.leads.convert');
     Route::post('leads/{lead}/convert', [LeadController::class, 'convert'])->name('admin.leads.convert.store');
+    Route::post('leads/{lead}/work-order', [LeadController::class, 'createWorkOrder'])->name('admin.leads.work-order');
     Route::delete('leads/{lead}', [LeadController::class, 'destroy'])->name('admin.leads.destroy');
 
     // Customers
@@ -143,14 +157,6 @@ Route::get('settings', [SettingController::class, 'index'])->name('admin.setting
     Route::post('stages/{stage}/products', [ServiceStageProductController::class, 'store'])->name('admin.stage-products.store');
     Route::put('stages/{stage}/products/{stageProduct}', [ServiceStageProductController::class, 'update'])->name('admin.stage-products.update');
     Route::delete('stages/{stage}/products/{stageProduct}', [ServiceStageProductController::class, 'destroy'])->name('admin.stage-products.destroy');
-
-    // Staff
-    Route::get('staff', [StaffController::class, 'index'])->name('admin.staff.index');
-    Route::get('staff/create', [StaffController::class, 'create'])->name('admin.staff.create');
-    Route::post('staff', [StaffController::class, 'store'])->name('admin.staff.store');
-    Route::get('staff/{admin}/edit', [StaffController::class, 'edit'])->name('admin.staff.edit');
-    Route::put('staff/{admin}', [StaffController::class, 'update'])->name('admin.staff.update');
-    Route::delete('staff/{admin}', [StaffController::class, 'destroy'])->name('admin.staff.destroy');
 
     // Notifications
     Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('admin.notifications.read-all');

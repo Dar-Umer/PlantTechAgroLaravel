@@ -44,7 +44,7 @@
                         </span>
                         <input type="email" name="email" id="email" value="{{ old('email') }}" required autofocus
                                class="w-full rounded-xl border @error('email') border-red-300 @else border-gray-200 @enderror bg-gray-50 pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 transition focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
-                               placeholder="admin@pta.com">
+                                placeholder="example@gmail.com">
                     </div>
                     @error('email')
                         <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>

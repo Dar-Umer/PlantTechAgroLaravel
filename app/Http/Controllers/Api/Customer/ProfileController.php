@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Support\AppConfig;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class ProfileController extends Controller
@@ -40,7 +41,7 @@ class ProfileController extends Controller
     {
         $data = $request->validate([
             'current_password' => ['required', 'string'],
-            'password' => ['required', 'string', 'min:6', 'max:64', 'confirmed'],
+            'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()->max(64)],
         ]);
 
         $customer = $request->user();

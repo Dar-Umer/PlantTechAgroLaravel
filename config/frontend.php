@@ -8,4 +8,9 @@ return [
         'success_message' => 'Thank you! Your request has been received. Our team will call you soon.',
         'min_submit_seconds' => 3,
     ],
+    'notice_bar' => [
+        'enabled' => false,
+        'items' => [],
+        'speed' => 40,
+    ],
 ];
