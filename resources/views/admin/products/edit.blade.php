@@ -19,6 +19,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <x-admin.input name="name" label="Product Name" :value="old('name', $product->name)" required />
                         <x-admin.input name="sku" label="SKU" :value="old('sku', $product->sku)" />
+                        <x-admin.input name="hsn_code" label="HSN / SAC Code" :value="old('hsn_code', $product->hsn_code)" placeholder="e.g. 3101, 3808" helptext="Used for GST reporting and invoice compliance." />
                         <x-admin.select name="unit" label="Unit" :options="$units" :value="old('unit', $product->unit)" required />
                         <x-admin.select name="type" label="Product Type" :options="\App\Models\Product::TYPES" :value="old('type', $product->type)" required helptext="Service materials are consumed in work orders; sellables appear in the customer catalog." />
                         <x-admin.input name="rate" label="Rate (₹ per unit)" type="number" step="1" min="0" :value="old('rate', $product->rate)" required />

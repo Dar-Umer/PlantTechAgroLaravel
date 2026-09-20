@@ -51,44 +51,58 @@
             @endif
         </form>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-xs border border-gray-100 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left">
-                    <thead class="bg-gray-50 border-b border-gray-100">
+                    <thead class="bg-gray-50/80 border-b border-gray-100">
                         <tr>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Product</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Supplier</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Rate</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600">GST</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Stock</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600 text-right">Actions</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Product</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Supplier</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Rate</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">GST</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Stock Status</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @forelse($products as $product)
-                            <tr class="hover:bg-gray-50 transition">
+                            <tr class="hover:bg-gray-50/70 transition group">
                                 <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-medium text-gray-900">{{ $product->name }}</span>
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium {{ $product->type === 'sellable' ? 'bg-brand-50 text-brand-700' : 'bg-gray-100 text-gray-600' }}">{{ \App\Models\Product::TYPES[$product->type] ?? $product->type }}</span>
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center font-bold text-xs shadow-xs flex-shrink-0 group-hover:scale-105 transition-transform">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <div class="flex items-center gap-2">
+                                                <a href="{{ route('admin.products.edit', $product) }}" class="font-semibold text-gray-900 group-hover:text-brand-600 transition-colors">{{ $product->name }}</a>
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium {{ $product->type === 'sellable' ? 'bg-brand-50 text-brand-700' : 'bg-gray-100 text-gray-600' }}">{{ \App\Models\Product::TYPES[$product->type] ?? $product->type }}</span>
+                                            </div>
+                                            <div class="text-xs text-gray-400 mt-0.5 flex items-center gap-1.5">
+                                                <span>{{ $product->sku ?: 'No SKU' }} · per {{ $product->unit }}</span>
+                                                @if($product->hsn_code)
+                                                    <span>·</span>
+                                                    <span class="font-mono text-emerald-600 font-medium">HSN: {{ $product->hsn_code }}</span>
+                                                @endif
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="text-xs text-gray-400">{{ $product->sku ?: '—' }} · per {{ $product->unit }}</div>
                                 </td>
-                                <td class="px-6 py-4 text-gray-600">{{ $product->supplier?->name ?? '—' }}</td>
-                                <td class="px-6 py-4 text-gray-600">₹{{ number_format((float) $product->rate, 0) }}</td>
+                                <td class="px-6 py-4 text-gray-600 font-medium">{{ $product->supplier?->name ?? '—' }}</td>
+                                <td class="px-6 py-4 text-gray-900 font-semibold">₹{{ number_format((float) $product->rate, 0) }}</td>
                                 <td class="px-6 py-4 text-gray-600">{{ $product->gst_rate }}%</td>
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $product->isLowStock() ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700' }}">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $product->isLowStock() ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700' }}">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ $product->isLowStock() ? 'bg-red-500 animate-pulse' : 'bg-emerald-500' }}"></span>
                                         {{ \App\Support\Format::qty($product->stock_qty) }} {{ $product->unit }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <div class="flex items-center justify-end gap-2">
+                                    <div class="flex items-center justify-end gap-1.5">
                                         <x-admin.button href="{{ route('admin.stock-movements.create', ['product_id' => $product->id]) }}" variant="secondary" size="sm">Stock</x-admin.button>
                                         @if($product->isLowStock() && $product->supplier?->email)
                                             <form action="{{ route('admin.products.notify-supplier', $product) }}" method="POST" onsubmit="return confirm('Send low stock alert email to {{ $product->supplier->email }}?')">
                                                 @csrf
-                                                <x-admin.button type="submit" variant="secondary" size="sm">Notify Supplier</x-admin.button>
+                                                <x-admin.button type="submit" variant="secondary" size="sm">Notify</x-admin.button>
                                             </form>
                                         @endif
                                         <x-admin.button href="{{ route('admin.products.edit', $product) }}" variant="secondary" size="sm">Edit</x-admin.button>

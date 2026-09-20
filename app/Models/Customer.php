@@ -14,7 +14,7 @@ class Customer extends Authenticatable
     use Notifiable;
 
     protected $fillable = [
-        'name', 'phone', 'password', 'email', 'address', 'area',
+        'name', 'phone', 'gstin', 'password', 'email', 'address', 'area',
         'status', 'notes', 'lead_id', 'last_login_at', 'last_login_ip',
     ];
 
@@ -49,6 +49,11 @@ class Customer extends Authenticatable
     public function isActive(): bool
     {
         return $this->status === 'active';
+    }
+
+    public function isB2B(): bool
+    {
+        return ! empty($this->gstin);
     }
 
     public static function findByPhoneDigits(string $phone): ?self

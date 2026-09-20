@@ -16,14 +16,14 @@
 
         <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4">
             <a href="{{ route('admin.work-orders.index') }}"
-               class="bg-white rounded-2xl shadow-sm border p-5 transition {{ request('status') ? 'border-gray-100 hover:border-brand-200' : 'border-brand-300 ring-1 ring-brand-200' }}">
-                <p class="text-sm font-medium text-gray-500">All</p>
+               class="group bg-white rounded-2xl shadow-xs hover:shadow-md border p-5 transition-all duration-200 hover:-translate-y-0.5 {{ request('status') ? 'border-gray-100 hover:border-brand-200' : 'border-brand-300 ring-2 ring-brand-100' }}">
+                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">All</p>
                 <p class="text-3xl font-bold text-gray-900 mt-2">{{ \App\Models\WorkOrder::count() }}</p>
             </a>
             @foreach(\App\Models\WorkOrder::STATUSES as $key => $label)
                 <a href="{{ route('admin.work-orders.index', ['status' => $key]) }}"
-                   class="bg-white rounded-2xl shadow-sm border p-5 transition {{ request('status') === $key ? 'border-brand-300 ring-1 ring-brand-200' : 'border-gray-100 hover:border-brand-200' }}">
-                    <p class="text-sm font-medium text-gray-500">{{ $label }}</p>
+                   class="group bg-white rounded-2xl shadow-xs hover:shadow-md border p-5 transition-all duration-200 hover:-translate-y-0.5 {{ request('status') === $key ? 'border-brand-300 ring-2 ring-brand-100' : 'border-gray-100 hover:border-brand-200' }}">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">{{ $label }}</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">{{ $counts[$key] ?? 0 }}</p>
                 </a>
             @endforeach
@@ -43,19 +43,19 @@
             @endif
         </form>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-xs border border-gray-100 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left">
-                    <thead class="bg-gray-50 border-b border-gray-100">
+                    <thead class="bg-gray-50/80 border-b border-gray-100">
                         <tr>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Number</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Customer</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Service</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Agent</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Status</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Invoice</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Created</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600 text-right">Actions</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Order #</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Customer</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Service</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Assigned Agent</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Invoice</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Created</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">

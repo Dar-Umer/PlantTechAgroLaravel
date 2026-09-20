@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class InvoiceItem extends Model
 {
     protected $fillable = [
-        'invoice_id', 'product_id', 'name', 'unit', 'qty', 'rate', 'discount', 'gst_rate', 'total', 'sort_order',
+        'invoice_id', 'product_id', 'hsn_code', 'name', 'unit', 'qty', 'rate', 'discount', 'gst_rate', 'total', 'sort_order',
     ];
 
     protected function casts(): array

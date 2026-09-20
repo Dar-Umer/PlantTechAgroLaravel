@@ -208,8 +208,14 @@ class InvoiceController extends Controller
         $gstRate = (float) ($row['gst_rate'] ?? 0);
         $total = max(0, round($qty * $rate - $discount, 2));
 
+        $hsnCode = $row['hsn_code'] ?? null;
+        if (! $hsnCode && ! empty($row['product_id'])) {
+            $hsnCode = \App\Models\Product::where('id', $row['product_id'])->value('hsn_code');
+        }
+
         return $invoice->items()->create([
             'product_id' => $row['product_id'] ?? null,
+            'hsn_code' => $hsnCode,
             'name' => $row['name'],
             'unit' => $row['unit'] ?? null,
             'qty' => $qty,

@@ -17,7 +17,7 @@ class Product extends Model
     ];
 
     protected $fillable = [
-        'name', 'sku', 'description', 'image', 'unit', 'type', 'rate',
+        'name', 'sku', 'hsn_code', 'description', 'image', 'unit', 'type', 'rate',
         'mrp', 'selling_price', 'gst_rate',
         'stock_qty', 'low_stock_threshold', 'supplier_id', 'is_active',
     ];
@@ -57,6 +57,16 @@ class Product extends Model
     public function stageTemplates()
     {
         return $this->hasMany(ServiceStageProduct::class);
+    }
+
+    public function batches(): HasMany
+    {
+        return $this->hasMany(ProductBatch::class)->latest();
+    }
+
+    public function activeBatches(): HasMany
+    {
+        return $this->hasMany(ProductBatch::class)->where('current_qty', '>', 0)->orderBy('expiry_date');
     }
 
     public function isLowStock(): bool

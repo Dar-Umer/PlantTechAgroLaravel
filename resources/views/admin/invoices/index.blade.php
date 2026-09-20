@@ -13,17 +13,17 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                <p class="text-sm font-medium text-gray-500">Total Invoices</p>
+            <div class="bg-white rounded-2xl shadow-xs hover:shadow-md border border-gray-100 p-5 transition-all duration-200 hover:-translate-y-0.5">
+                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Invoices</p>
                 <p class="text-3xl font-bold text-gray-900 mt-2">{{ $totals['count'] }}</p>
             </div>
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                <p class="text-sm font-medium text-gray-500">Outstanding</p>
+            <div class="bg-gradient-to-br from-red-50/50 via-white to-red-50/20 rounded-2xl shadow-xs hover:shadow-md border border-red-100/80 p-5 transition-all duration-200 hover:-translate-y-0.5">
+                <p class="text-xs font-semibold uppercase tracking-wider text-red-700">Total Outstanding</p>
                 <p class="text-3xl font-bold text-red-600 mt-2">₹{{ number_format($totals['outstanding'], 0) }}</p>
             </div>
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                <p class="text-sm font-medium text-gray-500">Collected</p>
-                <p class="text-3xl font-bold text-green-600 mt-2">₹{{ number_format($totals['collected'], 0) }}</p>
+            <div class="bg-gradient-to-br from-emerald-50/50 via-white to-emerald-50/20 rounded-2xl shadow-xs hover:shadow-md border border-emerald-100/80 p-5 transition-all duration-200 hover:-translate-y-0.5">
+                <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700">Total Collected</p>
+                <p class="text-3xl font-bold text-emerald-600 mt-2">₹{{ number_format($totals['collected'], 0) }}</p>
             </div>
         </div>
 
@@ -46,18 +46,18 @@
             @endif
         </form>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-xs border border-gray-100 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left">
-                    <thead class="bg-gray-50 border-b border-gray-100">
+                    <thead class="bg-gray-50/80 border-b border-gray-100">
                         <tr>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Number</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Customer</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Date</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Grand Total</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Paid</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Status</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600 text-right">Actions</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Invoice #</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Customer</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Date</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Grand Total</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Paid</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">

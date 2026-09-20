@@ -153,6 +153,53 @@
                         @enderror
                     </div>
 
+                    {{-- Batch / Lot Information (Optional) --}}
+                    <div class="border-t border-gray-100 pt-4" x-show="type !== 'adjustment'" x-cloak>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-sm font-semibold text-gray-800">Batch / Lot Tracking (Optional)</span>
+                            <span class="text-xs text-gray-400">For chemicals, seeds, bundles</span>
+                        </div>
+
+                        {{-- When type === 'in': Create or enter new batch --}}
+                        <div x-show="type === 'in'" class="space-y-3">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Batch Number</label>
+                                    <input type="text" name="batch_number" value="{{ old('batch_number') }}"
+                                           placeholder="e.g. LOT-2026-09"
+                                           class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2 text-sm text-gray-900 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Mfg Date</label>
+                                    <input type="date" name="mfg_date" value="{{ old('mfg_date') }}"
+                                           class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2 text-sm text-gray-900 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Expiry Date</label>
+                                    <input type="date" name="expiry_date" value="{{ old('expiry_date') }}"
+                                           class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2 text-sm text-gray-900 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- When type === 'out': Select from existing active batches --}}
+                        <div x-show="type === 'out'" class="space-y-2">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Deduct from Batch</label>
+                            <template x-if="currentProduct && currentProduct.batches && currentProduct.batches.length > 0">
+                                <select name="batch_id"
+                                        class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                                    <option value="">Auto / General Stock (No batch specified)</option>
+                                    <template x-for="b in currentProduct.batches" :key="b.id">
+                                        <option :value="b.id" x-text="b.batch_number + ' (Avail: ' + b.current_qty + ' ' + currentProduct.unit + (b.expiry_date ? ', Exp: ' + b.expiry_date : '') + ')'"></option>
+                                    </template>
+                                </select>
+                            </template>
+                            <template x-if="!currentProduct || !currentProduct.batches || currentProduct.batches.length === 0">
+                                <p class="text-xs text-gray-400 italic">No tracked batches currently recorded for this product.</p>
+                            </template>
+                        </div>
+                    </div>
+
                     {{-- Note --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1.5">Note</label>
@@ -221,6 +268,12 @@
                     'rate' => (float) $p->rate,
                     'stock' => (float) $p->stock_qty,
                     'low' => (float) $p->low_stock_threshold,
+                    'batches' => $p->activeBatches->map(fn ($b) => [
+                        'id' => (string) $b->id,
+                        'batch_number' => $b->batch_number,
+                        'current_qty' => (float) $b->current_qty,
+                        'expiry_date' => $b->expiry_date?->format('d M Y'),
+                    ])->values()->all(),
                 ])->all()),
                 selected: '',
                 stock: null,

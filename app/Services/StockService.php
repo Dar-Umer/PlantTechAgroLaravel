@@ -6,6 +6,7 @@ use App\Mail\SupplierLowStockMail;
 use App\Models\Admin;
 use App\Models\Product;
 use App\Models\StockMovement;
+use App\Models\ProductBatch;
 use App\Support\Format;
 use App\Notifications\LowStockAlert;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +29,10 @@ class StockService
         ?int $supplierId = null,
         ?float $unitCost = null,
         ?int $userId = null,
+        ?int $batchId = null,
+        ?string $batchNumber = null,
+        ?string $mfgDate = null,
+        ?string $expiryDate = null,
     ): StockMovement {
         if (! in_array($type, ['in', 'out', 'adjustment'], true)) {
             throw new \InvalidArgumentException("Invalid stock movement type [{$type}].");
@@ -41,7 +46,7 @@ class StockService
             ]);
         }
 
-        return DB::transaction(function () use ($product, $type, $quantity, $reference, $note, $supplierId, $unitCost, $userId) {
+        return DB::transaction(function () use ($product, $type, $quantity, $reference, $note, $supplierId, $unitCost, $userId, $batchId, $batchNumber, $mfgDate, $expiryDate) {
             $wasLow = $product->isLowStock();
 
             $movementQty = match ($type) {
@@ -64,10 +69,66 @@ class StockService
                 ]);
             }
 
+            $resolvedBatchId = null;
+            if ($batchId) {
+                $batch = ProductBatch::where('product_id', $product->id)->find($batchId);
+                if ($batch) {
+                    if ($type === 'in') {
+                        $batch->initial_qty = round((float) $batch->initial_qty + $quantity, 3);
+                        $batch->current_qty = round((float) $batch->current_qty + $quantity, 3);
+                        $batch->refreshStatus();
+                    } elseif ($type === 'out') {
+                        if ((float) $batch->current_qty < $quantity) {
+                            throw ValidationException::withMessages([
+                                'batch_id' => "Insufficient stock in batch {$batch->batch_number}. Available: {$batch->current_qty} {$product->unit}.",
+                            ]);
+                        }
+                        $batch->current_qty = round((float) $batch->current_qty - $quantity, 3);
+                        $batch->refreshStatus();
+                    }
+                    $resolvedBatchId = $batch->id;
+                }
+            } elseif (! empty($batchNumber)) {
+                $batchNumber = trim($batchNumber);
+                $batch = ProductBatch::firstOrNew([
+                    'product_id' => $product->id,
+                    'batch_number' => $batchNumber,
+                ]);
+
+                if ($type === 'in') {
+                    $batch->initial_qty = round(((float) $batch->initial_qty) + $quantity, 3);
+                    $batch->current_qty = round(((float) $batch->current_qty) + $quantity, 3);
+                    if ($mfgDate) {
+                        $batch->mfg_date = $mfgDate;
+                    }
+                    if ($expiryDate) {
+                        $batch->expiry_date = $expiryDate;
+                    }
+                    if ($supplierId) {
+                        $batch->supplier_id = $supplierId;
+                    }
+                    if ($unitCost) {
+                        $batch->unit_cost = $unitCost;
+                    }
+                    $batch->refreshStatus();
+                    $resolvedBatchId = $batch->id;
+                } elseif ($type === 'out' && $batch->exists) {
+                    if ((float) $batch->current_qty < $quantity) {
+                        throw ValidationException::withMessages([
+                            'batch_number' => "Insufficient stock in batch {$batch->batch_number}. Available: {$batch->current_qty} {$product->unit}.",
+                        ]);
+                    }
+                    $batch->current_qty = round((float) $batch->current_qty - $quantity, 3);
+                    $batch->refreshStatus();
+                    $resolvedBatchId = $batch->id;
+                }
+            }
+
             $product->forceFill(['stock_qty' => $newStock])->save();
 
             $movement = StockMovement::create([
                 'product_id' => $product->id,
+                'batch_id' => $resolvedBatchId,
                 'type' => $type,
                 'quantity' => $movementQty,
                 'stock_after' => $newStock,

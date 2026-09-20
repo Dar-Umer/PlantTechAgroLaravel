@@ -24,6 +24,8 @@ use App\Http\Controllers\Admin\ServiceStageController;
 use App\Http\Controllers\Admin\ServiceStageProductController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\StaffController;
+use App\Http\Controllers\Admin\ProductBatchController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\StockMovementController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\TestimonialController;
@@ -108,7 +110,6 @@ Route::middleware('admin')->group(function () {
     Route::post('leads/{lead}/work-order', [LeadController::class, 'createWorkOrder'])->name('admin.leads.work-order');
     Route::delete('leads/{lead}', [LeadController::class, 'destroy'])->name('admin.leads.destroy');
 
-    // Customers
     Route::get('customers', [CustomerController::class, 'index'])->name('admin.customers.index');
     Route::get('customers/create', [CustomerController::class, 'create'])->name('admin.customers.create');
     Route::post('customers', [CustomerController::class, 'store'])->name('admin.customers.store');
@@ -116,6 +117,9 @@ Route::middleware('admin')->group(function () {
     Route::get('customers/{customer}/edit', [CustomerController::class, 'edit'])->name('admin.customers.edit');
     Route::put('customers/{customer}', [CustomerController::class, 'update'])->name('admin.customers.update');
     Route::delete('customers/{customer}', [CustomerController::class, 'destroy'])->name('admin.customers.destroy');
+    Route::get('customers/{customer}/ledger', [CustomerController::class, 'ledger'])->name('admin.customers.ledger');
+    Route::get('customers/{customer}/ledger/pdf', [CustomerController::class, 'ledgerPdf'])->name('admin.customers.ledger.pdf');
+    Route::get('customers/{customer}/ledger/csv', [CustomerController::class, 'ledgerCsv'])->name('admin.customers.ledger.csv');
 
     // Inventory
     Route::resource('products', ProductController::class)->except('show')->names('admin.products');
@@ -126,6 +130,14 @@ Route::middleware('admin')->group(function () {
     Route::get('stock-movements/create', [StockMovementController::class, 'create'])->name('admin.stock-movements.create');
     Route::post('stock-movements', [StockMovementController::class, 'store'])->name('admin.stock-movements.store');
     Route::get('stock-movements/{movement}', [StockMovementController::class, 'show'])->name('admin.stock-movements.show');
+
+    // Batch & Expiry Tracking
+    Route::get('product-batches', [ProductBatchController::class, 'index'])->name('admin.product-batches.index');
+    Route::get('product-batches/export', [ProductBatchController::class, 'export'])->name('admin.product-batches.export');
+
+    // Reports
+    Route::get('reports/gst', [ReportController::class, 'gstReport'])->name('admin.reports.gst');
+    Route::get('reports/gst/export', [ReportController::class, 'exportGst'])->name('admin.reports.gst.export');
 
     // Work orders
     Route::get('work-orders', [WorkOrderController::class, 'index'])->name('admin.work-orders.index');

@@ -46,6 +46,7 @@ class StockMovementController extends Controller
     public function create(Request $request)
     {
         $products = Product::active()
+            ->with('activeBatches')
             ->orderBy('name')
             ->get(['id', 'name', 'sku', 'unit', 'rate', 'stock_qty', 'low_stock_threshold']);
         $suppliers = Supplier::active()->orderBy('name')->get(['id', 'name']);
@@ -63,6 +64,10 @@ class StockMovementController extends Controller
             'quantity_final' => ['nullable', 'numeric', 'min:0'],
             'unit_cost' => ['nullable', 'numeric', 'min:0'],
             'supplier_id' => ['nullable', 'exists:suppliers,id'],
+            'batch_id' => ['nullable', 'exists:product_batches,id'],
+            'batch_number' => ['nullable', 'string', 'max:64'],
+            'mfg_date' => ['nullable', 'date'],
+            'expiry_date' => ['nullable', 'date', 'after_or_equal:mfg_date'],
             'note' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -91,6 +96,10 @@ class StockMovementController extends Controller
             $data['type'] === 'in' ? $data['supplier_id'] : null,
             $data['type'] === 'in' ? $data['unit_cost'] : null,
             $request->user('admin')->id ?? null,
+            $data['batch_id'] ?? null,
+            $data['batch_number'] ?? null,
+            $data['mfg_date'] ?? null,
+            $data['expiry_date'] ?? null,
         );
 
         return redirect()->route('admin.stock-movements.index')->with('success', 'Stock updated. '.$product->name.' is now at '.Format::qty($product->refresh()->stock_qty).' '.$product->unit.'.');

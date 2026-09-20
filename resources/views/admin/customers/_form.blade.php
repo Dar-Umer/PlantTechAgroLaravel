@@ -5,6 +5,7 @@
         <x-admin.input name="name" label="Full Name" :value="old('name', $customer->name ?? '')" required />
         <x-admin.input name="phone" label="Phone Number (Login ID)" :value="old('phone', $customer->phone ?? '')" required helptext="Unique. Used as the app login ID." />
         <x-admin.input name="email" label="Email (Optional)" type="email" :value="old('email', $customer->email ?? '')" />
+        <x-admin.input name="gstin" label="GSTIN (Optional)" :value="old('gstin', $customer->gstin ?? '')" placeholder="e.g. 01AAAAA0000A1Z5" helptext="15-character GST identification number for B2B billing." />
         <x-admin.input name="area" label="Area / Locality" :value="old('area', $customer->area ?? '')" placeholder="e.g. Pulwama" />
     </div>
     <div class="mt-5">

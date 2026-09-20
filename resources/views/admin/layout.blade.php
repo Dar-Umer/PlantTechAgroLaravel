@@ -88,7 +88,21 @@
     @endphp
 </head>
 <body class="bg-gray-100 font-sans antialiased">
-    <div x-data="{ sidebarOpen: false }" class="flex h-screen overflow-hidden">
+    <div x-data="{
+            sidebarOpen: false,
+            commandPaletteOpen: false,
+            init() {
+                window.addEventListener('keydown', (e) => {
+                    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+                        e.preventDefault();
+                        this.commandPaletteOpen = !this.commandPaletteOpen;
+                    } else if (e.key === 'Escape' && this.commandPaletteOpen) {
+                        this.commandPaletteOpen = false;
+                    }
+                });
+            }
+         }"
+         class="flex h-screen overflow-hidden">
 
         <!-- Mobile Overlay -->
         <div x-show="sidebarOpen" x-cloak
@@ -190,6 +204,14 @@
                                 ['route' => 'admin.products.index', 'label' => 'Products'],
                                 ['route' => 'admin.suppliers.index', 'label' => 'Suppliers'],
                                 ['route' => 'admin.stock-movements.index', 'label' => 'Stock Movements'],
+                                ['route' => 'admin.product-batches.index', 'label' => 'Batches & Expiry'],
+                            ],
+                        ],
+                        [
+                            'label' => 'Reports',
+                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>',
+                            'items' => [
+                                ['route' => 'admin.reports.gst', 'label' => 'GST & Taxes'],
                             ],
                         ],
                         [
@@ -273,17 +295,74 @@
 
             <!-- Top Navbar -->
             <header class="{{ $topbarBg }} shadow-sm border-b border-gray-200 h-16 flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
-                <button @click="sidebarOpen = true" class="lg:hidden text-gray-500 hover:text-gray-700">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                    </svg>
-                </button>
+                <div class="flex items-center gap-4">
+                    <button @click="sidebarOpen = true" class="lg:hidden text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
 
-                <h1 class="text-lg font-semibold text-gray-800 hidden lg:block">
-                    @yield('page-title', 'Admin Panel')
-                </h1>
+                    <h1 class="text-lg font-bold text-gray-800 hidden xl:block">
+                        @yield('page-title', 'Admin Panel')
+                    </h1>
 
-                <div class="flex items-center space-x-4">
+                    {{-- Quick Search (Ctrl+K) Trigger --}}
+                    <button @click="commandPaletteOpen = true"
+                            type="button"
+                            class="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs text-gray-400 bg-gray-50 hover:bg-gray-100 hover:text-gray-700 border border-gray-200 rounded-xl transition shadow-xs">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+                        </svg>
+                        <span>Search actions or pages...</span>
+                        <kbd class="hidden md:inline-block px-1.5 py-0.5 text-[10px] font-semibold text-gray-500 bg-white border border-gray-200 rounded shadow-2xs font-mono">⌘K</kbd>
+                    </button>
+                </div>
+
+                <div class="flex items-center space-x-3">
+                    {{-- Quick Create Dropdown --}}
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            <span class="hidden sm:inline">Create</span>
+                            <svg class="w-3 h-3 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+
+                        <div x-show="open" @click.away="open = false" x-cloak
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             class="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl z-50 border border-gray-100 py-1.5 divide-y divide-gray-50">
+                            <div class="py-1">
+                                <a href="{{ route('admin.work-orders.create') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition">
+                                    <span class="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-bold">WO</span>
+                                    New Work Order
+                                </a>
+                                <a href="{{ route('admin.invoices.create') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition">
+                                    <span class="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-bold">INV</span>
+                                    New Invoice
+                                </a>
+                                <a href="{{ route('admin.customers.create') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition">
+                                    <span class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-bold">CUST</span>
+                                    Add Customer
+                                </a>
+                            </div>
+                            <div class="py-1">
+                                <a href="{{ route('admin.stock-movements.create') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition">
+                                    <span class="w-6 h-6 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xs font-bold">STK</span>
+                                    Stock In / Movement
+                                </a>
+                                <a href="{{ route('admin.products.create') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition">
+                                    <span class="w-6 h-6 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center text-xs font-bold">PRD</span>
+                                    New Product
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                     {{-- Farm weather --}}
                     @if(!empty($headerWeather ?? null))
                         @php
@@ -432,22 +511,71 @@
             </header>
 
             <!-- Page Content -->
-            <main class="flex-1 overflow-y-auto p-4 lg:p-6">
+            <main class="flex-1 overflow-y-auto p-4 lg:p-6 relative">
+                {{-- Floating Toast Notifications (Auto-dismissing) --}}
                 @if(session('success'))
-                    <div class="mb-4 p-4 bg-green-100 border border-green-300 text-green-800 rounded-lg">
-                        {{ session('success') }}
+                    <div x-data="{ show: true }"
+                         x-show="show"
+                         x-init="setTimeout(() => show = false, 5000)"
+                         x-transition:enter="transition ease-out duration-300 transform"
+                         x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave="transition ease-in duration-200 transform"
+                         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                         class="fixed bottom-5 right-5 z-50 flex items-center gap-3 bg-gray-900 text-white px-4 py-3 rounded-2xl shadow-2xl border border-gray-800 max-w-md">
+                        <div class="w-7 h-7 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                        <div class="text-xs font-medium flex-1">
+                            {{ session('success') }}
+                        </div>
+                        <button @click="show = false" class="text-gray-400 hover:text-white transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
                     </div>
                 @endif
 
                 @if(session('error'))
-                    <div class="mb-4 p-4 bg-red-100 border border-red-300 text-red-800 rounded-lg">
-                        {{ session('error') }}
+                    <div x-data="{ show: true }"
+                         x-show="show"
+                         x-init="setTimeout(() => show = false, 7000)"
+                         x-transition:enter="transition ease-out duration-300 transform"
+                         x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave="transition ease-in duration-200 transform"
+                         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                         class="fixed bottom-5 right-5 z-50 flex items-center gap-3 bg-gray-900 text-white px-4 py-3 rounded-2xl shadow-2xl border border-rose-900/50 max-w-md">
+                        <div class="w-7 h-7 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                        </div>
+                        <div class="text-xs font-medium flex-1">
+                            {{ session('error') }}
+                        </div>
+                        <button @click="show = false" class="text-gray-400 hover:text-white transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
                     </div>
                 @endif
 
                 @if($errors->any())
-                    <div class="mb-4 p-4 bg-red-100 border border-red-300 text-red-800 rounded-lg">
-                        <ul class="list-disc list-inside">
+                    <div class="mb-5 p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl shadow-xs">
+                        <div class="flex items-center gap-2 mb-2 font-semibold text-sm text-rose-900">
+                            <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Please correct the following errors:
+                        </div>
+                        <ul class="list-disc list-inside text-xs space-y-1 text-rose-700">
                             @foreach($errors->all() as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
@@ -595,6 +723,94 @@
             };
         }
     </script>
+
+    {{-- Global Command Palette (Cmd/Ctrl + K) --}}
+    <div x-show="commandPaletteOpen"
+         x-cloak
+         class="fixed inset-0 z-[120] flex items-start justify-center pt-16 px-4"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+
+        <!-- Backdrop -->
+        <div @click="commandPaletteOpen = false" class="fixed inset-0 bg-gray-900/60 backdrop-blur-xs"></div>
+
+        <!-- Palette Modal Box -->
+        <div x-data="{
+                search: '',
+                items: [
+                    { title: 'Dashboard', category: 'Navigation', url: '{{ route('admin.dashboard') }}', icon: 'M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25' },
+                    { title: 'New Work Order', category: 'Actions', url: '{{ route('admin.work-orders.create') }}', icon: 'M12 4v16m8-8H4' },
+                    { title: 'All Work Orders', category: 'Operations', url: '{{ route('admin.work-orders.index') }}', icon: 'M9.75 9.75h4.5m-4.5 3h4.5m-4.5 3h4.5m-5.625 3.75h6.75a4.5 4.5 0 004.5-4.5v-3a4.5 4.5 0 00-4.5-4.5H16.5a3 3 0 00-3-3h-3a3 3 0 00-3 3H7.125a4.5 4.5 0 00-4.5 4.5v3a4.5 4.5 0 004.5 4.5h6.75M12 3h.008v.008H12V3z' },
+                    { title: 'New Invoice', category: 'Actions', url: '{{ route('admin.invoices.create') }}', icon: 'M12 4v16m8-8H4' },
+                    { title: 'Invoices List', category: 'Finance', url: '{{ route('admin.invoices.index') }}', icon: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75z' },
+                    { title: 'GST & Tax Reports (GSTR-1)', category: 'Finance', url: '{{ route('admin.reports.gst') }}', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+                    { title: 'Customers Directory', category: 'CRM', url: '{{ route('admin.customers.index') }}', icon: 'M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z' },
+                    { title: 'Leads & Enquiries', category: 'CRM', url: '{{ route('admin.leads.index') }}', icon: 'M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75' },
+                    { title: 'Products & Inventory', category: 'Inventory', url: '{{ route('admin.products.index') }}', icon: 'M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9' },
+                    { title: 'Batches & Expiry Tracking', category: 'Inventory', url: '{{ route('admin.product-batches.index') }}', icon: 'M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z' },
+                    { title: 'Stock Movement (Stock In/Out)', category: 'Inventory', url: '{{ route('admin.stock-movements.create') }}', icon: 'M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5' },
+                    { title: 'Suppliers Management', category: 'Inventory', url: '{{ route('admin.suppliers.index') }}', icon: 'M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.948c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h2.25' },
+                    { title: 'General & Weather Settings', category: 'Settings', url: '{{ route('admin.settings.index') }}', icon: 'M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z' },
+                    { title: 'Staff Accounts & Roles', category: 'Settings', url: '{{ route('admin.staff.index') }}', icon: 'M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z' }
+                ],
+                get filtered() {
+                    if (!this.search.trim()) return this.items;
+                    const q = this.search.toLowerCase();
+                    return this.items.filter(i => i.title.toLowerCase().includes(q) || i.category.toLowerCase().includes(q));
+                }
+             }"
+             x-trap="commandPaletteOpen"
+             class="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 scale-95 -translate-y-4"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0">
+
+            <!-- Search Input Header -->
+            <div class="relative flex items-center px-5 py-4 border-b border-gray-100">
+                <svg class="w-5 h-5 text-gray-400 mr-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+                </svg>
+                <input x-ref="paletteInput"
+                       x-model="search"
+                       type="text"
+                       placeholder="Jump to a page or action..."
+                       class="w-full text-base font-medium text-gray-900 placeholder-gray-400 bg-transparent border-none focus:outline-none focus:ring-0">
+                <button @click="commandPaletteOpen = false" class="text-xs px-2 py-1 font-mono text-gray-400 hover:text-gray-600 bg-gray-100 rounded-lg">ESC</button>
+            </div>
+
+            <!-- List Results -->
+            <div class="max-h-80 overflow-y-auto p-2 divide-y divide-gray-50">
+                <template x-for="item in filtered" :key="item.url">
+                    <a :href="item.url"
+                       class="flex items-center justify-between px-4 py-2.5 rounded-2xl hover:bg-emerald-50/80 transition group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-xl bg-gray-100 group-hover:bg-emerald-100 text-gray-500 group-hover:text-emerald-700 flex items-center justify-center transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon"/>
+                                </svg>
+                            </div>
+                            <span class="text-sm font-medium text-gray-800 group-hover:text-emerald-900" x-text="item.title"></span>
+                        </div>
+                        <span class="text-[11px] font-medium text-gray-400 group-hover:text-emerald-600 px-2 py-0.5 rounded-md bg-gray-50 group-hover:bg-emerald-100/50" x-text="item.category"></span>
+                    </a>
+                </template>
+
+                <div x-show="filtered.length === 0" class="py-10 text-center text-sm text-gray-400">
+                    No results found for "<span x-text="search"></span>"
+                </div>
+            </div>
+
+            <!-- Footer Hint -->
+            <div class="px-5 py-2.5 bg-gray-50/80 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-400">
+                <span>Navigation &amp; Quick Command Palette</span>
+                <span class="font-mono">Press ESC to exit</span>
+            </div>
+        </div>
+    </div>
 
     @stack('scripts')
 </body>

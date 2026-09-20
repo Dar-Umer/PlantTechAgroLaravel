@@ -134,6 +134,7 @@ class ProductController extends Controller
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'sku' => $skuRule,
+            'hsn_code' => ['nullable', 'string', 'max:16'],
             'description' => ['nullable', 'string'],
             'unit' => ['required', 'string', 'max:20'],
             'type' => ['nullable', Rule::in(array_keys(Product::TYPES))],

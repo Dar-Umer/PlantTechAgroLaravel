@@ -16,7 +16,7 @@ class StockMovement extends Model
     public const MANUAL_REF_PREFIX = 'MV-';
 
     protected $fillable = [
-        'product_id', 'type', 'quantity', 'stock_after', 'unit_cost',
+        'product_id', 'batch_id', 'type', 'quantity', 'stock_after', 'unit_cost',
         'supplier_id', 'reference', 'note', 'created_by',
     ];
 
@@ -51,6 +51,11 @@ class StockMovement extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function batch(): BelongsTo
+    {
+        return $this->belongsTo(ProductBatch::class, 'batch_id');
     }
 
     public function supplier(): BelongsTo

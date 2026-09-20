@@ -26,6 +26,7 @@ Route::middleware(['auth:sanctum', \App\Http\Middleware\EnsureCustomerIsActive::
     Route::get('me', [ProfileController::class, 'show']);
     Route::put('me', [ProfileController::class, 'update']);
     Route::put('me/password', [ProfileController::class, 'changePassword']);
+    Route::get('me/ledger', [ProfileController::class, 'ledger']);
 
     Route::get('dashboard', [DashboardController::class, 'index']);
 

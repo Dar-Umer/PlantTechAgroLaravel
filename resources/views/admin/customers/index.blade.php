@@ -32,37 +32,58 @@
             @endif
         </form>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-xs border border-gray-100 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left">
-                    <thead class="bg-gray-50 border-b border-gray-100">
+                    <thead class="bg-gray-50/80 border-b border-gray-100">
                         <tr>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Name</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Phone</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Area</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Status</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600">Added</th>
-                            <th class="px-6 py-3 font-semibold text-gray-600 text-right">Actions</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Customer</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Phone</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Area</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Joined</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @forelse($customers as $customer)
-                            <tr class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 font-medium text-gray-900">
-                                    <a href="{{ route('admin.customers.show', $customer) }}" class="hover:text-brand-600">{{ $customer->name }}</a>
+                            <tr class="hover:bg-gray-50/70 transition group">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-xs flex-shrink-0 group-hover:scale-105 transition-transform">
+                                            {{ strtoupper(substr($customer->name, 0, 1)) }}
+                                        </div>
+                                        <div class="min-w-0">
+                                            <a href="{{ route('admin.customers.show', $customer) }}" class="font-semibold text-gray-900 group-hover:text-brand-600 transition-colors">
+                                                {{ $customer->name }}
+                                            </a>
+                                            @if($customer->gstin)
+                                                <span class="block text-[11px] font-mono text-emerald-600 font-medium mt-0.5">GST: {{ $customer->gstin }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
                                 </td>
-                                <td class="px-6 py-4 text-gray-600">{{ $customer->phone }}</td>
+                                <td class="px-6 py-4 text-gray-600 font-medium">{{ $customer->phone }}</td>
                                 <td class="px-6 py-4 text-gray-600">{{ $customer->area ?: '—' }}</td>
                                 <td class="px-6 py-4">
                                     @if($customer->status === 'active')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">Active</span>
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                            Active
+                                        </span>
                                     @else
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700">Inactive</span>
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                            Inactive
+                                        </span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-gray-500 text-xs">{{ $customer->created_at->format('d M Y') }}</td>
                                 <td class="px-6 py-4 text-right">
-                                    <div class="flex items-center justify-end gap-2">
+                                    <div class="flex items-center justify-end gap-1.5">
+                                        <x-admin.button href="{{ route('admin.customers.ledger', $customer) }}" variant="secondary" size="sm" title="Customer Ledger Statement">
+                                            Ledger
+                                        </x-admin.button>
                                         <x-admin.button href="{{ route('admin.customers.edit', $customer) }}" variant="secondary" size="sm">Edit</x-admin.button>
                                         <form action="{{ route('admin.customers.destroy', $customer) }}" method="POST" onsubmit="return confirm('Delete this customer? This cannot be undone.')">
                                             @csrf

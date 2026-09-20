@@ -8,17 +8,17 @@
 ])
 
 @php
-    $base = 'inline-flex items-center justify-center font-semibold transition text-sm rounded-xl shadow-sm';
+    $base = 'inline-flex items-center justify-center font-medium transition-all duration-150 text-sm rounded-xl shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed';
     $sizes = [
-        'sm' => 'px-3.5 py-1.5 text-xs',
-        'default' => 'px-5 py-2.5',
-        'lg' => 'px-6 py-3',
+        'sm' => 'px-3 py-1.5 text-xs',
+        'default' => 'px-4 py-2.5',
+        'lg' => 'px-6 py-3 text-base',
     ];
     $variants = [
-        'primary' => 'bg-brand-600 text-white hover:bg-brand-700 focus:ring-2 focus:ring-brand-200',
-        'secondary' => 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-2 focus:ring-gray-200',
-        'danger' => 'bg-red-600 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-200',
-        'ghost' => 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
+        'primary' => 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow shadow-emerald-600/20 focus:ring-2 focus:ring-emerald-500/20',
+        'secondary' => 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 focus:ring-2 focus:ring-gray-200',
+        'danger' => 'bg-rose-600 text-white hover:bg-rose-700 hover:shadow shadow-rose-600/20 focus:ring-2 focus:ring-rose-500/20',
+        'ghost' => 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/80 shadow-none',
     ];
     $class = trim($base . ' ' . ($sizes[$size] ?? $sizes['default']) . ' ' . ($variants[$variant] ?? $variants['primary']) . ' ' . $attributes->get('class', ''));
 @endphp

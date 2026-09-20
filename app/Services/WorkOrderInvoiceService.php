@@ -22,7 +22,7 @@ class WorkOrderInvoiceService
         }
 
         $rows = WorkOrderStageProduct::whereHas('stage', fn ($q) => $q->where('work_order_id', $workOrder->id))
-            ->with('stage')
+            ->with(['stage', 'product:id,hsn_code'])
             ->get()
             ->sortBy(fn ($r) => $r->stage->sort_order)
             ->values();
@@ -46,6 +46,7 @@ class WorkOrderInvoiceService
             foreach ($rows as $index => $row) {
                 $invoice->items()->create([
                     'product_id' => $row->product_id,
+                    'hsn_code' => $row->product?->hsn_code,
                     'name' => $row->name,
                     'unit' => $row->unit,
                     'qty' => (float) $row->quantity,
