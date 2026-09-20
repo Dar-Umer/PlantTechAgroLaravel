@@ -480,10 +480,8 @@
 
                     <div x-data="{ open: false }" class="relative">
                         <button @click="open = !open" class="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 focus:outline-none">
-                            <div class="w-8 h-8 bg-brand-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                                {{ substr(Auth::guard('admin')->user()->name ?? 'A', 0, 1) }}
-                            </div>
-                            <span class="hidden md:inline">{{ Auth::guard('admin')->user()->name ?? 'Admin' }}</span>
+                            <x-admin.avatar :name="Auth::guard('admin')->user()->name ?? 'Admin'" size="sm" />
+                            <span class="hidden md:inline font-medium text-gray-800">{{ Auth::guard('admin')->user()->name ?? 'Admin' }}</span>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                             </svg>

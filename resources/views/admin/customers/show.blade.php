@@ -18,14 +18,36 @@
     $invLabels = \App\Models\Invoice::STATUSES;
 @endphp
     <div class="space-y-6">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <h2 class="text-2xl font-bold text-gray-900">{{ $customer->name }}</h2>
-                @if($customer->status === 'active')
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">Active</span>
-                @else
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700">Inactive</span>
-                @endif
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <x-admin.avatar :name="$customer->name" size="lg" :status="$customer->status" class="shadow-xs" />
+                <div>
+                    <div class="flex items-center gap-3">
+                        <h2 class="text-2xl font-bold text-gray-900">{{ $customer->name }}</h2>
+                        @if($customer->status === 'active')
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                Active
+                            </span>
+                        @else
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                Inactive
+                            </span>
+                        @endif
+                    </div>
+                    <div class="flex items-center gap-3 text-xs text-gray-400 mt-1">
+                        <span>Phone: {{ $customer->phone }}</span>
+                        @if($customer->gstin)
+                            <span>·</span>
+                            <span class="font-mono text-emerald-600 font-semibold">GSTIN: {{ $customer->gstin }}</span>
+                        @endif
+                        @if($customer->area)
+                            <span>·</span>
+                            <span>{{ $customer->area }}</span>
+                        @endif
+                    </div>
+                </div>
             </div>
             <div class="flex items-center gap-2">
                 <x-admin.button href="{{ route('admin.customers.index') }}" variant="secondary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>'>Back</x-admin.button>

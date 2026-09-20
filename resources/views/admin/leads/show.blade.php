@@ -44,9 +44,7 @@
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div class="flex items-center justify-between flex-wrap gap-4">
                 <div class="flex items-center gap-4">
-                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white font-bold text-xl flex items-center justify-center flex-shrink-0 uppercase tracking-wide shadow-sm">
-                        {{ strtoupper(substr($lead->name, 0, 1)) }}
-                    </div>
+                    <x-admin.avatar :name="$lead->name" size="lg" class="shadow-xs" />
                     <div class="min-w-0">
                         <div class="flex items-center gap-2 flex-wrap">
                             <h2 class="text-2xl font-bold text-gray-900">{{ $lead->name }}</h2>

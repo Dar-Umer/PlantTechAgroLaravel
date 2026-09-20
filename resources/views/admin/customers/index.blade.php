@@ -50,9 +50,7 @@
                             <tr class="hover:bg-gray-50/70 transition group">
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-xs flex-shrink-0 group-hover:scale-105 transition-transform">
-                                            {{ strtoupper(substr($customer->name, 0, 1)) }}
-                                        </div>
+                                        <x-admin.avatar :name="$customer->name" size="sm" :status="$customer->status" class="group-hover:scale-105 transition-transform" />
                                         <div class="min-w-0">
                                             <a href="{{ route('admin.customers.show', $customer) }}" class="font-semibold text-gray-900 group-hover:text-brand-600 transition-colors">
                                                 {{ $customer->name }}

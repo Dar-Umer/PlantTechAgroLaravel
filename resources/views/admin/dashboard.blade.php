@@ -188,9 +188,7 @@
                         @foreach($recentLeads as $lead)
                             <a href="{{ route('admin.leads.show', $lead) }}" class="flex items-center justify-between py-3 hover:bg-gray-50/80 -mx-2 px-2 rounded-xl transition group">
                                 <div class="flex items-center gap-3 min-w-0">
-                                    <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-xs flex-shrink-0 group-hover:scale-105 transition-transform">
-                                        {{ strtoupper(substr($lead->name, 0, 1)) }}
-                                    </div>
+                                    <x-admin.avatar :name="$lead->name" size="sm" class="group-hover:scale-105 transition-transform" />
                                     <div class="min-w-0">
                                         <p class="text-sm font-semibold text-gray-800 truncate group-hover:text-brand-700 transition-colors">{{ $lead->name }}</p>
                                         <p class="text-xs text-gray-400">{{ $lead->phone }}</p>

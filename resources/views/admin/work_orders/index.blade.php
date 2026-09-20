@@ -77,10 +77,8 @@
                                 <td class="px-6 py-4">
                                     @if($workOrder->agent)
                                         <div class="flex items-center gap-2">
-                                            <div class="w-7 h-7 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
-                                                {{ strtoupper(substr($workOrder->agent->name, 0, 1)) }}
-                                            </div>
-                                            <span class="text-gray-600 text-xs">{{ $workOrder->agent->name }}</span>
+                                            <x-admin.avatar :name="$workOrder->agent->name" size="xs" />
+                                            <span class="text-gray-700 text-xs font-medium">{{ $workOrder->agent->name }}</span>
                                         </div>
                                     @else
                                         <span class="text-gray-400 text-xs">—</span>
