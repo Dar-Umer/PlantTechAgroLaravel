@@ -33,8 +33,12 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('admin.password.email') }}" class="space-y-5" x-data="{ loading: false }">
+            <form id="admin-password-form" method="POST" action="{{ route('admin.password.email') }}" class="space-y-5" x-data="{ loading: false }">
                 @csrf
+
+                @if(\App\Support\Recaptcha::enabled())
+                    <input type="hidden" name="g-recaptcha-response" id="admin-password-token">
+                @endif
 
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
@@ -69,5 +73,21 @@
             </a>
         </p>
     </div>
+    @if(\App\Support\Recaptcha::enabled())
+        <script src="https://www.google.com/recaptcha/api.js?render={{ config('apis.recaptcha_site_key') }}"></script>
+        <script>
+            document.getElementById('admin-password-form').addEventListener('submit', function (e) {
+                var tokenInput = document.getElementById('admin-password-token');
+                if (tokenInput.value) return;
+                e.preventDefault();
+                grecaptcha.ready(function () {
+                    grecaptcha.execute('{{ config('apis.recaptcha_site_key') }}', {action: 'admin_password'}).then(function (token) {
+                        tokenInput.value = token;
+                        e.target.submit();
+                    });
+                });
+            });
+        </script>
+    @endif
 </body>
 </html>

@@ -12,7 +12,10 @@ return [
         'http://127.0.0.1:8000',
     ]))),
 
-    'allowed_origins_patterns' => [],
+    // Local dev clients (Flutter web on any localhost port, e.g. :5555).
+    'allowed_origins_patterns' => [
+        '#^https?://(localhost|127\.0\.0\.1)(:\d+)?$#',
+    ],
 
     'allowed_headers' => ['Content-Type', 'X-Requested-With', 'Authorization', 'Accept', 'X-CSRF-TOKEN'],
 

@@ -65,7 +65,7 @@ class RecaptchaTest extends TestCase
     public function test_lead_is_accepted_when_recaptcha_passes(): void
     {
         $this->enableRecaptcha();
-        Http::fake(['www.google.com/*' => Http::response(['success' => true, 'score' => 0.9], 200)]);
+        Http::fake(['www.google.com/*' => Http::response(['success' => true, 'score' => 0.9, 'action' => 'lead', 'hostname' => 'localhost'], 200)]);
 
         $service = Service::factory()->create();
 
@@ -132,7 +132,7 @@ class RecaptchaTest extends TestCase
     {
         $this->seed([RolesAndPermissionsSeeder::class, AdminSeeder::class]);
         $this->enableRecaptcha();
-        Http::fake(['www.google.com/*' => Http::response(['success' => true, 'score' => 0.9], 200)]);
+        Http::fake(['www.google.com/*' => Http::response(['success' => true, 'score' => 0.9, 'action' => 'admin_login', 'hostname' => 'localhost'], 200)]);
 
         $this->post('/admin/login', [
             'email' => 'admin@pta.com',

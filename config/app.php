@@ -39,7 +39,9 @@ return [
     |
     */
 
-    'debug' => (bool) env('APP_DEBUG', false),
+    // Fail-safe: debug pages (stack traces, env dumps) can never render in
+    // production, even if APP_DEBUG=true is left over in the environment.
+    'debug' => (bool) env('APP_DEBUG', false) && env('APP_ENV', 'production') !== 'production',
 
     /*
     |--------------------------------------------------------------------------

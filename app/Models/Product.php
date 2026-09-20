@@ -11,8 +11,14 @@ class Product extends Model
 {
     use HasFactory;
 
+    public const TYPES = [
+        'material' => 'Service Material',
+        'sellable' => 'Sellable',
+    ];
+
     protected $fillable = [
-        'name', 'sku', 'description', 'image', 'unit', 'rate', 'gst_rate',
+        'name', 'sku', 'description', 'image', 'unit', 'type', 'rate',
+        'mrp', 'selling_price', 'gst_rate',
         'stock_qty', 'low_stock_threshold', 'supplier_id', 'is_active',
     ];
 
@@ -20,11 +26,22 @@ class Product extends Model
     {
         return [
             'rate' => 'decimal:2',
+            'mrp' => 'decimal:2',
+            'selling_price' => 'decimal:2',
             'gst_rate' => 'decimal:2',
             'stock_qty' => 'decimal:3',
             'low_stock_threshold' => 'decimal:3',
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * Storefront price: explicit selling price, falling back to the
+     * billing rate. Work orders/invoices always use `rate` directly.
+     */
+    public function salePrice(): float
+    {
+        return (float) ($this->selling_price ?? $this->rate);
     }
 
     public function supplier(): BelongsTo
@@ -51,5 +68,15 @@ class Product extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    public function scopeMaterial($query)
+    {
+        return $query->where('type', 'material');
+    }
+
+    public function scopeSellable($query)
+    {
+        return $query->where('type', 'sellable');
     }
 }

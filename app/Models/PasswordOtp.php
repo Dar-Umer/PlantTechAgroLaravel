@@ -7,7 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class PasswordOtp extends Model
 {
     protected $fillable = [
-        'phone', 'code', 'purpose', 'expires_at', 'consumed_at',
+        'phone', 'code', 'code_hash', 'purpose', 'expires_at', 'consumed_at',
+    ];
+
+    protected $hidden = [
+        'code', 'code_hash',
     ];
 
     protected function casts(): array

@@ -114,25 +114,41 @@ class StockMovementController extends Controller
             ]);
 
             foreach ($movements as $movement) {
-                fputcsv($handle, [
-                    $movement->reference,
-                    $movement->created_at?->format('Y-m-d H:i:s'),
-                    $movement->product?->name,
-                    $movement->product?->sku,
-                    StockMovement::TYPES[$movement->type] ?? $movement->type,
-                    $movement->quantity,
-                    $movement->stockBefore(),
-                    $movement->stock_after,
-                    $movement->unit_cost,
-                    $movement->movementValue(),
-                    $movement->supplier?->name,
-                    $movement->note,
-                    $movement->createdBy?->name,
-                ]);
+                fputcsv($handle, array_map(
+                    fn ($value) => self::csvCell($value),
+                    [
+                        $movement->reference,
+                        $movement->created_at?->format('Y-m-d H:i:s'),
+                        $movement->product?->name,
+                        $movement->product?->sku,
+                        StockMovement::TYPES[$movement->type] ?? $movement->type,
+                        $movement->quantity,
+                        $movement->stockBefore(),
+                        $movement->stock_after,
+                        $movement->unit_cost,
+                        $movement->movementValue(),
+                        $movement->supplier?->name,
+                        $movement->note,
+                        $movement->createdBy?->name,
+                    ]
+                ));
             }
 
             fclose($handle);
         }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
+    /**
+     * Neutralize CSV formula injection: cells starting with = + - @ (or
+     * tab/CR after them) execute as formulas when opened in Excel.
+     */
+    private static function csvCell(mixed $value): mixed
+    {
+        if (! is_string($value) || $value === '') {
+            return $value;
+        }
+
+        return preg_match('/^[\s]*[=+\-@\t\r]/', $value) ? "'" . $value : $value;
     }
 
     private function applyFilters(Request $request, $query)

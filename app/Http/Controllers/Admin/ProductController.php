@@ -24,6 +24,11 @@ class ProductController extends Controller
             $query->where('supplier_id', $supplierId);
         }
 
+        if ($type = $request->query('type')) {
+            abort_unless(in_array($type, array_keys(Product::TYPES), true), 422, 'Invalid type filter.');
+            $query->where('type', $type);
+        }
+
         if ($search = trim((string) $request->query('q'))) {
             $search = addcslashes($search, '%_\\');
             $query->where(function ($q) use ($search) {
@@ -58,6 +63,7 @@ class ProductController extends Controller
 
         $openingStock = (float) ($data['stock_qty'] ?? 0);
         unset($data['stock_qty']);
+        $data['type'] = $data['type'] ?? 'material';
 
         $product = Product::create($data);
 
@@ -130,7 +136,10 @@ class ProductController extends Controller
             'sku' => $skuRule,
             'description' => ['nullable', 'string'],
             'unit' => ['required', 'string', 'max:20'],
+            'type' => ['nullable', Rule::in(array_keys(Product::TYPES))],
             'rate' => ['required', 'numeric', 'min:0'],
+            'mrp' => ['nullable', 'numeric', 'min:0'],
+            'selling_price' => ['nullable', 'numeric', 'min:0'],
             'gst_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'stock_qty' => ['nullable', 'numeric', 'min:0'],
             'low_stock_threshold' => ['nullable', 'numeric', 'min:0'],

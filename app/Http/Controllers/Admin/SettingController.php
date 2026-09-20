@@ -168,6 +168,7 @@ class SettingController extends Controller
             'seo_yandex_verification' => 'nullable|string|max:255',
             'seo_schema_enabled' => 'nullable|in:0,1',
             'logo_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
+            'invoice_logo_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
             'favicon_file' => 'nullable|file|mimes:png,jpg,jpeg,webp,gif,ico|max:1024',
             'seo_og_image_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:4096',
             'seo_twitter_image_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:4096',
@@ -374,22 +375,35 @@ class SettingController extends Controller
 
     public function smtpTest(Request $request)
     {
+        // Validate test inputs: the endpoint dials the given host:port, so
+        // raw input here would be an SSRF/port-scan primitive.
+        $test = $request->validate([
+            'default' => ['nullable', Rule::in(['smtp', 'log', 'array'])],
+            'smtp_host' => ['nullable', 'string', 'max:255', 'regex:/^[a-zA-Z0-9.\-]+$/'],
+            'smtp_port' => ['nullable', 'integer', 'between:1,65535'],
+            'smtp_username' => ['nullable', 'string', 'max:255'],
+            'smtp_password' => ['nullable', 'string', 'max:255'],
+            'smtp_encryption' => ['nullable', Rule::in(['none', 'tls', 'ssl'])],
+            'from_address' => ['nullable', 'email', 'max:255'],
+            'from_name' => ['nullable', 'string', 'max:255'],
+        ]);
+
         $fallbackHost = config('mail.mailers.smtp.host');
         $fallbackPort = config('mail.mailers.smtp.port');
         $fallbackUser = config('mail.mailers.smtp.username');
         $fallbackPass = config('mail.mailers.smtp.password');
 
         $values = [
-            'default' => $request->input('default', config('mail.default')),
-            'smtp_host' => $request->input('smtp_host', $fallbackHost),
-            'smtp_port' => $request->input('smtp_port', $fallbackPort),
-            'smtp_username' => $request->input('smtp_username', $fallbackUser),
-            'smtp_password' => ($request->input('smtp_password') && $request->input('smtp_password') !== '_____')
-                ? $request->input('smtp_password')
+            'default' => $test['default'] ?? config('mail.default'),
+            'smtp_host' => $test['smtp_host'] ?? $fallbackHost,
+            'smtp_port' => $test['smtp_port'] ?? $fallbackPort,
+            'smtp_username' => $test['smtp_username'] ?? $fallbackUser,
+            'smtp_password' => (filled($test['smtp_password'] ?? null) && $test['smtp_password'] !== '_____')
+                ? $test['smtp_password']
                 : $fallbackPass,
-            'smtp_encryption' => $request->input('smtp_encryption', config('mail.smtp_encryption', 'tls')),
-            'from_address' => $request->input('from_address', config('mail.from_address', config('mail.from.address'))),
-            'from_name' => $request->input('from_name', config('mail.from_name', config('mail.from.name'))),
+            'smtp_encryption' => $test['smtp_encryption'] ?? config('mail.smtp_encryption', 'tls'),
+            'from_address' => $test['from_address'] ?? config('mail.from_address', config('mail.from.address')),
+            'from_name' => $test['from_name'] ?? config('mail.from_name', config('mail.from.name')),
         ];
 
         $values['smtp_encryption'] = $values['smtp_encryption'] === 'none' ? '' : $values['smtp_encryption'];
@@ -405,7 +419,9 @@ class SettingController extends Controller
 
             return back()->with('success', 'Test email sent to '.$admin->email.'. Check your inbox (and spam folder).');
         } catch (\Throwable $e) {
-            return back()->with('error', 'Test email failed: '.$e->getMessage());
+            \Illuminate\Support\Facades\Log::warning('SMTP test failed: '.$e->getMessage());
+
+            return back()->with('error', 'Test email failed. Check the host, port and credentials, then try again.');
         }
     }
 }

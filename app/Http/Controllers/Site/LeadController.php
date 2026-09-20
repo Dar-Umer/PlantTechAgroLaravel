@@ -40,7 +40,7 @@ class LeadController extends Controller
             return redirect()->to('/?submitted=1');
         }
 
-        if (Recaptcha::enabled() && ! Recaptcha::verify($request->input('g-recaptcha-response'), $request->ip())) {
+        if (Recaptcha::enabled() && ! Recaptcha::verify($request->input('g-recaptcha-response'), $request->ip(), 'lead')) {
             throw ValidationException::withMessages([
                 'g-recaptcha-response' => 'Bot verification failed. Please refresh the page and try again.',
             ]);

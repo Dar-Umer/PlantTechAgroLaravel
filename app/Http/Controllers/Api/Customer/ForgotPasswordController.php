@@ -48,7 +48,8 @@ class ForgotPasswordController extends Controller
 
         PasswordOtp::create([
             'phone' => $customer->phone,
-            'code' => $code,
+            'code' => '', // legacy column kept NOT NULL; real secret lives in code_hash
+            'code_hash' => Hash::make($code),
             'purpose' => 'password_reset',
             'expires_at' => now()->addMinutes((int) config('api.otp_expires_minutes', 10)),
         ]);
@@ -97,21 +98,29 @@ class ForgotPasswordController extends Controller
             ]);
         }
 
-        $otp = $this->resolveOtp($customer, $data['code']);
+        // Resolve + consume inside one locked transaction so two concurrent
+        // submissions with the same code cannot both succeed.
+        $consumed = DB::transaction(function () use ($customer, $data) {
+            $otp = $this->resolveOtp($customer, $data['code'], true);
 
-        if (! $otp) {
+            if (! $otp) {
+                return false;
+            }
+
+            $customer->password = Hash::make($data['password']);
+            $customer->save();
+            $customer->tokens()->delete();
+            $otp->forceFill(['consumed_at' => now()])->save();
+
+            return true;
+        });
+
+        if (! $consumed) {
             $this->recordFailedAttempt($customer->phone);
             throw ValidationException::withMessages([
                 'code' => 'Invalid or expired OTP.',
             ]);
         }
-
-        DB::transaction(function () use ($customer, $otp, $data) {
-            $customer->password = Hash::make($data['password']);
-            $customer->save();
-            $customer->tokens()->delete();
-            $otp->forceFill(['consumed_at' => now()])->save();
-        });
 
         Cache::forget($this->attemptKey($customer->phone));
 
@@ -180,15 +189,32 @@ class ForgotPasswordController extends Controller
         }
     }
 
-    private function resolveOtp(Customer $customer, string $code): ?PasswordOtp
+    private function resolveOtp(Customer $customer, string $code, bool $forUpdate = false): ?PasswordOtp
     {
-        return PasswordOtp::query()
+        // Codes are bcrypt-hashed at rest, so candidates are compared in PHP.
+        // Normally a single live row exists (older ones are consumed on issue).
+        $query = PasswordOtp::query()
             ->where('phone', $customer->phone)
-            ->where('code', $code)
             ->where('purpose', 'password_reset')
             ->whereNull('consumed_at')
             ->where('expires_at', '>', now())
             ->orderByDesc('id')
-            ->first();
+            ->limit(5);
+
+        $candidates = $forUpdate ? $query->lockForUpdate()->get() : $query->get();
+
+        foreach ($candidates as $otp) {
+            if ($otp->code_hash && Hash::check($code, $otp->code_hash)) {
+                return $otp;
+            }
+
+            // Legacy plaintext rows predating the code_hash migration
+            // (all expire within minutes of deploy).
+            if (! $otp->code_hash && hash_equals((string) $otp->code, $code)) {
+                return $otp;
+            }
+        }
+
+        return null;
     }
 }

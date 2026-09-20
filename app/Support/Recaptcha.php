@@ -26,7 +26,12 @@ class Recaptcha
         return (string) config('apis.recaptcha_site_key', '');
     }
 
-    public static function verify(?string $token, ?string $ip = null): bool
+    /**
+     * @param  string|null  $expectedAction  Binds the token to the form that
+     *     requested it (e.g. 'lead', 'admin_login'). Tokens minted for another
+     *     action — or on another domain using our public site key — are rejected.
+     */
+    public static function verify(?string $token, ?string $ip = null, ?string $expectedAction = null): bool
     {
         if ($token === null || $token === '') {
             return false;
@@ -47,8 +52,26 @@ class Recaptcha
 
             $json = $response->json();
 
-            return ($json['success'] ?? false) === true
-                && (float) ($json['score'] ?? 0) >= (float) config('apis.recaptcha_min_score', 0.5);
+            if (($json['success'] ?? false) !== true) {
+                return false;
+            }
+
+            if ((float) ($json['score'] ?? 0) < (float) config('apis.recaptcha_min_score', 0.5)) {
+                return false;
+            }
+
+            if ($expectedAction !== null && ($json['action'] ?? null) !== $expectedAction) {
+                return false;
+            }
+
+            $expectedHost = strtolower((string) parse_url((string) config('app.url'), PHP_URL_HOST));
+            $actualHost = strtolower((string) ($json['hostname'] ?? ''));
+
+            if ($expectedHost !== '' && $actualHost !== '' && $actualHost !== $expectedHost) {
+                return false;
+            }
+
+            return true;
         } catch (\Throwable) {
             return false;
         }

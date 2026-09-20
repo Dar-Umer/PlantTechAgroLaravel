@@ -78,12 +78,18 @@ class StaffController extends Controller
         $admin->phone = $data['phone'] ?? null;
         $admin->is_active = isset($data['is_active']);
 
-        if (! empty($data['password'])) {
+        $passwordChanged = ! empty($data['password']);
+
+        if ($passwordChanged) {
             $admin->password = $data['password'];
         }
 
         $admin->save();
         $admin->syncRoles([$data['role']]);
+
+        if ($passwordChanged) {
+            static::invalidateSessions($admin->id);
+        }
 
         return redirect()->route('admin.staff.index')->with('success', 'Staff member updated.');
     }
@@ -103,6 +109,29 @@ class StaffController extends Controller
         $admin->delete();
 
         return redirect()->route('admin.staff.index')->with('success', 'Staff member deleted.');
+    }
+
+    /**
+     * A password change must lock out any other live sessions for that
+     * account (stolen session cookies otherwise survive the reset).
+     */
+    private static function invalidateSessions(int $adminId): void
+    {
+        try {
+            if (! \Illuminate\Support\Facades\Schema::hasTable('sessions')) {
+                return;
+            }
+
+            $query = \Illuminate\Support\Facades\DB::table('sessions')->where('user_id', $adminId);
+
+            // Never kick out the Super Admin performing the change.
+            if ($adminId === auth('admin')->id()) {
+                $query->where('id', '!=', session()->getId());
+            }
+
+            $query->delete();
+        } catch (\Throwable) {
+        }
     }
 
     private function ensureSuperAdmin(): void

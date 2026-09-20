@@ -37,8 +37,16 @@
                     @endforeach
                 </select>
             </div>
+            <div>
+                <select name="type" class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                    <option value="">All Types</option>
+                    @foreach(\App\Models\Product::TYPES as $typeKey => $typeLabel)
+                        <option value="{{ $typeKey }}" {{ request('type') === $typeKey ? 'selected' : '' }}>{{ $typeLabel }}</option>
+                    @endforeach
+                </select>
+            </div>
             <x-admin.button type="submit" variant="primary">Filter</x-admin.button>
-            @if(request('q') || request('supplier_id') || request('stock'))
+            @if(request('q') || request('supplier_id') || request('stock') || request('type'))
                 <a href="{{ route('admin.products.index') }}" class="text-sm text-gray-500 hover:text-gray-700">Clear</a>
             @endif
         </form>
@@ -60,7 +68,10 @@
                         @forelse($products as $product)
                             <tr class="hover:bg-gray-50 transition">
                                 <td class="px-6 py-4">
-                                    <div class="font-medium text-gray-900">{{ $product->name }}</div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-medium text-gray-900">{{ $product->name }}</span>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium {{ $product->type === 'sellable' ? 'bg-brand-50 text-brand-700' : 'bg-gray-100 text-gray-600' }}">{{ \App\Models\Product::TYPES[$product->type] ?? $product->type }}</span>
+                                    </div>
                                     <div class="text-xs text-gray-400">{{ $product->sku ?: '—' }} · per {{ $product->unit }}</div>
                                 </td>
                                 <td class="px-6 py-4 text-gray-600">{{ $product->supplier?->name ?? '—' }}</td>

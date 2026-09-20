@@ -22,7 +22,7 @@ Route::prefix('auth')->group(function () {
     Route::post('reset-password', [ForgotPasswordController::class, 'resetPassword'])->middleware('throttle:customer-otp');
 });
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', \App\Http\Middleware\EnsureCustomerIsActive::class])->group(function () {
     Route::get('me', [ProfileController::class, 'show']);
     Route::put('me', [ProfileController::class, 'update']);
     Route::put('me/password', [ProfileController::class, 'changePassword']);
@@ -32,6 +32,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('weather', [\App\Http\Controllers\Api\Customer\WeatherController::class, 'show']);
 
     Route::get('services', [ServiceController::class, 'index']);
+
+    Route::get('products', [\App\Http\Controllers\Api\Customer\ProductController::class, 'index']);
 
     Route::get('work-orders', [WorkOrderController::class, 'index']);
     Route::post('work-orders', [WorkOrderController::class, 'store']);

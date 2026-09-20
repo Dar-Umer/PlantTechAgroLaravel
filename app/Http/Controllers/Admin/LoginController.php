@@ -27,18 +27,21 @@ class LoginController extends Controller
             'password' => 'required',
         ]);
 
-        if (Recaptcha::enabled() && ! Recaptcha::verify($request->input('g-recaptcha-response'), $request->ip())) {
+        if (Recaptcha::enabled() && ! Recaptcha::verify($request->input('g-recaptcha-response'), $request->ip(), 'admin_login')) {
             return back()->withErrors(['email' => 'The provided credentials do not match our records.'])->onlyInput('email');
         }
 
-        if (Auth::guard('admin')->attempt($credentials, $request->boolean('remember'))) {
+        // Session-only auth: no long-lived "remember" cookies (5-year recaller).
+        if (Auth::guard('admin')->attempt($credentials)) {
             $request->session()->regenerate();
             $admin = Auth::guard('admin')->user();
 
             if (! $admin->is_active) {
                 Auth::guard('admin')->logout();
 
-                return back()->withErrors(['email' => 'Your account has been deactivated.']);
+                // Generic message: confirming "valid credentials but inactive"
+                // would let anyone probe which accounts exist and are disabled.
+                return back()->withErrors(['email' => 'The provided credentials do not match our records.'])->onlyInput('email');
             }
 
             RateLimiter::clear('admin-login:'.Str::lower($credentials['email']).'|'.$request->ip());

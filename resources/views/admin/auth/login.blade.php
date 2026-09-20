@@ -151,11 +151,7 @@
                             @enderror
                         </div>
 
-                        <div class="flex items-center justify-between">
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" name="remember" class="w-4 h-4 text-brand-600 border-gray-300 rounded focus:ring-brand-500">
-                                <span class="text-sm text-gray-600">Remember me</span>
-                            </label>
+                        <div class="flex items-center justify-end">
                             <a href="{{ route('admin.password.request') }}" class="text-sm font-medium text-brand-600 hover:text-brand-700 transition">
                                 Forgot password?
                             </a>
