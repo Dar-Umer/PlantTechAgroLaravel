@@ -47,6 +47,9 @@ class AppConfig
                 'android_update_url' => config('mobile.android_update_url', ''),
                 'ios_update_url' => config('mobile.ios_update_url', ''),
                 'release_notes' => config('mobile.release_notes', ''),
+                'app_palette' => $paletteName,
+                'app_font_family' => $fontFamily,
+                'app_logo_url' => $logoUrl,
             ],
             'currency' => config('shop.currency', '₹'),
             'support' => [

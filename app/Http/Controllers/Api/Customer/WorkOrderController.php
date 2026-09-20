@@ -48,7 +48,7 @@ class WorkOrderController extends Controller
     public function show(Request $request, int $id)
     {
         $workOrder = WorkOrder::where('customer_id', $request->user()->id)
-            ->with(['agent:id,name', 'invoice', 'stages.products', 'service'])
+            ->with(['agent:id,name', 'invoice', 'stages.products', 'stages.attachments', 'service'])
             ->findOrFail($id);
 
         $data = static::summary($workOrder);

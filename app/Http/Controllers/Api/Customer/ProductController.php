@@ -32,6 +32,7 @@ class ProductController extends Controller
                 'id' => $product->id,
                 'name' => $product->name,
                 'sku' => $product->sku,
+                'hsn_code' => $product->hsn_code,
                 'description' => $product->description,
                 'image' => Media::url($product->image),
                 'unit' => $product->unit,
