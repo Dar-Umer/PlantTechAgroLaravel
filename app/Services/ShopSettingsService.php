@@ -52,11 +52,6 @@ class ShopSettingsService
                 return $cached;
             }
 
-            if (! Schema::hasTable('settings')) {
-                // Don't cache the transient pre-migration state.
-                return [];
-            }
-
             $settings = Setting::query()->get()
                 ->mapWithKeys(fn (Setting $setting) => [$setting->key => $setting->value])
                 ->all();

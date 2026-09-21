@@ -72,7 +72,7 @@ class WeatherService
             $location = static::resolveDistrict($area);
             $forecast = static::fetch($location['lat'], $location['lon']);
 
-            if ($forecast === null) {
+            if ($forecast === null || isset($forecast['failed'])) {
                 return null;
             }
 
@@ -131,18 +131,22 @@ class WeatherService
                     $params['forecast_hours'] = 24;
                 }
 
-                $response = Http::timeout((int) config('weather.timeout_seconds', 5))
-                    ->retry((int) config('weather.retries', 2), 200)
+                // Low 1.5s timeout with 0 retries so HTTP calls never freeze page rendering
+                $timeout = min(2, (int) config('weather.timeout_seconds', 2));
+
+                $response = Http::timeout($timeout)
                     ->get((string) config('weather.base_url', 'https://api.open-meteo.com/v1/forecast'), $params);
 
                 if (! $response->successful()) {
-                    return null;
+                    return ['failed' => true];
                 }
 
-                return static::shape($response->json());
+                $shaped = static::shape($response->json());
+
+                return $shaped ?? ['failed' => true];
             });
         } catch (\Throwable) {
-            return null;
+            return ['failed' => true];
         }
     }
 
