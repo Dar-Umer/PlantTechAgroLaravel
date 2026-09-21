@@ -91,6 +91,8 @@ Route::middleware('admin')->group(function () {
     Route::resource('gallery', GalleryController::class)->except(['create', 'edit', 'update', 'show'])->names('admin.gallery');
     Route::patch('varieties/{variety}/toggle-active', [\App\Http\Controllers\Admin\VarietyController::class, 'toggleActive'])->name('admin.varieties.toggle-active');
     Route::resource('varieties', \App\Http\Controllers\Admin\VarietyController::class)->except('show')->names('admin.varieties');
+    Route::patch('partners/{partner}/toggle-active', [\App\Http\Controllers\Admin\PartnerController::class, 'toggleActive'])->name('admin.partners.toggle-active');
+    Route::resource('partners', \App\Http\Controllers\Admin\PartnerController::class)->except('show')->names('admin.partners');
 
     // Website / Frontend management
     Route::get('frontend', [FrontendController::class, 'index'])->name('admin.frontend.index');

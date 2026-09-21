@@ -3,7 +3,7 @@
 @section('title', ($post->meta_title ?: $post->title) . ' — ' . config('shop.site_name', 'Plant Tech Agro'))
 
 @section('content')
-<article class="pt-24 sm:pt-28 pb-16 bg-gray-50/50 dark:bg-gray-950/80 min-h-screen">
+<article class="pt-28 sm:pt-36 pb-16 bg-gray-50/50 dark:bg-gray-950/80 min-h-screen">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {{-- Breadcrumb & Back Navigation --}}

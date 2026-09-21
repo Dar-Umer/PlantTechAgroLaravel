@@ -3,7 +3,7 @@
 @section('title', 'Apple & Fruit Varieties — ' . config('shop.site_name', 'Plant Tech Agro'))
 
 @section('content')
-<section id="varieties" class="pt-24 sm:pt-28 pb-16 sm:pb-20 bg-gray-50/60 dark:bg-gray-950 min-h-screen"
+<section id="varieties" class="pt-28 sm:pt-36 pb-16 sm:pb-20 bg-gray-50/60 dark:bg-gray-950 min-h-screen"
          x-data="{
              selectedCategory: 'all',
              searchQuery: '',

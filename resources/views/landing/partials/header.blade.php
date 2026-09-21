@@ -52,12 +52,13 @@
 
     {{-- Mobile Nav --}}
     <div x-show="mobileOpen" x-cloak class="lg:hidden border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 space-y-1">
-        <a href="#services" @click="mobileOpen = false" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">Services</a>
-        <a href="#about" @click="mobileOpen = false" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">About</a>
-        <a href="#gallery" @click="mobileOpen = false" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">Gallery</a>
-        <a href="#projects" @click="mobileOpen = false" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">Projects</a>
-        <a href="#blog" @click="mobileOpen = false" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">Knowledge</a>
-        <a href="#contact" @click="mobileOpen = false" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">Contact</a>
+        <a href="{{ route('varieties.index') }}" @click="mobileOpen = false" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">Varieties</a>
+        <a href="{{ url('/') }}#services" @click="mobileOpen = false" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">Services</a>
+        <a href="{{ url('/') }}#about" @click="mobileOpen = false" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">About</a>
+        <a href="{{ url('/') }}#gallery" @click="mobileOpen = false" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">Gallery</a>
+        <a href="{{ url('/') }}#projects" @click="mobileOpen = false" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">Projects</a>
+        <a href="{{ url('/') }}#blog" @click="mobileOpen = false" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">Knowledge</a>
+        <a href="{{ url('/') }}#contact" @click="mobileOpen = false" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">Contact</a>
         <button type="button" onclick="mobileOpen = false; openBookModal()"
                 class="mt-2 w-full inline-flex items-center justify-center px-5 py-3 rounded-xl bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 transition">Book Now</button>
     </div>
