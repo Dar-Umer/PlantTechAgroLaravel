@@ -15,8 +15,13 @@ return new class extends Migration
             $table->string('category')->nullable();
             $table->string('season')->nullable();
             $table->string('taste')->nullable();
+            $table->string('origin')->nullable();
+            $table->string('color')->nullable();
+            $table->string('storage_life')->nullable();
             $table->string('image')->nullable();
             $table->text('short_description')->nullable();
+            $table->longText('description')->nullable();
+            $table->boolean('is_featured')->default(false);
             $table->boolean('is_active')->default(true);
             $table->integer('sort_order')->default(0);
             $table->timestamps();

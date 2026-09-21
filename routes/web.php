@@ -12,6 +12,8 @@ Route::get('projects/{project:slug}', [ProjectController::class, 'show'])->name(
 
 Route::get('blog/{post:slug}', [PostController::class, 'show'])->name('post.show');
 
+Route::get('varieties', [\App\Http\Controllers\Site\VarietyController::class, 'index'])->name('varieties.index');
+
 Route::post('leads', [LeadController::class, 'store'])
     ->middleware('throttle:leads')
     ->name('leads.store');

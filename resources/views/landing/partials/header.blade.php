@@ -24,12 +24,13 @@
             </a>
 
             <nav class="hidden lg:flex items-center gap-8 text-sm font-medium text-gray-600 dark:text-gray-300">
-                <a href="#services" class="hover:text-brand-700 dark:hover:text-brand-400 transition">Services</a>
-                <a href="#about" class="hover:text-brand-700 dark:hover:text-brand-400 transition">About</a>
-                <a href="#gallery" class="hover:text-brand-700 dark:hover:text-brand-400 transition">Gallery</a>
-                <a href="#projects" class="hover:text-brand-700 dark:hover:text-brand-400 transition">Projects</a>
-                <a href="#blog" class="hover:text-brand-700 dark:hover:text-brand-400 transition">Knowledge</a>
-                <a href="#contact" class="hover:text-brand-700 dark:hover:text-brand-400 transition">Contact</a>
+                <a href="{{ route('varieties.index') }}" class="hover:text-brand-700 dark:hover:text-brand-400 transition">Varieties</a>
+                <a href="{{ url('/') }}#services" class="hover:text-brand-700 dark:hover:text-brand-400 transition">Services</a>
+                <a href="{{ url('/') }}#about" class="hover:text-brand-700 dark:hover:text-brand-400 transition">About</a>
+                <a href="{{ url('/') }}#gallery" class="hover:text-brand-700 dark:hover:text-brand-400 transition">Gallery</a>
+                <a href="{{ url('/') }}#projects" class="hover:text-brand-700 dark:hover:text-brand-400 transition">Projects</a>
+                <a href="{{ url('/') }}#blog" class="hover:text-brand-700 dark:hover:text-brand-400 transition">Knowledge</a>
+                <a href="{{ url('/') }}#contact" class="hover:text-brand-700 dark:hover:text-brand-400 transition">Contact</a>
             </nav>
 
             <div class="flex items-center gap-1.5 sm:gap-3 ml-auto lg:ml-0">

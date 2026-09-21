@@ -65,6 +65,7 @@ class AppServiceProvider extends ServiceProvider
             PostCategory::class,
             Testimonial::class,
             LeadFormField::class,
+            \App\Models\Variety::class,
         ];
 
         foreach ($models as $model) {

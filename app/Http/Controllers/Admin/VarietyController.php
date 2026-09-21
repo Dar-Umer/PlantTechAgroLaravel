@@ -9,11 +9,33 @@ use Illuminate\Support\Str;
 
 class VarietyController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $varieties = Variety::orderBy('sort_order')->paginate(15);
+        $query = Variety::query();
 
-        return view('admin.varieties.index', compact('varieties'));
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('category', 'like', "%{$search}%")
+                  ->orWhere('season', 'like', "%{$search}%")
+                  ->orWhere('taste', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('category')) {
+            $query->where('category', $request->get('category'));
+        }
+
+        $varieties = $query->orderBy('sort_order')->orderBy('name')->paginate(15)->withQueryString();
+
+        $categories = Variety::query()
+            ->whereNotNull('category')
+            ->where('category', '!=', '')
+            ->distinct()
+            ->pluck('category');
+
+        return view('admin.varieties.index', compact('varieties', 'categories'));
     }
 
     public function create()
@@ -28,8 +50,13 @@ class VarietyController extends Controller
             'category' => ['nullable', 'string', 'max:100'],
             'season' => ['nullable', 'string', 'max:100'],
             'taste' => ['nullable', 'string', 'max:100'],
-            'image' => ['nullable', 'image', 'max:2048'],
+            'origin' => ['nullable', 'string', 'max:100'],
+            'color' => ['nullable', 'string', 'max:100'],
+            'storage_life' => ['nullable', 'string', 'max:100'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'short_description' => ['nullable', 'string'],
+            'description' => ['nullable', 'string'],
+            'is_featured' => ['boolean'],
             'is_active' => ['boolean'],
             'sort_order' => ['nullable', 'integer'],
         ]);
@@ -39,10 +66,13 @@ class VarietyController extends Controller
         }
 
         $data['slug'] = Str::slug($data['name']);
+        $data['is_active'] = $request->has('is_active');
+        $data['is_featured'] = $request->has('is_featured');
+        $data['sort_order'] = $data['sort_order'] ?? 0;
 
         Variety::create($data);
 
-        return redirect()->route('admin.varieties.index')->with('success', 'Variety created.');
+        return redirect()->route('admin.varieties.index')->with('success', 'Variety created successfully.');
     }
 
     public function edit(Variety $variety)
@@ -57,8 +87,13 @@ class VarietyController extends Controller
             'category' => ['nullable', 'string', 'max:100'],
             'season' => ['nullable', 'string', 'max:100'],
             'taste' => ['nullable', 'string', 'max:100'],
-            'image' => ['nullable', 'image', 'max:2048'],
+            'origin' => ['nullable', 'string', 'max:100'],
+            'color' => ['nullable', 'string', 'max:100'],
+            'storage_life' => ['nullable', 'string', 'max:100'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'short_description' => ['nullable', 'string'],
+            'description' => ['nullable', 'string'],
+            'is_featured' => ['boolean'],
             'is_active' => ['boolean'],
             'sort_order' => ['nullable', 'integer'],
         ]);
@@ -70,16 +105,29 @@ class VarietyController extends Controller
         }
 
         $data['slug'] = Str::slug($data['name']);
+        $data['is_active'] = $request->has('is_active');
+        $data['is_featured'] = $request->has('is_featured');
+        $data['sort_order'] = $data['sort_order'] ?? 0;
 
         $variety->update($data);
 
-        return redirect()->route('admin.varieties.index')->with('success', 'Variety updated.');
+        return redirect()->route('admin.varieties.index')->with('success', 'Variety updated successfully.');
+    }
+
+    public function toggleActive(Variety $variety)
+    {
+        $variety->is_active = ! $variety->is_active;
+        $variety->save();
+
+        $status = $variety->is_active ? 'activated' : 'deactivated';
+
+        return back()->with('success', "Variety '{$variety->name}' {$status}.");
     }
 
     public function destroy(Variety $variety)
     {
         $variety->delete();
 
-        return redirect()->route('admin.varieties.index')->with('success', 'Variety deleted.');
+        return redirect()->route('admin.varieties.index')->with('success', 'Variety deleted successfully.');
     }
 }
