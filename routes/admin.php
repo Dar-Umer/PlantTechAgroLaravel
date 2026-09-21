@@ -79,6 +79,8 @@ Route::middleware('admin')->group(function () {
     });
 
     // Content management
+    Route::patch('posts/{post}/toggle-publish', [PostController::class, 'togglePublish'])->name('admin.posts.toggle-publish');
+    Route::post('post-categories', [PostController::class, 'storeCategory'])->name('admin.post-categories.store');
     Route::resource('posts', PostController::class)->except('show')->names('admin.posts');
     Route::resource('services', ServiceController::class)->except('show')->names('admin.services');
     Route::resource('services.items', ServiceItemController::class)->shallow()->except('show')->names('admin.services.items');

@@ -13,9 +13,41 @@ class PostController extends Controller
 {
     public function index(Request $request)
     {
-        $posts = Post::with('category')->latest()->paginate(15);
+        $query = Post::with(['category', 'author'])->latest();
 
-        return view('admin.posts.index', compact('posts'));
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('excerpt', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->get('category_id'));
+        }
+
+        if ($request->filled('status')) {
+            $status = $request->get('status');
+            if ($status === 'published') {
+                $query->where('is_published', true);
+            } elseif ($status === 'draft') {
+                $query->where('is_published', false);
+            }
+        }
+
+        $posts = $query->paginate(15)->withQueryString();
+
+        $stats = [
+            'total' => Post::count(),
+            'published' => Post::where('is_published', true)->count(),
+            'drafts' => Post::where('is_published', false)->count(),
+            'categories' => PostCategory::count(),
+        ];
+
+        $categories = PostCategory::orderBy('name')->get();
+
+        return view('admin.posts.index', compact('posts', 'stats', 'categories'));
     }
 
     public function create()
@@ -54,7 +86,7 @@ class PostController extends Controller
 
         Post::create($data);
 
-        return redirect()->route('admin.posts.index')->with('success', 'Post created.');
+        return redirect()->route('admin.posts.index')->with('success', 'Post created successfully.');
     }
 
     public function edit(Post $post)
@@ -89,15 +121,46 @@ class PostController extends Controller
             $data['excerpt'] = strip_tags((string) $data['excerpt']);
         }
 
+        if (! empty($data['is_published']) && empty($post->published_at) && empty($data['published_at'])) {
+            $data['published_at'] = now();
+        }
+
         $post->update($data);
 
-        return redirect()->route('admin.posts.index')->with('success', 'Post updated.');
+        return redirect()->route('admin.posts.index')->with('success', 'Post updated successfully.');
+    }
+
+    public function togglePublish(Post $post)
+    {
+        $post->is_published = ! $post->is_published;
+        if ($post->is_published && empty($post->published_at)) {
+            $post->published_at = now();
+        }
+        $post->save();
+
+        $statusLabel = $post->is_published ? 'published' : 'moved to drafts';
+
+        return back()->with('success', "Post '{$post->title}' {$statusLabel}.");
+    }
+
+    public function storeCategory(Request $request)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:post_categories,name'],
+            'description' => ['nullable', 'string'],
+        ]);
+
+        $data['slug'] = Str::slug($data['name']);
+
+        PostCategory::create($data);
+
+        return back()->with('success', "Category '{$data['name']}' created successfully.");
     }
 
     public function destroy(Post $post)
     {
         $post->delete();
 
-        return redirect()->route('admin.posts.index')->with('success', 'Post deleted.');
+        return redirect()->route('admin.posts.index')->with('success', 'Post deleted successfully.');
     }
 }

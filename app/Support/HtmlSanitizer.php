@@ -22,7 +22,7 @@ class HtmlSanitizer
         $html = preg_replace('/\s+on\w+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $html) ?? '';
         $html = preg_replace('/(href|src|xlink:href)\s*=\s*([\'"]?)\s*javascript:[^>"\']*\\2/i', '$1="#"', $html) ?? '';
 
-        $allowed = '<p><br><b><strong><i><em><u><ul><ol><li><h2><h3><h4><blockquote><a><img><table><thead><tbody><tr><th><td><pre><code><hr><span><div>';
+        $allowed = '<h1><p><br><b><strong><i><em><u><ul><ol><li><h2><h3><h4><h5><h6><blockquote><a><img><table><thead><tbody><tr><th><td><pre><code><hr><span><div>';
         $html = strip_tags($html, $allowed);
 
         // Only allow http/https/mailto in links and http/https/data in images.
