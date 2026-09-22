@@ -121,19 +121,19 @@
                class="fixed inset-y-0 left-0 z-40 w-64 {{ $sidebarBg }} transition-transform duration-300 lg:translate-x-0 lg:static lg:z-auto flex flex-col">
 
             <!-- Branding -->
-            <div class="flex items-center justify-between h-16 px-6 {{ $sidebarBg }} border-b {{ $sidebarBorder }}">
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-2">
+            <div class="flex items-center justify-between h-20 px-6 {{ $sidebarBg }} border-b {{ $sidebarBorder }}">
+                <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-3 py-1">
                     @if(!empty($theme['logo_url']))
-                        <img src="{{ $theme['logo_url'] }}" alt="{{ $theme['site_name'] }}" class="h-8 w-auto">
+                        <img src="{{ $theme['logo_url'] }}" alt="{{ $theme['site_name'] }}" class="h-12 max-h-14 w-auto max-w-[180px] object-contain rounded-lg">
                     @else
-                        <span class="text-xl font-bold text-brand-400">{{ $theme['brand_first'] }}</span>
+                        <span class="text-2xl font-bold text-brand-400">{{ $theme['brand_first'] }}</span>
                         @if($theme['brand_rest'])
-                            <span class="text-xl font-light {{ $sidebarStyle === 'light' ? 'text-gray-900' : 'text-white' }}">{{ $theme['brand_rest'] }}</span>
+                            <span class="text-2xl font-light {{ $sidebarStyle === 'light' ? 'text-gray-900' : 'text-white' }}">{{ $theme['brand_rest'] }}</span>
                         @endif
                     @endif
                 </a>
                 <button @click="sidebarOpen = false" class="lg:hidden {{ $sidebarChildText }} hover:text-white">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
@@ -150,11 +150,20 @@
                             ],
                         ],
                         [
+                            'label' => 'Point of Sale (POS)',
+                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>',
+                            'items' => [
+                                ['route' => 'admin.pos.terminal', 'label' => 'POS Terminal'],
+                                ['route' => 'admin.pos.sales', 'label' => 'POS Invoices & Sales'],
+                            ],
+                        ],
+                        [
                             'label' => 'Operations & CRM',
                             'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 9.75h4.5m-4.5 3h4.5m-4.5 3h4.5m-5.625 3.75h6.75a4.5 4.5 0 004.5-4.5v-3a4.5 4.5 0 00-4.5-4.5H16.5a3 3 0 00-3-3h-3a3 3 0 00-3 3H7.125a4.5 4.5 0 00-4.5 4.5v3a4.5 4.5 0 004.5 4.5h6.75M12 3h.008v.008H12V3z"/>',
                             'items' => [
                                 ['route' => 'admin.work-orders.index', 'label' => 'Work Orders'],
                                 ['route' => 'admin.leads.index', 'label' => 'Leads'],
+                                ['route' => 'admin.quotations.index', 'label' => 'Quotations / Estimates'],
                                 ['route' => 'admin.customers.index', 'label' => 'Customers'],
                                 ['route' => 'admin.invoices.index', 'label' => 'Invoices'],
                             ],
@@ -189,6 +198,7 @@
                             'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>',
                             'items' => [
                                 ['route' => 'admin.reports.gst', 'label' => 'GST & Taxes'],
+                                ['route' => 'admin.roles.index', 'label' => 'Roles & Permissions'],
                                 ['route' => 'admin.staff.index', 'label' => 'Staff Accounts'],
                                 ['route' => 'admin.mobile-apps.index', 'label' => 'Mobile Apps'],
                                 ['route' => 'admin.automation.index', 'label' => 'Automation'],
@@ -200,13 +210,85 @@
 
                 @php
                     $currentAdmin = Auth::guard('admin')->user();
-                    $superOnlyRoutes = ['admin.staff.index', 'admin.automation.index', 'admin.settings.index', 'admin.mobile-apps.index'];
-                    $canView = function ($route) use ($currentAdmin, $superOnlyRoutes) {
+                    $superOnlyRoutes = ['admin.roles.index', 'admin.staff.index', 'admin.automation.index', 'admin.settings.index', 'admin.mobile-apps.index'];
+                    $isPosOnlyUser = $currentAdmin?->isPosOnly();
+                    $posAndStockAllowed = [
+                        'admin.dashboard',
+                        'admin.pos.terminal',
+                        'admin.pos.sales',
+                        'admin.products.index',
+                        'admin.product-batches.index',
+                        'admin.stock-movements.index',
+                        'admin.suppliers.index',
+                    ];
+
+                    $routePermissionMap = [
+                        'admin.dashboard' => null,
+                        'admin.pos.terminal' => 'pos.terminal',
+                        'admin.pos.sales' => 'pos.sales.view',
+                        'admin.work-orders.index' => 'work-orders.view',
+                        'admin.leads.index' => 'leads.view',
+                        'admin.quotations.index' => 'quotations.view',
+                        'admin.customers.index' => 'customers.view',
+                        'admin.invoices.index' => 'invoices.view',
+                        'admin.products.index' => 'inventory.view',
+                        'admin.product-batches.index' => 'inventory.batches',
+                        'admin.stock-movements.index' => ['inventory.stock-in', 'inventory.stock-out', 'inventory.view'],
+                        'admin.suppliers.index' => 'suppliers.manage',
+                        'admin.posts.index' => 'content.manage',
+                        'admin.varieties.index' => 'content.manage',
+                        'admin.partners.index' => 'content.manage',
+                        'admin.services.index' => 'services.view',
+                        'admin.projects.index' => 'content.manage',
+                        'admin.testimonials.index' => 'content.manage',
+                        'admin.gallery.index' => 'content.manage',
+                        'admin.faqs.index' => 'content.manage',
+                        'admin.frontend.index' => 'frontend.editor',
+                        'admin.reports.gst' => 'reports.gst',
+                        'admin.roles.index' => 'roles.manage',
+                        'admin.staff.index' => ['staff.view', 'staff.manage'],
+                        'admin.mobile-apps.index' => 'automation.manage',
+                        'admin.automation.index' => 'automation.manage',
+                        'admin.settings.index' => 'settings.manage',
+                    ];
+
+                    $canView = function ($route) use ($currentAdmin, $superOnlyRoutes, $isPosOnlyUser, $posAndStockAllowed, $routePermissionMap) {
                         if (!$currentAdmin) return false;
                         if (!Route::has($route)) return false;
-                        if (in_array($route, $superOnlyRoutes, true)) {
-                            return $currentAdmin->hasRole('Super Admin');
+
+                        // Super Admin has master access to everything
+                        if ($currentAdmin->hasRole('Super Admin')) {
+                            return true;
                         }
+
+                        if ($isPosOnlyUser && !in_array($route, $posAndStockAllowed, true)) {
+                            return false;
+                        }
+
+                        if (array_key_exists($route, $routePermissionMap)) {
+                            $required = $routePermissionMap[$route];
+                            if ($required === null) {
+                                return true;
+                            }
+                            try {
+                                if (is_array($required)) {
+                                    foreach ($required as $perm) {
+                                        if ($currentAdmin->hasPermissionTo($perm, 'admin')) {
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                }
+                                return $currentAdmin->hasPermissionTo($required, 'admin');
+                            } catch (\Throwable $e) {
+                                return false;
+                            }
+                        }
+
+                        if (in_array($route, $superOnlyRoutes, true)) {
+                            return false;
+                        }
+
                         return true;
                     };
                 @endphp
@@ -266,7 +348,7 @@
         <div class="flex-1 flex flex-col overflow-hidden">
 
             <!-- Top Navbar -->
-            <header class="{{ $topbarBg }} shadow-sm border-b border-gray-200 h-16 flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
+            <header class="{{ $topbarBg }} shadow-sm border-b border-gray-200 h-20 flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
                 <div class="flex items-center gap-4">
                     <button @click="sidebarOpen = true" class="lg:hidden text-gray-500 hover:text-gray-700">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -395,7 +477,7 @@
                         @endif
                     @endif
                     {{-- Page Speed Indicator --}}
-                    @php $pageLoadMs = round((microtime(true) - LARAVEL_START) * 1000); @endphp
+                    @php $pageLoadMs = defined('LARAVEL_START') ? round((microtime(true) - LARAVEL_START) * 1000) : 15; @endphp
                     <div x-data="{ loadMs: '{{ $pageLoadMs }}' }"
                          x-init="window.addEventListener('load', () => { const nav = performance.getEntriesByType('navigation')[0]; if (nav && nav.duration) loadMs = Math.round(nav.duration); })"
                          class="hidden md:flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-gray-600 bg-gray-50/80 hover:bg-gray-100 border border-gray-200/80 rounded-xl shadow-2xs transition cursor-default"

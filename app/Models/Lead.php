@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Lead extends Model
 {
@@ -46,6 +48,16 @@ class Lead extends Model
     public function convertedCustomer(): BelongsTo
     {
         return $this->belongsTo(Customer::class, 'converted_customer_id');
+    }
+
+    public function quotations(): HasMany
+    {
+        return $this->hasMany(Quotation::class)->latest();
+    }
+
+    public function latestQuotation(): HasOne
+    {
+        return $this->hasOne(Quotation::class)->latestOfMany();
     }
 
     /**

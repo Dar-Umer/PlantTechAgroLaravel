@@ -3,7 +3,8 @@
     $brandParts = explode(' ', trim($siteName), 2);
     $logo = config('shop.logo_url');
 @endphp
-<header x-data="{ mobileOpen: false, scrolled: false,
+<header id="site-header"
+        x-data="{ mobileOpen: false, scrolled: false,
             updateTint() { this.scrolled = window.scrollY > 24; } }"
         x-init="updateTint()"
         @scroll.passive.window="updateTint()"
@@ -63,3 +64,20 @@
                 class="mt-2 w-full inline-flex items-center justify-center px-5 py-3 rounded-xl bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 transition">Book Now</button>
     </div>
 </header>
+
+<script>
+    (function () {
+        function syncHeaderHeight() {
+            var header = document.getElementById('site-header');
+            if (header) {
+                var h = header.offsetHeight;
+                if (h > 0) {
+                    document.documentElement.style.setProperty('--site-header-height', h + 'px');
+                }
+            }
+        }
+        syncHeaderHeight();
+        window.addEventListener('resize', syncHeaderHeight, { passive: true });
+        window.addEventListener('load', syncHeaderHeight);
+    })();
+</script>

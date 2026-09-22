@@ -47,7 +47,7 @@
                         observer.observe(this.$el);
                     },
                     startCounting(target, fallback) {
-                        const duration = 1600;
+                        const duration = 3200; // Slower, steady counting animation
                         const startTime = performance.now();
                         const isFloat = String(rawTarget).includes('.');
                         const decimals = isFloat ? String(rawTarget).split('.')[1].length : 0;
@@ -55,7 +55,8 @@
                         const step = (now) => {
                             const elapsed = now - startTime;
                             const progress = Math.min(elapsed / duration, 1);
-                            const ease = 1 - Math.pow(1 - progress, 3);
+                            // Smooth ease-out curve for gentle deceleration
+                            const ease = 1 - Math.pow(1 - progress, 2.5);
                             const currentVal = target * ease;
 
                             if (isFloat) {

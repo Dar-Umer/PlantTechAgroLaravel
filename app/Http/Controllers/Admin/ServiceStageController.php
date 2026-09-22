@@ -52,6 +52,25 @@ class ServiceStageController extends Controller
         return redirect()->route('admin.services.stages.index', $serviceId)->with('success', 'Stage deleted.');
     }
 
+    public function reorder(Request $request, Service $service): \Illuminate\Http\JsonResponse
+    {
+        $data = $request->validate([
+            'order' => ['required', 'array'],
+            'order.*' => ['integer', 'exists:service_stages,id'],
+        ]);
+
+        foreach ($data['order'] as $index => $stageId) {
+            $service->stages()->where('id', $stageId)->update([
+                'sort_order' => $index + 1,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Stages reordered successfully.',
+        ]);
+    }
+
     private function validated(Request $request): array
     {
         return $request->validate([

@@ -36,4 +36,27 @@ class Admin extends Authenticatable
     {
         $this->notify(new \App\Notifications\AdminResetPassword($token, $this->email));
     }
+
+    public function isPosOnly(): bool
+    {
+        if (in_array($this->role, ['pos_manager', 'pos_operator', 'pos_staff'], true)) {
+            return true;
+        }
+
+        try {
+            return $this->hasAnyRole(['POS Manager', 'POS Operator', 'pos_manager']);
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    public function canAccessPos(): bool
+    {
+        return true;
+    }
+
+    public function canAccessStock(): bool
+    {
+        return true;
+    }
 }

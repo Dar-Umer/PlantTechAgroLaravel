@@ -24,10 +24,10 @@
             <div class="relative flex flex-col justify-between w-full p-12 xl:p-16">
                 <div class="flex items-center gap-3">
                     @if(!empty($theme['logo_url']))
-                        <img src="{{ $theme['logo_url'] }}" alt="{{ $theme['site_name'] }}" class="h-10 w-10 object-contain rounded-lg bg-white p-1">
+                        <img src="{{ $theme['logo_url'] }}" alt="{{ $theme['site_name'] }}" class="h-14 w-14 object-contain rounded-xl bg-white p-1.5 shadow-sm">
                     @else
-                        <div class="w-11 h-11 bg-white/15 backdrop-blur rounded-xl flex items-center justify-center">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        <div class="w-14 h-14 bg-white/15 backdrop-blur rounded-xl flex items-center justify-center">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                         </div>
                     @endif
                     <span class="text-white text-lg font-bold tracking-tight">{{ $theme['site_name'] }}</span>
@@ -86,10 +86,10 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 sm:p-10">
                     <div class="text-center mb-8">
                         @if(!empty($theme['logo_url']))
-                            <img src="{{ $theme['logo_url'] }}" alt="{{ $theme['site_name'] }}" class="h-14 w-auto mx-auto mb-5 object-contain">
+                            <img src="{{ $theme['logo_url'] }}" alt="{{ $theme['site_name'] }}" class="h-20 w-auto max-w-[200px] mx-auto mb-5 object-contain">
                         @else
-                            <div class="w-14 h-14 bg-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm">
-                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            <div class="w-16 h-16 bg-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm">
+                                <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                             </div>
                         @endif
                         <h1 class="text-xl font-bold text-gray-900">Admin Panel</h1>

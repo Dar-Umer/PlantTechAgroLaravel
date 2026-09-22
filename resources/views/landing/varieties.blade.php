@@ -4,6 +4,7 @@
 
 @section('content')
 <section id="varieties" class="pt-28 sm:pt-36 pb-16 sm:pb-20 bg-gray-50/60 dark:bg-gray-950 min-h-screen"
+         style="padding-top: calc(var(--site-header-height, 6.75rem) + 1.5rem);"
          x-data="{
              selectedCategory: 'all',
              searchQuery: '',

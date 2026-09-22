@@ -33,6 +33,8 @@ class ProductBatch extends Model
     protected $fillable = [
         'product_id',
         'batch_number',
+        'lot_number',
+        'inward_date',
         'mfg_date',
         'expiry_date',
         'initial_qty',
@@ -46,12 +48,18 @@ class ProductBatch extends Model
     protected function casts(): array
     {
         return [
+            'inward_date' => 'date',
             'mfg_date' => 'date',
             'expiry_date' => 'date',
             'initial_qty' => 'decimal:3',
             'current_qty' => 'decimal:3',
             'unit_cost' => 'decimal:2',
         ];
+    }
+
+    public function batchValuation(): float
+    {
+        return round((float) $this->current_qty * (float) ($this->unit_cost ?? 0), 2);
     }
 
     public function product(): BelongsTo
@@ -125,5 +133,11 @@ class ProductBatch extends Model
         return $query->whereNotNull('expiry_date')
             ->where('expiry_date', '<', now()->toDateString())
             ->where('current_qty', '>', 0);
+    }
+
+    public function scopeFifo($query)
+    {
+        return $query->where('current_qty', '>', 0)
+            ->orderByRaw('COALESCE(inward_date, created_at) ASC, id ASC');
     }
 }

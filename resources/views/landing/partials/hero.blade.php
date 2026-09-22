@@ -10,7 +10,9 @@
     $headline = count($words) > 1 ? implode(' ', array_slice($words, 0, -1)) : '';
 @endphp
 @if($heroActive)
-<section id="hero-section" class="hero-cursor relative flex items-center overflow-hidden bg-white dark:bg-gray-950 pt-20 sm:pt-24 lg:pt-28 pb-8 sm:pb-12">
+<section id="hero-section"
+         class="hero-cursor relative flex items-center overflow-hidden bg-white dark:bg-gray-950 pt-32 sm:pt-36 lg:pt-40 pb-8 sm:pb-12"
+         style="padding-top: calc(var(--site-header-height, 6.75rem) + 1.75rem);">
     <div class="absolute inset-0 bg-gradient-to-b from-brand-50 via-white to-gray-50 dark:from-brand-900/40 dark:via-gray-950 dark:to-gray-950"></div>
     <div class="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.35),transparent_55%)]"></div>
     <div class="absolute inset-0 opacity-[0.36] bg-[linear-gradient(rgba(15,23,42,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.06)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(148,163,184,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.10)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_72%)]"></div>
@@ -119,7 +121,7 @@
     </script>
 
     <div class="relative w-full max-w-[88rem] mx-auto px-6 sm:px-8 lg:px-12 text-center">
-        <p class="animate-fade-up inline-flex items-center justify-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-1.5 text-[11px] sm:text-xs font-semibold tracking-widest uppercase text-brand-600 dark:text-brand-400 shadow-sm">
+        <p class="animate-fade-up inline-flex items-center justify-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-1.5 text-[11px] sm:text-xs font-semibold tracking-widest uppercase text-brand-600 dark:text-brand-400 shadow-sm mt-1.5 sm:mt-0">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21c5.5 0 8-3.5 8-9V5.25c0-.14-.11-.25-.25-.25H12C6.5 5 4 8.5 4 14s2.5 7 8 7z"/></svg>
             Kashmir's Finest Agritech Company
         </p>

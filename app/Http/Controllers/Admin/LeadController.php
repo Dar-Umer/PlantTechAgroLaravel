@@ -60,7 +60,7 @@ class LeadController extends Controller
 
     public function show(Lead $lead)
     {
-        $lead->load('service', 'convertedCustomer');
+        $lead->load('service', 'convertedCustomer', 'quotations.workOrder');
 
         $existingCustomer = $lead->isConverted()
             ? $lead->convertedCustomer

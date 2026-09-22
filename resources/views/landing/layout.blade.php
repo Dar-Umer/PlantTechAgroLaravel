@@ -51,7 +51,14 @@
             }
         }
     </script>
+    @php
+        $noticeBarConfig = config('frontend.notice_bar', []);
+        $hasNoticeActive = (!empty($noticeBarConfig['enabled']) && !empty($noticeBarConfig['items']) && is_array($noticeBarConfig['items']));
+    @endphp
     <style>
+        :root {
+            --site-header-height: {{ $hasNoticeActive ? '6.75rem' : '4.25rem' }};
+        }
         html { color-scheme: light; }
         html.dark { color-scheme: dark; }
         body { transition: background-color .3s ease, color .3s ease; }
@@ -115,6 +122,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="font-sans antialiased overflow-x-hidden text-gray-800 dark:text-gray-300 bg-white dark:bg-gray-950">
+    @include('landing.partials.preloader')
     @include('landing.partials.header')
 
     <main>

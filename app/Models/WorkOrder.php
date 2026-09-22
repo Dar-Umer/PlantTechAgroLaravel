@@ -60,6 +60,11 @@ class WorkOrder extends Model
         return $this->belongsTo(Admin::class, 'created_by');
     }
 
+    public function quotation(): HasOne
+    {
+        return $this->hasOne(Quotation::class);
+    }
+
     public function stages(): HasMany
     {
         return $this->hasMany(WorkOrderStage::class)->orderBy('sort_order');

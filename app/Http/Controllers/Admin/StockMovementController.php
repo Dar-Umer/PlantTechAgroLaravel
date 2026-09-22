@@ -28,7 +28,9 @@ class StockMovementController extends Controller
         $outMonthQty = (float) StockMovement::where('type', 'out')->where('created_at', '>=', $monthStart)->sum(DB::raw('ABS(quantity)'));
         $adjustmentCount = StockMovement::where('type', 'adjustment')->where('created_at', '>=', $monthStart)->count();
         $netMonthQty = (float) StockMovement::where('created_at', '>=', $monthStart)->sum('quantity');
-        $stockValue = (float) Product::sum(DB::raw('COALESCE(stock_qty, 0) * COALESCE(rate, 0)'));
+        
+        $batchValuation = (float) \App\Models\ProductBatch::where('current_qty', '>', 0)->sum(DB::raw('current_qty * COALESCE(unit_cost, 0)'));
+        $stockValue = $batchValuation > 0 ? $batchValuation : (float) Product::sum(DB::raw('COALESCE(stock_qty, 0) * COALESCE(rate, 0)'));
 
         return view('admin.stock_movements.index', compact(
             'movements', 'products', 'suppliers',
@@ -38,7 +40,7 @@ class StockMovementController extends Controller
 
     public function show(StockMovement $movement)
     {
-        $movement->load(['product', 'supplier', 'createdBy']);
+        $movement->load(['product', 'supplier', 'createdBy', 'batch']);
 
         return view('admin.stock_movements.show', compact('movement'));
     }
@@ -46,7 +48,9 @@ class StockMovementController extends Controller
     public function create(Request $request)
     {
         $products = Product::active()
-            ->with('activeBatches')
+            ->with(['activeBatchesFifo' => function ($q) {
+                $q->select('id', 'product_id', 'batch_number', 'lot_number', 'current_qty', 'unit_cost', 'expiry_date', 'inward_date');
+            }])
             ->orderBy('name')
             ->get(['id', 'name', 'sku', 'unit', 'rate', 'stock_qty', 'low_stock_threshold']);
         $suppliers = Supplier::active()->orderBy('name')->get(['id', 'name']);

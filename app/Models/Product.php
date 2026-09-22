@@ -69,6 +69,37 @@ class Product extends Model
         return $this->hasMany(ProductBatch::class)->where('current_qty', '>', 0)->orderBy('expiry_date');
     }
 
+    public function activeBatchesFifo(): HasMany
+    {
+        return $this->hasMany(ProductBatch::class)
+            ->where('current_qty', '>', 0)
+            ->orderByRaw('COALESCE(inward_date, created_at) ASC, id ASC');
+    }
+
+    public function stockValuation(): float
+    {
+        $val = (float) $this->batches()
+            ->where('current_qty', '>', 0)
+            ->selectRaw('SUM(current_qty * COALESCE(unit_cost, 0)) as total_val')
+            ->value('total_val');
+
+        if ($val <= 0 && (float) $this->stock_qty > 0) {
+            return round((float) $this->stock_qty * (float) ($this->rate ?? 0), 2);
+        }
+
+        return round($val, 2);
+    }
+
+    public function weightedAverageCost(): float
+    {
+        $totalQty = (float) $this->batches()->where('current_qty', '>', 0)->sum('current_qty');
+        if ($totalQty <= 0) {
+            return (float) ($this->rate ?? 0);
+        }
+
+        return round($this->stockValuation() / $totalQty, 2);
+    }
+
     public function isLowStock(): bool
     {
         return $this->low_stock_threshold > 0

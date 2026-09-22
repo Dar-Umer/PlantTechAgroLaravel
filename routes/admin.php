@@ -14,10 +14,13 @@ use App\Http\Controllers\Admin\LeadFormFieldController;
 use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\Admin\MobileAppController;
 use App\Http\Controllers\Admin\NotificationController;
+use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProjectController;
+use App\Http\Controllers\Admin\QuotationController;
 use App\Http\Controllers\Admin\ResetPasswordController;
+use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\ServiceItemController;
 use App\Http\Controllers\Admin\ServiceStageController;
@@ -76,6 +79,9 @@ Route::middleware('admin')->group(function () {
         Route::get('staff/{admin}/edit', [StaffController::class, 'edit'])->name('admin.staff.edit');
         Route::put('staff/{admin}', [StaffController::class, 'update'])->name('admin.staff.update');
         Route::delete('staff/{admin}', [StaffController::class, 'destroy'])->name('admin.staff.destroy');
+
+        // Roles & Permissions
+        Route::resource('roles', RoleController::class)->except('show')->names('admin.roles');
     });
 
     // Content management
@@ -85,6 +91,7 @@ Route::middleware('admin')->group(function () {
     Route::resource('services', ServiceController::class)->except('show')->names('admin.services');
     Route::resource('services.items', ServiceItemController::class)->shallow()->except('show')->names('admin.services.items');
     Route::resource('services.stages', ServiceStageController::class)->shallow()->except('show')->names('admin.services.stages');
+    Route::post('services/{service}/stages/reorder', [ServiceStageController::class, 'reorder'])->name('admin.services.stages.reorder');
     Route::resource('projects', ProjectController::class)->except('show')->names('admin.projects');
     Route::resource('testimonials', TestimonialController::class)->except('show')->names('admin.testimonials');
     Route::resource('faqs', FaqController::class)->except('show')->names('admin.faqs');
@@ -116,6 +123,18 @@ Route::middleware('admin')->group(function () {
     Route::post('leads/{lead}/convert', [LeadController::class, 'convert'])->name('admin.leads.convert.store');
     Route::post('leads/{lead}/work-order', [LeadController::class, 'createWorkOrder'])->name('admin.leads.work-order');
     Route::delete('leads/{lead}', [LeadController::class, 'destroy'])->name('admin.leads.destroy');
+
+    // Quotations / Estimates
+    Route::get('quotations', [QuotationController::class, 'index'])->name('admin.quotations.index');
+    Route::get('quotations/create', [QuotationController::class, 'create'])->name('admin.quotations.create');
+    Route::post('quotations', [QuotationController::class, 'store'])->name('admin.quotations.store');
+    Route::get('quotations/{quotation}', [QuotationController::class, 'show'])->name('admin.quotations.show');
+    Route::get('quotations/{quotation}/edit', [QuotationController::class, 'edit'])->name('admin.quotations.edit');
+    Route::put('quotations/{quotation}', [QuotationController::class, 'update'])->name('admin.quotations.update');
+    Route::delete('quotations/{quotation}', [QuotationController::class, 'destroy'])->name('admin.quotations.destroy');
+    Route::get('quotations/{quotation}/print', [QuotationController::class, 'print'])->name('admin.quotations.print');
+    Route::get('quotations/{quotation}/pdf', [QuotationController::class, 'pdf'])->name('admin.quotations.pdf');
+    Route::post('quotations/{quotation}/approve', [QuotationController::class, 'approveAndStartWork'])->name('admin.quotations.approve');
 
     Route::get('customers', [CustomerController::class, 'index'])->name('admin.customers.index');
     Route::get('customers/create', [CustomerController::class, 'create'])->name('admin.customers.create');
@@ -176,6 +195,18 @@ Route::middleware('admin')->group(function () {
     Route::post('stages/{stage}/products', [ServiceStageProductController::class, 'store'])->name('admin.stage-products.store');
     Route::put('stages/{stage}/products/{stageProduct}', [ServiceStageProductController::class, 'update'])->name('admin.stage-products.update');
     Route::delete('stages/{stage}/products/{stageProduct}', [ServiceStageProductController::class, 'destroy'])->name('admin.stage-products.destroy');
+
+    // Point of Sale (POS)
+    Route::get('pos', [PosController::class, 'terminal'])->name('admin.pos.terminal');
+    Route::get('pos/sales', [PosController::class, 'sales'])->name('admin.pos.sales');
+    Route::get('pos/products/search', [PosController::class, 'searchProducts'])->name('admin.pos.products.search');
+    Route::get('pos/customers/search', [PosController::class, 'searchCustomers'])->name('admin.pos.customers.search');
+    Route::post('pos/customers', [PosController::class, 'storeCustomer'])->name('admin.pos.customers.store');
+    Route::post('pos/checkout', [PosController::class, 'checkout'])->name('admin.pos.checkout');
+    Route::get('pos/sales/{sale}', [PosController::class, 'show'])->name('admin.pos.sales.show');
+    Route::get('pos/sales/{sale}/receipt', [PosController::class, 'receipt'])->name('admin.pos.receipt');
+    Route::get('pos/sales/{sale}/invoice', [PosController::class, 'invoice'])->name('admin.pos.invoice');
+    Route::post('pos/sales/{sale}/cancel', [PosController::class, 'cancel'])->name('admin.pos.sales.cancel');
 
     // Notifications
     Route::get('notifications/latest', [NotificationController::class, 'latest'])->name('admin.notifications.latest');

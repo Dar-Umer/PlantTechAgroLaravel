@@ -90,6 +90,8 @@
                             <th class="py-3.5 px-4">Product</th>
                             <th class="py-3.5 px-4">Status</th>
                             <th class="py-3.5 px-4 text-right">Current Stock</th>
+                            <th class="py-3.5 px-4 text-right">Cost Rate</th>
+                            <th class="py-3.5 px-4 text-right">Lot Valuation</th>
                             <th class="py-3.5 px-4 text-right">Initial Qty</th>
                             <th class="py-3.5 px-4">Mfg Date</th>
                             <th class="py-3.5 px-4">Expiry Date</th>
@@ -125,6 +127,12 @@
                                 </td>
                                 <td class="py-3.5 px-4 text-right font-semibold {{ (float)$batch->current_qty <= 0 ? 'text-gray-400' : 'text-gray-900' }}">
                                     {{ \App\Support\Format::qty($batch->current_qty) }} <span class="text-xs text-gray-400">{{ $batch->product?->unit }}</span>
+                                </td>
+                                <td class="py-3.5 px-4 text-right font-mono font-medium text-gray-900">
+                                    {{ $batch->unit_cost !== null ? '₹' . number_format($batch->unit_cost, 2) : '—' }}
+                                </td>
+                                <td class="py-3.5 px-4 text-right font-mono font-bold text-gray-900">
+                                    {{ $batch->unit_cost !== null ? '₹' . number_format($batch->batchValuation(), 2) : '—' }}
                                 </td>
                                 <td class="py-3.5 px-4 text-right text-gray-500">
                                     {{ \App\Support\Format::qty($batch->initial_qty) }} <span class="text-xs text-gray-400">{{ $batch->product?->unit }}</span>

@@ -35,6 +35,7 @@ class StaffController extends Controller
             'email' => $data['email'],
             'phone' => $data['phone'] ?? null,
             'password' => $data['password'],
+            'role' => $data['role'],
             'is_active' => isset($data['is_active']),
             'email_verified_at' => now(),
         ]);
@@ -76,6 +77,7 @@ class StaffController extends Controller
         $admin->name = $data['name'];
         $admin->email = $data['email'];
         $admin->phone = $data['phone'] ?? null;
+        $admin->role = $data['role'];
         $admin->is_active = isset($data['is_active']);
 
         $passwordChanged = ! empty($data['password']);
@@ -161,7 +163,7 @@ class StaffController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => $emailRule,
             'phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9+\-\s()]{7,20}$/'],
-            'role' => ['required', Rule::in(['Super Admin', 'Manager', 'Field Agent'])],
+            'role' => ['required', 'string', Rule::exists('roles', 'name')->where('guard_name', 'admin')],
             'is_active' => ['nullable', 'boolean'],
         ];
 
@@ -176,8 +178,8 @@ class StaffController extends Controller
 
     private function assignableRoles()
     {
-        return Role::whereIn('name', ['Super Admin', 'Manager', 'Field Agent'])
-            ->where('guard_name', 'admin')
+        return Role::where('guard_name', 'admin')
+            ->orderBy('name')
             ->pluck('name', 'name')
             ->all();
     }

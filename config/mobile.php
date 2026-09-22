@@ -25,9 +25,9 @@ return [
     'app_logo_url' => '',  // dedicated app icon/logo (absolute /storage path or URL)
 
     // Version control of the customer app.
-    'version' => '1.0.0',          // display version shown in the app
+    'version' => '2.0.0',          // display version shown in the app
     'build_number' => '1',
-    'minimum_supported' => '1.0.0', // oldest app version allowed to keep running
+    'minimum_supported' => '2.0.0', // oldest app version allowed to keep running
     'force_update' => false,        // block usage until the customer updates
     'android_update_url' => '',     // Play Store listing
     'ios_update_url' => '',         // App Store listing

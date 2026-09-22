@@ -64,6 +64,7 @@
                     <x-admin.button href="{{ route('admin.leads.index') }}" variant="secondary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>'>Back</x-admin.button>
                     @if($statusKey !== 'converted')
                         <x-admin.button href="{{ route('admin.leads.edit', $lead) }}" variant="secondary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>'>Edit</x-admin.button>
+                        <x-admin.button href="{{ route('admin.quotations.create', ['lead_id' => $lead->id]) }}" variant="secondary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>'>Create Quotation</x-admin.button>
                     @endif
                     @if($statusKey !== 'converted' && empty($existingCustomer))
                         <x-admin.button href="{{ route('admin.leads.convert', $lead) }}" variant="primary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>'>Convert to Customer</x-admin.button>
@@ -154,6 +155,87 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {{-- Main column --}}
             <div class="lg:col-span-2 space-y-6">
+                {{-- Quotations & Estimates Section --}}
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-3 flex-wrap gap-2">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                <span>Quotations & Estimates</span>
+                                @if($lead->quotations->isNotEmpty())
+                                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-brand-50 text-brand-700">
+                                        {{ $lead->quotations->count() }}
+                                    </span>
+                                @endif
+                            </h3>
+                            <p class="text-xs text-gray-500">Proforma invoices and price estimates prepared for this farmer.</p>
+                        </div>
+                        <x-admin.button href="{{ route('admin.quotations.create', ['lead_id' => $lead->id]) }}" variant="primary" size="sm"
+                                        icon='<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>'>
+                            Create Quotation
+                        </x-admin.button>
+                    </div>
+
+                    @if($lead->quotations->isEmpty())
+                        <div class="rounded-xl border border-dashed border-gray-200 p-6 text-center bg-gray-50/50">
+                            <div class="w-10 h-10 rounded-xl bg-gray-100 text-gray-400 flex items-center justify-center mx-auto mb-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            </div>
+                            <p class="text-sm font-medium text-gray-700">No quotation generated yet</p>
+                            <p class="text-xs text-gray-500 mt-0.5">For larger services like Drone Spraying or Trellis Installation, generate a Proforma Quotation PDF before starting work.</p>
+                            <div class="mt-3">
+                                <x-admin.button href="{{ route('admin.quotations.create', ['lead_id' => $lead->id]) }}" variant="secondary" size="sm">
+                                    Generate Proforma Quotation
+                                </x-admin.button>
+                            </div>
+                        </div>
+                    @else
+                        <div class="space-y-3">
+                            @foreach($lead->quotations as $quotation)
+                                <div class="rounded-xl border border-gray-100 bg-gray-50/50 p-4 hover:border-gray-200 transition flex items-center justify-between flex-wrap gap-3">
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <a href="{{ route('admin.quotations.show', $quotation) }}" class="font-bold text-gray-900 hover:text-brand-600 hover:underline">
+                                                {{ $quotation->number }}
+                                            </a>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border {{ $quotation->statusBadge() }}">
+                                                {{ $quotation->statusLabel() }}
+                                            </span>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            Issued {{ $quotation->date->format('d M Y') }}
+                                            <span class="mx-1 text-gray-300">·</span>
+                                            <strong class="text-gray-900">₹{{ number_format((float) $quotation->grand_total, 2) }}</strong>
+                                            @if($quotation->workOrder)
+                                                <span class="mx-1 text-gray-300">·</span>
+                                                <a href="{{ route('admin.work-orders.show', $quotation->workOrder) }}" class="font-semibold text-green-700 hover:underline">
+                                                    Work Order: {{ $quotation->workOrder->number }}
+                                                </a>
+                                            @endif
+                                        </p>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <a href="{{ route('admin.quotations.pdf', $quotation) }}" target="_blank"
+                                           class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 transition shadow-xs">
+                                            <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                            Download PDF
+                                        </a>
+                                        @if($quotation->canApprove())
+                                            <form action="{{ route('admin.quotations.approve', $quotation) }}" method="POST" class="inline"
+                                                  onsubmit="return confirm('Farmer approved this quotation?\n\nThis will automatically convert this lead and create an active Work Order.');">
+                                                @csrf
+                                                <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-green-600 text-white text-xs font-bold hover:bg-green-700 transition shadow-xs">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                                    Approve & Start Work
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+
                 {{-- Details --}}
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <div class="flex items-center justify-between mb-5">
@@ -306,6 +388,7 @@
                     <div class="mt-6 pt-6 border-t border-gray-100 space-y-3">
                         @if($statusKey !== 'converted')
                             <x-admin.button href="{{ route('admin.leads.edit', $lead) }}" variant="secondary" class="w-full">Edit Lead Details</x-admin.button>
+                            <x-admin.button href="{{ route('admin.quotations.create', ['lead_id' => $lead->id]) }}" variant="secondary" class="w-full">Create Quotation / Estimate</x-admin.button>
                         @endif
                         @if($statusKey !== 'converted' && empty($existingCustomer))
                             <x-admin.button href="{{ route('admin.leads.convert', $lead) }}" variant="primary" class="w-full">Convert to Customer</x-admin.button>
