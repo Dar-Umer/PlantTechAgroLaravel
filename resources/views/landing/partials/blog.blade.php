@@ -1,7 +1,7 @@
 @if($posts->isNotEmpty())
 <section id="blog" class="py-8 sm:py-12 bg-gray-50 dark:bg-gray-900/50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="max-w-2xl mb-10 sm:mb-14">
+        <div class="max-w-2xl mb-8 sm:mb-10">
             <p class="text-sm font-semibold tracking-widest uppercase text-brand-600 dark:text-brand-400 mb-3">From the Blog</p>
             <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">Latest <span class="text-brand-600 dark:text-brand-400">Articles</span></h2>
             <p class="mt-4 text-gray-500 dark:text-gray-400 leading-relaxed">Expert insights on apple cultivation, orchard management, and modern farming techniques.</p>
@@ -24,9 +24,8 @@
                         <h3 class="mt-3 font-bold text-gray-900 dark:text-white group-hover:text-brand-700 dark:group-hover:text-brand-400 transition leading-snug">{{ $post->title }}</h3>
                         <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 leading-relaxed flex-1">{{ $post->excerpt }}</p>
                         <p class="mt-4 text-xs text-gray-400 dark:text-gray-500">{{ $post->published_at?->format('d M Y') }}</p>
-                        <span class="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand-600 dark:text-brand-400 group-hover:text-brand-700 dark:group-hover:text-brand-300 transition">
+                        <span class="mt-3 inline-flex items-center text-sm font-semibold text-brand-600 dark:text-brand-400 group-hover:text-brand-700 dark:group-hover:text-brand-300 transition">
                             Read More
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                         </span>
                     </div>
                 </a>

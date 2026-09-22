@@ -255,6 +255,93 @@
                             <x-admin.textarea name="sections[{{ $section->id }}][description]" label="Description" :value="$section->content['description'] ?? ''" rows="3" />
                             <x-admin.checkbox name="sections[{{ $section->id }}][is_active]" label="Visible on landing page" :checked="$section->is_active" />
 
+                            @if($section->section_key === 'hero')
+                                {{-- Hero Slider Management --}}
+                                @php
+                                    $heroSlides = $section->content['slides'] ?? [];
+                                    $slidePlaceholders = [
+                                        0 => ['badge' => 'High-Density Orchards', 'title' => 'Advanced Trellis & High-Yield Orchard Architecture', 'desc' => 'High-density apple orchards with modern trellis systems.'],
+                                        1 => ['badge' => 'Certified Apple Varieties', 'title' => 'World-Class Clonal Varieties Grafted for Kashmir', 'desc' => 'Gala, Fuji, and Red Velox apple varieties.'],
+                                        2 => ['badge' => 'Precision AgTech & Irrigation', 'title' => 'Smart Micro-Drip Irrigation & Automated Fertigation', 'desc' => 'Drip irrigation and sensor nutrition.'],
+                                        3 => ['badge' => 'Aerial Drone Spraying', 'title' => 'Drone Crop Protection & Orchard Safety Solutions', 'desc' => 'Drone pesticide spraying and hail nets.'],
+                                    ];
+                                @endphp
+                                <div class="rounded-xl bg-gray-50 border border-gray-100 p-5 space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm font-semibold text-gray-800">Hero Banner Slider Images</p>
+                                            <p class="text-xs text-gray-500">Customize the images and text sliding in the hero section banner. If custom images are not uploaded, default agritech photos will be displayed.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        @for($i = 0; $i < 4; $i++)
+                                            @php
+                                                $s = $heroSlides[$i] ?? [];
+                                                $ph = $slidePlaceholders[$i];
+                                                $hasCustomImg = !empty($s['image']);
+                                                $previewImg = $hasCustomImg ? \App\Support\Media::url($s['image']) : asset("images/hero/slide-" . ($i + 1) . ".jpg");
+                                            @endphp
+                                            <div class="rounded-xl border border-gray-200 bg-white p-4 space-y-3"
+                                                 x-data="{
+                                                     preview: '{{ $previewImg }}',
+                                                     hasImg: {{ $hasCustomImg ? 'true' : 'false' }}
+                                                 }">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="text-xs font-bold text-gray-700 uppercase tracking-wider">Slide {{ $i + 1 }}</span>
+                                                    @if($hasCustomImg)
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-50 text-green-700">Custom Uploaded</span>
+                                                    @else
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-600">Default Slide</span>
+                                                    @endif
+                                                </div>
+
+                                                <div class="aspect-video w-full rounded-lg border border-gray-200 bg-gray-100 overflow-hidden relative group">
+                                                    <img :src="preview" alt="Slide {{ $i + 1 }}" class="w-full h-full object-cover">
+                                                </div>
+
+                                                <div>
+                                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Replace Image</label>
+                                                    <input type="file" name="sections[{{ $section->id }}][slides][{{ $i }}][image]" accept="image/*"
+                                                           class="w-full text-xs text-gray-600 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100"
+                                                           onchange="if(this.files[0]){const r=new FileReader();r.onload=e=>{preview=e.target.result;hasImg=true};r.readAsDataURL(this.files[0])}">
+                                                    @if($hasCustomImg)
+                                                        <label class="mt-1.5 flex items-center gap-1.5 text-xs text-red-600 cursor-pointer">
+                                                            <input type="checkbox" name="sections[{{ $section->id }}][slides][{{ $i }}][remove_image]" value="1" class="w-3.5 h-3.5 text-red-600 rounded">
+                                                            Remove custom image
+                                                        </label>
+                                                    @endif
+                                                </div>
+
+                                                <div class="space-y-2">
+                                                    <div>
+                                                        <label class="block text-[11px] font-medium text-gray-600">Pill Badge</label>
+                                                        <input type="text" name="sections[{{ $section->id }}][slides][{{ $i }}][badge]"
+                                                               value="{{ $s['badge'] ?? $ph['badge'] }}"
+                                                               placeholder="{{ $ph['badge'] }}"
+                                                               class="w-full rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs text-gray-900 focus:outline-none focus:border-brand-500">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-[11px] font-medium text-gray-600">Slide Title</label>
+                                                        <input type="text" name="sections[{{ $section->id }}][slides][{{ $i }}][title]"
+                                                               value="{{ $s['title'] ?? $ph['title'] }}"
+                                                               placeholder="{{ $ph['title'] }}"
+                                                               class="w-full rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs text-gray-900 focus:outline-none focus:border-brand-500">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-[11px] font-medium text-gray-600">Description</label>
+                                                        <input type="text" name="sections[{{ $section->id }}][slides][{{ $i }}][desc]"
+                                                               value="{{ $s['desc'] ?? $ph['desc'] }}"
+                                                               placeholder="{{ $ph['desc'] }}"
+                                                               class="w-full rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs text-gray-900 focus:outline-none focus:border-brand-500">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endfor
+                                    </div>
+                                </div>
+                            @endif
+
                             @if($section->section_key === 'about_preview')
                                 {{-- About images --}}
                                 <div class="rounded-xl bg-gray-50 border border-gray-100 p-5"
@@ -379,6 +466,17 @@
                         <x-admin.input name="social_youtube" label="YouTube" :value="$settings['social_youtube'] ?? ''" />
                         <x-admin.input name="social_whatsapp" label="WhatsApp" :value="$settings['social_whatsapp'] ?? ''" />
                         <x-admin.input name="social_x" label="X (Twitter) URL" :value="$settings['social_x'] ?? ''" placeholder="https://x.com/yourhandle" helptext="Blank to hide" />
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Interactive Google Map</h3>
+                    <p class="text-sm text-gray-500 mb-6">Displayed in the front page footer so farmers and visitors can locate your office and high-density demo nursery.</p>
+                    <div class="space-y-5">
+                        <x-admin.checkbox name="site_map_enabled" label="Display Map in Footer" :checked="$settings['site_map_enabled'] ?? true" help="Toggle map visibility in the footer." />
+                        <x-admin.textarea name="site_map_embed" label="Custom Google Maps Embed URL or iframe code" :value="$settings['site_map_embed'] ?? ''" rows="3"
+                                          placeholder="https://maps.google.com/maps?q=... or <iframe src='...'></iframe>"
+                                          helptext="Paste a custom Google Maps embed URL or iframe code here. If left blank, a map will automatically be generated for your registered address above." />
                     </div>
                 </div>
 

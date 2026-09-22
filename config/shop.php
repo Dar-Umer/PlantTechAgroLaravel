@@ -21,4 +21,6 @@ return [
     'seo_meta_description' => 'Plant Tech Agro — Kashmir\'s finest agritech company. High-density orchard development, drip irrigation, soil testing, ground water detection and expert agri consultation.',
     'seo_meta_keywords' => 'high density orchard, apple cultivation, drip irrigation, soil testing, Kashmir agriculture',
     'seo_og_image' => '',
+    'site_map_embed' => '',
+    'site_map_enabled' => true,
 ];

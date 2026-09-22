@@ -1,9 +1,9 @@
 <section id="services" class="pt-4 pb-8 sm:pt-8 sm:pb-12 bg-white dark:bg-gray-950">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="max-w-2xl mb-10 sm:mb-16">
-            <p class="text-sm font-semibold tracking-widest uppercase text-brand-600 dark:text-brand-400 mb-3">What We Offer</p>
+        <div class="max-w-2xl mb-8 sm:mb-10">
+            <p class="text-xs sm:text-sm font-semibold tracking-widest uppercase text-brand-600 dark:text-brand-400 mb-2">What We Offer</p>
             <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">Our <span class="text-brand-600 dark:text-brand-400">Services</span></h2>
-            <p class="mt-4 text-gray-500 dark:text-gray-400 leading-relaxed">Modern orchard development, precision farming, and sustainable agricultural solutions powered by innovative technologies, scientific farm management, and expert advisory services.</p>
+            <p class="mt-3 text-gray-500 dark:text-gray-400 leading-relaxed text-sm sm:text-base">Modern orchard development, precision farming, and sustainable agricultural solutions powered by scientific farm management and expert advisory services.</p>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -24,9 +24,8 @@
                         <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-brand-700 dark:group-hover:text-brand-400 transition">{{ $service->name }}</h3>
                         <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 leading-relaxed flex-1">{{ $service->description }}</p>
                         <button type="button" onclick="openBookModal('{{ $service->id }}')"
-                                class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition">
+                                class="mt-4 inline-flex items-center text-sm font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition">
                             Book Now
-                            <svg class="w-4 h-4 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                         </button>
                     </div>
                 </article>

@@ -23,41 +23,39 @@
 @if($aboutVisible)
 <section id="about" class="py-8 sm:py-12 bg-white dark:bg-gray-950 overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-center">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
             {{-- Content --}}
             <div class="relative">
-                <p class="inline-flex items-center gap-2 text-sm font-semibold tracking-widest uppercase text-brand-600 dark:text-brand-400 mb-4">
-                    <span class="w-8 h-px bg-brand-500 inline-block"></span>
+                <p class="text-xs sm:text-sm font-semibold tracking-widest uppercase text-brand-600 dark:text-brand-400 mb-3">
                     About {{ config('shop.site_name', 'Plant Tech Agro') }}
                 </p>
                 <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight leading-tight">
                     {{ $aboutTitle }}
                 </h2>
                 @if($aboutDescription)
-                    <p class="mt-6 text-gray-600 dark:text-gray-400 leading-relaxed text-lg">{{ $aboutDescription }}</p>
+                    <p class="mt-4 text-gray-600 dark:text-gray-400 leading-relaxed text-base sm:text-lg">{{ $aboutDescription }}</p>
                 @endif
 
                 @if($points)
-                    <div class="mt-8 space-y-3.5">
+                    <div class="mt-6 space-y-3">
                         @foreach($points as $point)
                             <div class="flex items-start gap-3">
                                 <span class="mt-0.5 w-6 h-6 rounded-full bg-brand-50 dark:bg-brand-900/40 border border-brand-100 dark:border-brand-800 flex items-center justify-center flex-shrink-0">
                                     <svg class="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                                 </span>
-                                <p class="text-gray-600 dark:text-gray-400 text-[15px] leading-relaxed">{{ $point }}</p>
+                                <p class="text-gray-600 dark:text-gray-400 text-sm sm:text-[15px] leading-relaxed">{{ $point }}</p>
                             </div>
                         @endforeach
                     </div>
                 @endif
 
-                <div class="mt-10 flex flex-wrap gap-4">
+                <div class="mt-8 flex flex-wrap gap-3 sm:gap-4">
                     <button type="button" onclick="openBookModal()"
-                            class="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 transition shadow-sm shadow-brand-600/20">
+                            class="inline-flex items-center px-6 sm:px-7 py-3 rounded-xl bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 transition shadow-sm">
                         Get Started
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                     </button>
                     <a href="#contact"
-                       class="inline-flex items-center px-7 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                       class="inline-flex items-center px-6 sm:px-7 py-3 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition">
                         Get in Touch
                     </a>
                 </div>

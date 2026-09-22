@@ -15,6 +15,48 @@
         </x-admin.button>
     </div>
 
+    {{-- Marquee Speed Control Card --}}
+    @php
+        $currentSpeed = (int) config('frontend.partner_marquee_speed', 30);
+    @endphp
+    <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-2xs">
+        <form method="POST" action="{{ route('admin.partners.speed') }}" class="flex flex-col md:flex-row md:items-center justify-between gap-4"
+              x-data="{ speed: {{ $currentSpeed }} }">
+            @csrf
+            <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="w-2.5 h-2.5 rounded-full bg-brand-500 animate-pulse"></span>
+                    <h3 class="text-sm font-bold text-gray-900">Front Page Marquee Sliding Speed</h3>
+                </div>
+                <p class="text-xs text-gray-500">Controls how fast partner logos scroll across the screen (seconds for a full loop). Lower is faster, higher is slower.</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+                {{-- Quick Presets --}}
+                <div class="flex items-center gap-1.5 bg-gray-50 p-1 rounded-xl border border-gray-200 text-xs">
+                    <button type="button" @click="speed = 18" :class="speed === 18 ? 'bg-white shadow-2xs font-semibold text-brand-700' : 'text-gray-600 hover:text-gray-900'" class="px-2.5 py-1 rounded-lg transition">Fast (18s)</button>
+                    <button type="button" @click="speed = 30" :class="speed === 30 ? 'bg-white shadow-2xs font-semibold text-brand-700' : 'text-gray-600 hover:text-gray-900'" class="px-2.5 py-1 rounded-lg transition">Normal (30s)</button>
+                    <button type="button" @click="speed = 45" :class="speed === 45 ? 'bg-white shadow-2xs font-semibold text-brand-700' : 'text-gray-600 hover:text-gray-900'" class="px-2.5 py-1 rounded-lg transition">Smooth (45s)</button>
+                    <button type="button" @click="speed = 65" :class="speed === 65 ? 'bg-white shadow-2xs font-semibold text-brand-700' : 'text-gray-600 hover:text-gray-900'" class="px-2.5 py-1 rounded-lg transition">Slow (65s)</button>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <input type="range" min="10" max="90" step="1" x-model="speed"
+                           class="w-24 sm:w-32 accent-brand-600 cursor-pointer">
+                    <div class="relative w-20">
+                        <input type="number" name="partner_marquee_speed" x-model="speed" min="5" max="120" required
+                               class="w-full rounded-xl border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-sm text-center font-bold text-gray-900 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                    </div>
+                    <span class="text-xs font-semibold text-gray-500">sec</span>
+                </div>
+
+                <button type="submit" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold transition shadow-sm">
+                    Save Speed
+                </button>
+            </div>
+        </form>
+    </div>
+
     {{-- Filter Bar --}}
     <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs">
         <form method="GET" action="{{ route('admin.partners.index') }}" class="flex flex-col sm:flex-row items-center gap-3">

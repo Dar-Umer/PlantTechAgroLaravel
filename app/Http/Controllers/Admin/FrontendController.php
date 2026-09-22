@@ -33,6 +33,9 @@ class FrontendController extends Controller
             'social_whatsapp' => config('shop.social_whatsapp'),
             'social_x' => config('shop.social_x'),
             'support_hours' => config('shop.support_hours'),
+            'site_map_embed' => config('shop.site_map_embed', ''),
+            'site_map_enabled' => (bool) config('shop.site_map_enabled', true),
+            'partner_marquee_speed' => (int) config('frontend.partner_marquee_speed', 30),
         ];
 
         $fields = LeadFormField::query()->orderBy('sort_order')->get();
@@ -88,6 +91,14 @@ class FrontendController extends Controller
             'sections.*.image_2' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:4096'],
             'sections.*.remove_image_1' => ['nullable', 'boolean'],
             'sections.*.remove_image_2' => ['nullable', 'boolean'],
+            'sections.*.slides' => ['nullable', 'array'],
+            'sections.*.slides.*.image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:4096'],
+            'sections.*.slides.*.remove_image' => ['nullable', 'boolean'],
+            'sections.*.slides.*.badge' => ['nullable', 'string', 'max:100'],
+            'sections.*.slides.*.title' => ['nullable', 'string', 'max:255'],
+            'sections.*.slides.*.desc' => ['nullable', 'string', 'max:1000'],
+            'sections.*.slides.*.cta_text' => ['nullable', 'string', 'max:100'],
+            'sections.*.slides.*.cta_link' => ['nullable', 'string', 'max:255'],
             'stats' => ['nullable', 'array'],
             'stats.*.label' => ['nullable', 'string', 'max:255'],
             'stats.*.value' => ['nullable', 'string', 'max:255'],
@@ -107,6 +118,34 @@ class FrontendController extends Controller
                 } elseif ($request->hasFile("sections.{$id}.{$imageKey}")) {
                     $content[$imageKey] = $request->file("sections.{$id}.{$imageKey}")->store('sections', 'public');
                 }
+            }
+
+            if ($section->section_key === 'hero' && isset($input['slides'])) {
+                $existingSlides = $content['slides'] ?? [];
+                $newSlides = [];
+
+                foreach ($input['slides'] as $sIdx => $sData) {
+                    $existingImg = $existingSlides[$sIdx]['image'] ?? null;
+                    $slideImg = $existingImg;
+
+                    if (! empty($sData['remove_image'])) {
+                        $slideImg = null;
+                    } elseif ($request->hasFile("sections.{$id}.slides.{$sIdx}.image")) {
+                        $slideImg = $request->file("sections.{$id}.slides.{$sIdx}.image")->store('hero', 'public');
+                    }
+
+                    if ($slideImg || ! empty($sData['title']) || ! empty($sData['badge'])) {
+                        $newSlides[] = [
+                            'image' => $slideImg,
+                            'badge' => $sData['badge'] ?? '',
+                            'title' => $sData['title'] ?? '',
+                            'desc' => $sData['desc'] ?? '',
+                            'cta_text' => $sData['cta_text'] ?? '',
+                            'cta_link' => $sData['cta_link'] ?? '',
+                        ];
+                    }
+                }
+                $content['slides'] = $newSlides;
             }
 
             if (array_key_exists('points', $input)) {
@@ -158,6 +197,8 @@ class FrontendController extends Controller
             'social_youtube' => ['nullable', 'string', 'max:500'],
             'social_whatsapp' => ['nullable', 'string', 'max:500'],
             'social_x' => ['nullable', 'string', 'max:500'],
+            'site_map_embed' => ['nullable', 'string', 'max:2000'],
+            'site_map_enabled' => ['nullable', 'in:0,1'],
         ]);
 
         $settingsService->set([
@@ -172,6 +213,8 @@ class FrontendController extends Controller
             'social_youtube' => $validated['social_youtube'] ?? '',
             'social_whatsapp' => $validated['social_whatsapp'] ?? '',
             'social_x' => $validated['social_x'] ?? '',
+            'site_map_embed' => $validated['site_map_embed'] ?? '',
+            'site_map_enabled' => ($request->input('site_map_enabled', '0') === '1'),
         ], 'shop');
 
         return redirect()->route('admin.frontend.index', ['tab' => 'footer'])

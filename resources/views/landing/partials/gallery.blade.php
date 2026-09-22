@@ -5,7 +5,7 @@
 @if($galleryVisible && $gallery->isNotEmpty())
 <section id="gallery" class="py-8 sm:py-12 bg-gray-50 dark:bg-gray-900/50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="max-w-2xl mb-8 sm:mb-12">
+        <div class="max-w-2xl mb-8 sm:mb-10">
             <p class="text-sm font-semibold tracking-widest uppercase text-brand-600 dark:text-brand-400 mb-3">Gallery</p>
             <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">{{ $gallerySection->title ?? "From Kashmir's Fields" }}</h2>
         </div>

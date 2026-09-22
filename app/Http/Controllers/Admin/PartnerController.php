@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Partner;
+use App\Services\ShopSettingsService;
 use Illuminate\Http\Request;
 
 class PartnerController extends Controller
@@ -86,6 +87,21 @@ class PartnerController extends Controller
         $status = $partner->is_active ? 'activated' : 'deactivated';
 
         return back()->with('success', "Partner '{$partner->name}' {$status}.");
+    }
+
+    public function updateSpeed(Request $request, ShopSettingsService $settingsService)
+    {
+        $validated = $request->validate([
+            'partner_marquee_speed' => ['required', 'integer', 'min:5', 'max:120'],
+        ]);
+
+        $speed = (int) $validated['partner_marquee_speed'];
+
+        $settingsService->set([
+            'partner_marquee_speed' => $speed,
+        ], 'frontend');
+
+        return back()->with('success', "Partner marquee sliding speed updated to {$speed} seconds.");
     }
 
     public function destroy(Partner $partner)

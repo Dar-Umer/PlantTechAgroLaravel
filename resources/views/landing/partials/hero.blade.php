@@ -10,7 +10,7 @@
     $headline = count($words) > 1 ? implode(' ', array_slice($words, 0, -1)) : '';
 @endphp
 @if($heroActive)
-<section id="hero-section" class="hero-cursor relative flex items-center overflow-hidden bg-white dark:bg-gray-950 min-h-[68vh] sm:min-h-[80vh] pt-28 sm:pt-36 lg:pt-40 pb-10 sm:pb-12 lg:pb-16">
+<section id="hero-section" class="hero-cursor relative flex items-center overflow-hidden bg-white dark:bg-gray-950 pt-20 sm:pt-24 lg:pt-28 pb-8 sm:pb-12">
     <div class="absolute inset-0 bg-gradient-to-b from-brand-50 via-white to-gray-50 dark:from-brand-900/40 dark:via-gray-950 dark:to-gray-950"></div>
     <div class="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.35),transparent_55%)]"></div>
     <div class="absolute inset-0 opacity-[0.36] bg-[linear-gradient(rgba(15,23,42,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.06)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(148,163,184,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.10)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_72%)]"></div>
@@ -159,6 +159,189 @@
                 <span class="flex items-center gap-2"><strong class="text-gray-900 dark:text-white">{{ $stat->value }}{{ $stat->suffix }}</strong> {{ $stat->label }}</span>
                 @if(! $loop->last) <span class="w-px h-4 bg-gray-200 dark:bg-gray-700"></span> @endif
             @endforeach
+        </div>
+
+        {{-- Hero Image Slider Banner --}}
+        @php
+            $defaultSlides = [
+                [
+                    'image' => asset('images/hero/slide-1.jpg'),
+                    'badge' => 'High-Density Orchards',
+                    'title' => 'Advanced Trellis & High-Yield Orchard Architecture',
+                    'desc' => 'Transforming Kashmir\'s apple orchards with high-density Italian dwarf rootstocks, modern trellis architecture, and higher yields per kanal.',
+                    'cta_text' => 'Explore Orchard Booking',
+                    'cta_link' => '#services',
+                ],
+                [
+                    'image' => asset('images/hero/slide-2.jpg'),
+                    'badge' => 'Certified Apple Varieties',
+                    'title' => 'World-Class Clonal Varieties Grafted for Kashmir',
+                    'desc' => 'Disease-resistant, high-coloring Gala, Fuji, Red Velox, and King Roat varieties delivering premium market value.',
+                    'cta_text' => 'View Varieties',
+                    'cta_link' => route('varieties.index'),
+                ],
+                [
+                    'image' => asset('images/hero/slide-3.jpg'),
+                    'badge' => 'Precision AgTech & Irrigation',
+                    'title' => 'Smart Micro-Drip Irrigation & Automated Fertigation',
+                    'desc' => 'Optimize root-zone water efficiency up to 60% with sensor-guided irrigation systems and precision soil nutrition plans.',
+                    'cta_text' => 'Soil & Drip Solutions',
+                    'cta_link' => '#services',
+                ],
+                [
+                    'image' => asset('images/hero/slide-4.jpg'),
+                    'badge' => 'Aerial Drone Spraying',
+                    'title' => 'Drone Crop Protection & Orchard Safety Solutions',
+                    'desc' => 'Next-gen drone pesticide and nutrient spraying combined with heavy-duty anti-hail net installations to shield your harvest.',
+                    'cta_text' => 'Book Consultation',
+                    'cta_link' => '#contact',
+                ],
+            ];
+
+            $customSlides = $hero->content['slides'] ?? [];
+            $slides = [];
+            if (!empty($customSlides) && is_array($customSlides)) {
+                foreach ($customSlides as $idx => $cs) {
+                    if (!empty($cs['image'])) {
+                        $slides[] = [
+                            'image' => \App\Support\Media::url($cs['image']),
+                            'badge' => $cs['badge'] ?? ('Featured ' . ($idx + 1)),
+                            'title' => $cs['title'] ?? 'Modern Agriculture Excellence',
+                            'desc' => $cs['desc'] ?? '',
+                            'cta_text' => $cs['cta_text'] ?? 'Learn More',
+                            'cta_link' => $cs['cta_link'] ?? '#services',
+                        ];
+                    }
+                }
+            }
+            if (empty($slides)) {
+                $slides = $defaultSlides;
+            }
+        @endphp
+
+        <div class="animate-fade-up [animation-delay:500ms] mt-10 sm:mt-12 w-full max-w-5xl mx-auto"
+             x-data="{
+                 current: 0,
+                 total: {{ count($slides) }},
+                 timer: null,
+                 touchStartX: 0,
+                 touchEndX: 0,
+                 autoplay() {
+                     this.stop();
+                     this.timer = setInterval(() => { this.next(); }, 5000);
+                 },
+                 stop() {
+                     if (this.timer) {
+                         clearInterval(this.timer);
+                         this.timer = null;
+                     }
+                 },
+                 next() {
+                     this.current = (this.current + 1) % this.total;
+                 },
+                 prev() {
+                     this.current = (this.current - 1 + this.total) % this.total;
+                 },
+                 goTo(idx) {
+                     this.current = idx;
+                     this.autoplay();
+                 },
+                 handleTouchStart(e) {
+                     this.touchStartX = e.changedTouches[0].screenX;
+                 },
+                 handleTouchEnd(e) {
+                     this.touchEndX = e.changedTouches[0].screenX;
+                     if (this.touchStartX - this.touchEndX > 50) this.next();
+                     if (this.touchEndX - this.touchStartX > 50) this.prev();
+                 },
+                 init() {
+                     this.autoplay();
+                 }
+             }"
+             @mouseenter="stop()"
+             @mouseleave="autoplay()"
+             @touchstart.passive="handleTouchStart($event)"
+             @touchend.passive="handleTouchEnd($event)">
+            <div class="relative overflow-hidden rounded-3xl bg-gray-900 border border-gray-200/80 dark:border-gray-800 shadow-2xl shadow-brand-900/10 h-[280px] sm:h-[380px] lg:h-[440px] group">
+                {{-- Slides --}}
+                @foreach($slides as $index => $slide)
+                    <div x-show="current === {{ $index }}"
+                         x-transition:enter="transition ease-out duration-700"
+                         x-transition:enter-start="opacity-0 scale-105"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-500"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute inset-0 w-full h-full"
+                         style="{{ $index === 0 ? '' : 'display: none;' }}">
+                        <img src="{{ $slide['image'] }}"
+                             alt="{{ $slide['title'] }}"
+                             loading="{{ $index === 0 ? 'eager' : 'lazy' }}"
+                             class="w-full h-full object-cover object-center">
+
+                        {{-- Gradient Dark Overlays for Text Legibility --}}
+                        <div class="absolute inset-0 bg-gradient-to-t from-gray-950/95 via-gray-950/50 to-black/20"></div>
+                        <div class="absolute inset-0 bg-gradient-to-r from-gray-950/85 via-gray-950/40 to-transparent"></div>
+
+                        {{-- Slide Content Overlay --}}
+                        <div class="absolute inset-0 p-6 sm:p-8 lg:p-10 flex flex-col justify-end text-left">
+                            <div class="max-w-2xl">
+                                @if(!empty($slide['badge']))
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-500/25 border border-brand-400/40 text-brand-300 text-[11px] sm:text-xs font-semibold backdrop-blur-md uppercase tracking-wider mb-2.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse"></span>
+                                        {{ $slide['badge'] }}
+                                    </span>
+                                @endif
+
+                                <h3 class="text-lg sm:text-2xl lg:text-3xl font-extrabold text-white tracking-tight leading-snug drop-shadow-sm">
+                                    {{ $slide['title'] }}
+                                </h3>
+
+                                @if(!empty($slide['desc']))
+                                    <p class="mt-2 text-xs sm:text-sm text-gray-200/90 leading-relaxed max-w-xl line-clamp-2 sm:line-clamp-none drop-shadow-sm">
+                                        {{ $slide['desc'] }}
+                                    </p>
+                                @endif
+
+                                <div class="mt-4 flex items-center gap-3">
+                                    @if(!empty($slide['cta_link']) && !empty($slide['cta_text']))
+                                        <a href="{{ $slide['cta_link'] }}"
+                                           class="inline-flex items-center px-4 py-2 rounded-xl bg-brand-600 text-white hover:bg-brand-500 text-xs sm:text-sm font-semibold transition-all shadow-md shadow-brand-600/30">
+                                            <span>{{ $slide['cta_text'] }}</span>
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+
+                {{-- Previous & Next Navigation Buttons --}}
+                <button type="button"
+                        @click="prev(); autoplay()"
+                        aria-label="Previous Slide"
+                        class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 hover:scale-105 z-10 focus:outline-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                </button>
+                <button type="button"
+                        @click="next(); autoplay()"
+                        aria-label="Next Slide"
+                        class="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 hover:scale-105 z-10 focus:outline-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                </button>
+
+                {{-- Pagination Dot Indicators --}}
+                <div class="absolute bottom-4 right-4 sm:bottom-6 sm:right-8 flex items-center gap-2 z-10">
+                    <template x-for="(slide, i) in {{ count($slides) }}" :key="i">
+                        <button type="button"
+                                @click="goTo(i)"
+                                :aria-label="'Go to slide ' + (i + 1)"
+                                class="h-2 rounded-full transition-all duration-300 focus:outline-none"
+                                :class="current === i ? 'w-7 sm:w-9 bg-brand-500' : 'w-2 bg-white/40 hover:bg-white/70'">
+                        </button>
+                    </template>
+                </div>
+            </div>
         </div>
     </div>
 

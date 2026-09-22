@@ -13,4 +13,5 @@ return [
         'items' => [],
         'speed' => 40,
     ],
+    'partner_marquee_speed' => 30,
 ];
