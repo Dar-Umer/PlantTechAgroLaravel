@@ -10,12 +10,73 @@
 
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             @foreach($stats as $stat)
-                <div class="rounded-2xl border border-gray-800 bg-gray-900/60 p-5 sm:p-8 text-center hover:border-brand-700 transition">
-                    <p class="text-4xl sm:text-5xl font-extrabold text-white">{{ $stat->value }}<span class="text-brand-500">{{ $stat->suffix }}</span></p>
-                    <p class="mt-3 text-sm font-medium text-gray-400">{{ $stat->label }}</p>
+                <div x-data="window.impactCounter({{ json_encode($stat->value) }}, {{ json_encode($stat->value) }})"
+                     class="rounded-2xl border border-gray-800 bg-gray-900/60 p-4 sm:p-8 text-center hover:border-brand-700 transition duration-300">
+                    <p class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+                        <span x-text="display">{{ $stat->value }}</span><span class="text-brand-500">{{ $stat->suffix }}</span>
+                    </p>
+                    <p class="mt-2 sm:mt-3 text-xs sm:text-sm font-medium text-gray-400">{{ $stat->label }}</p>
                 </div>
             @endforeach
         </div>
+
+        <script>
+            window.impactCounter = function (rawTarget, finalFallback) {
+                return {
+                    display: '0',
+                    hasStarted: false,
+                    init() {
+                        if (!('IntersectionObserver' in window)) {
+                            this.display = finalFallback;
+                            return;
+                        }
+                        const num = parseFloat(String(rawTarget).replace(/[^0-9.]/g, ''));
+                        if (isNaN(num)) {
+                            this.display = finalFallback;
+                            return;
+                        }
+                        const observer = new IntersectionObserver((entries) => {
+                            entries.forEach((entry) => {
+                                if (entry.isIntersecting && !this.hasStarted) {
+                                    this.hasStarted = true;
+                                    this.startCounting(num, finalFallback);
+                                    observer.disconnect();
+                                }
+                            });
+                        }, { threshold: 0.15 });
+                        observer.observe(this.$el);
+                    },
+                    startCounting(target, fallback) {
+                        const duration = 1600;
+                        const startTime = performance.now();
+                        const isFloat = String(rawTarget).includes('.');
+                        const decimals = isFloat ? String(rawTarget).split('.')[1].length : 0;
+
+                        const step = (now) => {
+                            const elapsed = now - startTime;
+                            const progress = Math.min(elapsed / duration, 1);
+                            const ease = 1 - Math.pow(1 - progress, 3);
+                            const currentVal = target * ease;
+
+                            if (isFloat) {
+                                this.display = currentVal.toFixed(decimals);
+                            } else if (target >= 1000) {
+                                this.display = Math.floor(currentVal).toLocaleString();
+                            } else {
+                                this.display = Math.floor(currentVal).toString();
+                            }
+
+                            if (progress < 1) {
+                                requestAnimationFrame(step);
+                            } else {
+                                this.display = fallback;
+                            }
+                        };
+                        requestAnimationFrame(step);
+                    }
+                };
+            };
+        </script>
 
         <div class="mt-8 sm:mt-10 overflow-hidden" aria-hidden="true">
             <div class="flex gap-8 w-max animate-marquee text-sm font-semibold text-gray-600 uppercase tracking-wider">

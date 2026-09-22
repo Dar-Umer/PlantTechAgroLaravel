@@ -224,45 +224,54 @@
                  current: 0,
                  total: {{ count($slides) }},
                  timer: null,
-                 touchStartX: 0,
-                 touchEndX: 0,
-                 autoplay() {
-                     this.stop();
-                     this.timer = setInterval(() => { this.next(); }, 5000);
-                 },
-                 stop() {
-                     if (this.timer) {
-                         clearInterval(this.timer);
-                         this.timer = null;
-                     }
-                 },
-                 next() {
-                     this.current = (this.current + 1) % this.total;
-                 },
-                 prev() {
-                     this.current = (this.current - 1 + this.total) % this.total;
-                 },
-                 goTo(idx) {
-                     this.current = idx;
-                     this.autoplay();
-                 },
-                 handleTouchStart(e) {
-                     this.touchStartX = e.changedTouches[0].screenX;
-                 },
-                 handleTouchEnd(e) {
-                     this.touchEndX = e.changedTouches[0].screenX;
-                     if (this.touchStartX - this.touchEndX > 50) this.next();
-                     if (this.touchEndX - this.touchStartX > 50) this.prev();
-                 },
-                 init() {
-                     this.autoplay();
-                 }
-             }"
-             @mouseenter="stop()"
-             @mouseleave="autoplay()"
-             @touchstart.passive="handleTouchStart($event)"
-             @touchend.passive="handleTouchEnd($event)">
-            <div class="relative overflow-hidden rounded-3xl bg-gray-900 border border-gray-200/80 dark:border-gray-800 shadow-2xl shadow-brand-900/10 h-[280px] sm:h-[380px] lg:h-[440px] group">
+                  touchStartX: 0,
+                  touchEndX: 0,
+                  touchStartY: 0,
+                  touchEndY: 0,
+                  autoplay() {
+                      this.stop();
+                      this.timer = setInterval(() => { this.next(); }, 5000);
+                  },
+                  stop() {
+                      if (this.timer) {
+                          clearInterval(this.timer);
+                          this.timer = null;
+                      }
+                  },
+                  next() {
+                      this.current = (this.current + 1) % this.total;
+                  },
+                  prev() {
+                      this.current = (this.current - 1 + this.total) % this.total;
+                  },
+                  goTo(idx) {
+                      this.current = idx;
+                      this.autoplay();
+                  },
+                  handleTouchStart(e) {
+                      this.touchStartX = e.changedTouches[0].screenX;
+                      this.touchStartY = e.changedTouches[0].screenY;
+                  },
+                  handleTouchEnd(e) {
+                      this.touchEndX = e.changedTouches[0].screenX;
+                      this.touchEndY = e.changedTouches[0].screenY;
+                      const diffX = this.touchStartX - this.touchEndX;
+                      const diffY = this.touchStartY - this.touchEndY;
+                      if (Math.abs(diffX) > 35 && Math.abs(diffX) > Math.abs(diffY)) {
+                          if (diffX > 0) this.next();
+                          else this.prev();
+                          this.autoplay();
+                      }
+                  },
+                  init() {
+                      this.autoplay();
+                  }
+              }"
+              @mouseenter="stop()"
+              @mouseleave="autoplay()"
+              @touchstart.passive="handleTouchStart($event)"
+              @touchend.passive="handleTouchEnd($event)">
+            <div class="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gray-900 border border-gray-200/80 dark:border-gray-800 shadow-2xl shadow-brand-900/10 min-h-[340px] xs:min-h-[360px] sm:min-h-[400px] lg:h-[450px] group">
                 {{-- Slides --}}
                 @foreach($slides as $index => $slide)
                     <div x-show="current === {{ $index }}"
@@ -280,33 +289,33 @@
                              class="w-full h-full object-cover object-center">
 
                         {{-- Gradient Dark Overlays for Text Legibility --}}
-                        <div class="absolute inset-0 bg-gradient-to-t from-gray-950/95 via-gray-950/50 to-black/20"></div>
-                        <div class="absolute inset-0 bg-gradient-to-r from-gray-950/85 via-gray-950/40 to-transparent"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-gray-950/95 via-gray-950/60 to-black/30"></div>
+                        <div class="absolute inset-0 bg-gradient-to-r from-gray-950/90 via-gray-950/40 to-transparent"></div>
 
                         {{-- Slide Content Overlay --}}
-                        <div class="absolute inset-0 p-6 sm:p-8 lg:p-10 flex flex-col justify-end text-left">
+                        <div class="absolute inset-0 p-4 sm:p-8 lg:p-10 pb-14 sm:pb-8 lg:pb-10 flex flex-col justify-end text-left">
                             <div class="max-w-2xl">
                                 @if(!empty($slide['badge']))
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-500/25 border border-brand-400/40 text-brand-300 text-[11px] sm:text-xs font-semibold backdrop-blur-md uppercase tracking-wider mb-2.5">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-brand-500/25 border border-brand-400/40 text-brand-300 text-[10px] sm:text-xs font-semibold backdrop-blur-md uppercase tracking-wider mb-2 sm:mb-2.5">
                                         <span class="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse"></span>
                                         {{ $slide['badge'] }}
                                     </span>
                                 @endif
 
-                                <h3 class="text-lg sm:text-2xl lg:text-3xl font-extrabold text-white tracking-tight leading-snug drop-shadow-sm">
+                                <h3 class="text-base xs:text-lg sm:text-2xl lg:text-3xl font-extrabold text-white tracking-tight leading-snug drop-shadow-sm pr-16 sm:pr-0">
                                     {{ $slide['title'] }}
                                 </h3>
 
                                 @if(!empty($slide['desc']))
-                                    <p class="mt-2 text-xs sm:text-sm text-gray-200/90 leading-relaxed max-w-xl line-clamp-2 sm:line-clamp-none drop-shadow-sm">
+                                    <p class="mt-1.5 sm:mt-2 text-xs sm:text-sm text-gray-200/90 leading-relaxed max-w-xl line-clamp-2 sm:line-clamp-none drop-shadow-sm">
                                         {{ $slide['desc'] }}
                                     </p>
                                 @endif
 
-                                <div class="mt-4 flex items-center gap-3">
+                                <div class="mt-3 sm:mt-4 flex items-center gap-3">
                                     @if(!empty($slide['cta_link']) && !empty($slide['cta_text']))
                                         <a href="{{ $slide['cta_link'] }}"
-                                           class="inline-flex items-center px-4 py-2 rounded-xl bg-brand-600 text-white hover:bg-brand-500 text-xs sm:text-sm font-semibold transition-all shadow-md shadow-brand-600/30">
+                                           class="inline-flex items-center px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-brand-600 text-white hover:bg-brand-500 text-xs sm:text-sm font-semibold transition-all shadow-md shadow-brand-600/30">
                                             <span>{{ $slide['cta_text'] }}</span>
                                         </a>
                                     @endif
@@ -316,28 +325,47 @@
                     </div>
                 @endforeach
 
-                {{-- Previous & Next Navigation Buttons --}}
+                {{-- Mobile Top Bar: Counter & Compact Prev/Next --}}
+                <div class="sm:hidden absolute top-3 right-3 flex items-center gap-1.5 z-20">
+                    <span class="px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-md border border-white/20 text-[11px] font-semibold text-gray-200 tabular-nums">
+                        <span x-text="current + 1"></span>/<span x-text="total"></span>
+                    </span>
+                    <button type="button"
+                            @click="prev(); autoplay()"
+                            aria-label="Previous Slide"
+                            class="w-7 h-7 rounded-full bg-black/50 active:bg-black/80 text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                    </button>
+                    <button type="button"
+                            @click="next(); autoplay()"
+                            aria-label="Next Slide"
+                            class="w-7 h-7 rounded-full bg-black/50 active:bg-black/80 text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                </div>
+
+                {{-- Desktop Center-Side Navigation Buttons --}}
                 <button type="button"
                         @click="prev(); autoplay()"
                         aria-label="Previous Slide"
-                        class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 hover:scale-105 z-10 focus:outline-none">
+                        class="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md border border-white/20 items-center justify-center transition-all opacity-80 group-hover:opacity-100 hover:scale-105 z-10 focus:outline-none">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
                 </button>
                 <button type="button"
                         @click="next(); autoplay()"
                         aria-label="Next Slide"
-                        class="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 hover:scale-105 z-10 focus:outline-none">
+                        class="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md border border-white/20 items-center justify-center transition-all opacity-80 group-hover:opacity-100 hover:scale-105 z-10 focus:outline-none">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                 </button>
 
                 {{-- Pagination Dot Indicators --}}
-                <div class="absolute bottom-4 right-4 sm:bottom-6 sm:right-8 flex items-center gap-2 z-10">
-                    <template x-for="(slide, i) in {{ count($slides) }}" :key="i">
+                <div class="absolute bottom-3 right-3 sm:bottom-6 sm:right-8 flex items-center gap-1.5 sm:gap-2 z-10">
+                    <template x-for="(slide, i) in total" :key="i">
                         <button type="button"
                                 @click="goTo(i)"
                                 :aria-label="'Go to slide ' + (i + 1)"
-                                class="h-2 rounded-full transition-all duration-300 focus:outline-none"
-                                :class="current === i ? 'w-7 sm:w-9 bg-brand-500' : 'w-2 bg-white/40 hover:bg-white/70'">
+                                class="h-1.5 sm:h-2 rounded-full transition-all duration-300 focus:outline-none"
+                                :class="current === i ? 'w-6 sm:w-9 bg-brand-500' : 'w-1.5 sm:w-2 bg-white/40 hover:bg-white/70'">
                         </button>
                     </template>
                 </div>
