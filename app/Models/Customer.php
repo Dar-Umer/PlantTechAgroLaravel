@@ -14,7 +14,7 @@ class Customer extends Authenticatable
     use Notifiable;
 
     protected $fillable = [
-        'name', 'phone', 'gstin', 'password', 'email', 'address', 'area',
+        'orchardist_id', 'name', 'phone', 'gstin', 'password', 'email', 'address', 'area',
         'status', 'notes', 'lead_id', 'last_login_at', 'last_login_ip',
     ];
 
@@ -29,6 +29,42 @@ class Customer extends Authenticatable
             'password' => 'hashed',
             'last_login_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (Customer $customer) {
+            if (empty($customer->orchardist_id)) {
+                $customer->orchardist_id = static::nextOrchardistId();
+            }
+        });
+    }
+
+    public static function nextOrchardistId(): string
+    {
+        $seq = static::count() + 1001;
+
+        for ($attempt = 0; $attempt < 50; $attempt++) {
+            $id = sprintf('OID-%04d', $seq);
+
+            if (! static::where('orchardist_id', $id)->exists()) {
+                return $id;
+            }
+
+            $seq++;
+        }
+
+        return 'OID-'.uniqid();
+    }
+
+    public function orchards(): HasMany
+    {
+        return $this->hasMany(Orchard::class);
+    }
+
+    public function companyOrchards(): HasMany
+    {
+        return $this->hasMany(Orchard::class)->where('is_company_established', true);
     }
 
     public function lead(): BelongsTo

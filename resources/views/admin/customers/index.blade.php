@@ -55,9 +55,14 @@
                                             <a href="{{ route('admin.customers.show', $customer) }}" class="font-semibold text-gray-900 group-hover:text-brand-600 transition-colors">
                                                 {{ $customer->name }}
                                             </a>
-                                            @if($customer->gstin)
-                                                <span class="block text-[11px] font-mono text-emerald-600 font-medium mt-0.5">GST: {{ $customer->gstin }}</span>
-                                            @endif
+                                            <div class="flex items-center gap-1.5 mt-0.5">
+                                                <span class="inline-flex items-center font-mono text-[11px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">
+                                                    {{ $customer->orchardist_id ?? 'OID-N/A' }}
+                                                </span>
+                                                @if($customer->gstin)
+                                                    <span class="text-[11px] font-mono text-emerald-600 font-medium">GST: {{ $customer->gstin }}</span>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
                                 </td>

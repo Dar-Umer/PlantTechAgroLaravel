@@ -34,11 +34,13 @@ class ServiceController extends Controller
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:2048'],
             'sort_order' => ['nullable', 'integer'],
             'is_active' => ['boolean'],
+            'creates_orchard_on_completion' => ['boolean'],
         ]);
 
         $data['slug'] = Str::slug($data['name']);
         $data['content'] = HtmlSanitizer::clean($data['content'] ?? null);
         $data['description'] = strip_tags((string) ($data['description'] ?? ''));
+        $data['creates_orchard_on_completion'] = (bool) $request->boolean('creates_orchard_on_completion');
 
         if (isset($data['image']) && $data['image']) {
             $data['image'] = $request->file('image')->store('services', 'public');
@@ -66,7 +68,10 @@ class ServiceController extends Controller
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:2048'],
             'sort_order' => ['nullable', 'integer'],
             'is_active' => ['boolean'],
+            'creates_orchard_on_completion' => ['boolean'],
         ]);
+
+        $data['creates_orchard_on_completion'] = (bool) $request->boolean('creates_orchard_on_completion');
 
         if (isset($data['image']) && $data['image']) {
             $data['image'] = $request->file('image')->store('services', 'public');

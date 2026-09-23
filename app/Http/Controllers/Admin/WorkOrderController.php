@@ -66,12 +66,19 @@ class WorkOrderController extends Controller
             && Service::whereKey((int) $preselectService)->exists()
             ? (int) $preselectService : null;
 
+        $preselectOrchard = $request->query('orchard_id');
+        $preselectOrchard = is_numeric($preselectOrchard)
+            && \App\Models\Orchard::whereKey((int) $preselectOrchard)->exists()
+            ? (int) $preselectOrchard : null;
+
         return view('admin.work_orders.create', [
-            'customers' => Customer::where('status', 'active')->orderBy('name')->get(['id', 'name', 'phone']),
+            'customers' => Customer::where('status', 'active')->orderBy('name')->get(['id', 'name', 'phone', 'orchardist_id']),
+            'orchards' => \App\Models\Orchard::orderBy('name')->get(['id', 'name', 'orchard_id', 'customer_id', 'area_kanals', 'is_company_established']),
             'services' => Service::active()->with(['stages.products.product'])->orderBy('sort_order')->get(),
             'agents' => Admin::where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'preselectCustomer' => $preselectCustomer,
             'preselectService' => $preselectService,
+            'preselectOrchard' => $preselectOrchard,
         ]);
     }
 
@@ -80,6 +87,7 @@ class WorkOrderController extends Controller
         $data = $request->validate([
             'customer_id' => ['required', 'exists:customers,id'],
             'service_id' => ['required', 'exists:services,id'],
+            'orchard_id' => ['nullable', 'exists:orchards,id'],
             'assigned_agent_id' => ['nullable', 'exists:admins,id'],
             'notes' => ['nullable', 'string'],
         ]);
@@ -93,6 +101,7 @@ class WorkOrderController extends Controller
                 'customer_name' => $customer->name,
                 'service_id' => $service->id,
                 'service_name' => $service->name,
+                'orchard_id' => $data['orchard_id'] ?? null,
                 'assigned_agent_id' => $data['assigned_agent_id'] ?? null,
                 'status' => ($data['assigned_agent_id'] ?? null) ? 'assigned' : 'pending',
                 'notes' => $data['notes'] ?? null,
@@ -146,7 +155,7 @@ class WorkOrderController extends Controller
 
     public function show(WorkOrder $workOrder)
     {
-        $workOrder->load(['stages.products.product', 'stages.attachments', 'agent', 'createdBy', 'customer', 'service.stages', 'invoice']);
+        $workOrder->load(['stages.products.product', 'stages.attachments', 'agent', 'createdBy', 'customer', 'service.stages', 'invoice', 'orchard']);
 
         $agents = Admin::where('is_active', true)->orderBy('name')->get(['id', 'name']);
         $products = Product::active()->orderBy('name')->get(['id', 'name', 'sku', 'unit', 'rate', 'gst_rate', 'stock_qty']);
@@ -385,6 +394,8 @@ class WorkOrderController extends Controller
                 'started_at' => $workOrder->started_at ?? now(),
                 'completed_at' => now(),
             ]);
+
+            app(\App\Services\OrchardService::class)->createFromWorkOrder($workOrder);
         } elseif ($anyDone && ! in_array($workOrder->status, ['completed'], true)) {
             $workOrder->update([
                 'status' => 'in_progress',

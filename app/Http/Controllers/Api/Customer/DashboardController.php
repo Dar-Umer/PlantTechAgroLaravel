@@ -47,10 +47,18 @@ class DashboardController extends Controller
             ->limit(6)
             ->get();
 
+        $orchards = $customer->orchards()->latest()->get();
+        $recentOrchards = $orchards->take(4);
+
         $appConfig = AppConfig::toArray();
 
         return response()->json([
+            'orchardist_id' => $customer->orchardist_id,
             'stats' => [
+                'orchards_total' => $orchards->count(),
+                'company_orchards_total' => $orchards->where('is_company_established', true)->count(),
+                'total_kanals' => round($orchards->sum('area_kanals'), 2),
+                'total_plants' => $orchards->sum('tree_count'),
                 'work_orders_total' => $workOrdersTotal,
                 'work_orders_active' => $workOrdersActive,
                 'work_orders_in_progress' => $workOrdersInProgress,
@@ -61,6 +69,7 @@ class DashboardController extends Controller
                 'collected_this_month' => round($collectedThisMonth, 2),
                 'unread_notifications' => $customer->unreadNotifications()->count(),
             ],
+            'recent_orchards' => $recentOrchards->map(fn ($orchard) => OrchardController::summary($orchard))->values(),
             'recent_work_orders' => $recentWorkOrders->map(fn (WorkOrder $wo) => WorkOrderController::summary($wo))->values(),
             'recent_invoices' => $recentInvoices->map(fn (Invoice $invoice) => InvoiceController::summary($invoice))->values(),
             'support' => $appConfig['support'],

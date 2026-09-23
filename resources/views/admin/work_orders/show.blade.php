@@ -327,9 +327,27 @@
                             <dt class="text-gray-500">Customer</dt>
                             <dd class="font-medium text-gray-900 text-right">
                                 @if($workOrder->customer)
-                                    <a href="{{ route('admin.customers.show', $workOrder->customer) }}" class="hover:text-brand-600">{{ $workOrder->customer_name }}</a>
+                                    <a href="{{ route('admin.customers.show', $workOrder->customer) }}" class="hover:text-emerald-700 font-semibold">{{ $workOrder->customer_name }}</a>
+                                    <div class="font-mono text-xs text-indigo-700 font-bold mt-0.5">{{ $workOrder->customer->orchardist_id ?? 'OID-N/A' }}</div>
                                 @else
                                     {{ $workOrder->customer_name }}
+                                @endif
+                            </dd>
+                        </div>
+                        <div class="flex justify-between gap-3">
+                            <dt class="text-gray-500">Orchard</dt>
+                            <dd class="font-medium text-gray-900 text-right">
+                                @if($workOrder->orchard)
+                                    <a href="{{ route('admin.orchards.show', $workOrder->orchard) }}" class="hover:underline text-emerald-700 font-semibold">
+                                        {{ $workOrder->orchard->name }}
+                                    </a>
+                                    <div class="font-mono text-[11px] text-gray-500">{{ $workOrder->orchard->orchard_id }} ({{ $workOrder->orchard->area_kanals }}K)</div>
+                                @elseif($workOrder->service?->creates_orchard_on_completion)
+                                    <span class="inline-flex items-center gap-1 text-xs text-emerald-700 font-medium bg-emerald-50 px-2 py-0.5 rounded">
+                                        🌱 Auto-created on completion
+                                    </span>
+                                @else
+                                    <span class="text-xs text-gray-400">None specified</span>
                                 @endif
                             </dd>
                         </div>

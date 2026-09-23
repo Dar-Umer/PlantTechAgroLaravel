@@ -2,6 +2,15 @@
     <h3 class="text-lg font-semibold text-gray-900 mb-1">Customer Details</h3>
     <p class="text-sm text-gray-500 mb-5">The customer logs into the Customer App with phone number + password.</p>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        @isset($customer->orchardist_id)
+            <div class="md:col-span-2 p-3 bg-indigo-50/60 border border-indigo-100 rounded-xl flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-semibold text-indigo-900 uppercase tracking-wider">Unique Orchardist ID (System ID)</span>
+                    <p class="font-mono text-base font-bold text-indigo-700 mt-0.5">{{ $customer->orchardist_id }}</p>
+                </div>
+                <span class="text-xs text-indigo-500 font-medium">Used across all services and mobile app</span>
+            </div>
+        @endisset
         <x-admin.input name="name" label="Full Name" :value="old('name', $customer->name ?? '')" required />
         <x-admin.input name="phone" label="Phone Number (Login ID)" :value="old('phone', $customer->phone ?? '')" required helptext="Unique. Used as the app login ID." />
         <x-admin.input name="email" label="Email (Optional)" type="email" :value="old('email', $customer->email ?? '')" />

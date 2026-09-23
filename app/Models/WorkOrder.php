@@ -26,7 +26,7 @@ class WorkOrder extends Model
     ];
 
     protected $fillable = [
-        'number', 'customer_id', 'customer_name', 'service_id', 'service_name',
+        'number', 'customer_id', 'customer_name', 'service_id', 'service_name', 'orchard_id',
         'assigned_agent_id', 'status', 'started_at', 'completed_at', 'notes', 'created_by',
         'last_reminder_sent_at',
     ];
@@ -43,6 +43,11 @@ class WorkOrder extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function orchard(): BelongsTo
+    {
+        return $this->belongsTo(Orchard::class);
     }
 
     public function service(): BelongsTo

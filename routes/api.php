@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Customer\DashboardController;
 use App\Http\Controllers\Api\Customer\ForgotPasswordController;
 use App\Http\Controllers\Api\Customer\InvoiceController;
 use App\Http\Controllers\Api\Customer\NotificationController;
+use App\Http\Controllers\Api\Customer\OrchardController;
 use App\Http\Controllers\Api\Customer\ProfileController;
 use App\Http\Controllers\Api\Customer\ServiceController;
 use App\Http\Controllers\Api\Customer\WorkOrderController;
@@ -33,6 +34,8 @@ Route::middleware(['auth:sanctum', \App\Http\Middleware\EnsureCustomerIsActive::
     Route::get('weather', [\App\Http\Controllers\Api\Customer\WeatherController::class, 'show']);
 
     Route::get('services', [ServiceController::class, 'index']);
+
+    Route::apiResource('orchards', OrchardController::class);
 
     Route::get('products', [\App\Http\Controllers\Api\Customer\ProductController::class, 'index']);
 

@@ -22,8 +22,11 @@
             <div class="flex items-center gap-4">
                 <x-admin.avatar :name="$customer->name" size="lg" :status="$customer->status" class="shadow-xs" />
                 <div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex flex-wrap items-center gap-2.5">
                         <h2 class="text-2xl font-bold text-gray-900">{{ $customer->name }}</h2>
+                        <span class="font-mono text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200 shadow-2xs">
+                            Orchardist ID: {{ $customer->orchardist_id ?? 'OID-N/A' }}
+                        </span>
                         @if($customer->status === 'active')
                             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">
                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
@@ -143,6 +146,64 @@
                             <p class="text-sm text-gray-900 whitespace-pre-line">{{ $customer->notes }}</p>
                         </div>
                     @endif
+                </div>
+
+                {{-- Orchards Owned by Customer --}}
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex items-center justify-between mb-1">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">Orchards & Farm Holdings</h3>
+                            <p class="text-sm text-gray-500">Orchards managed under this farmer's account ({{ $customer->orchards()->count() }} Total).</p>
+                        </div>
+                        <x-admin.button href="{{ route('admin.orchards.create', ['customer_id' => $customer->id]) }}" variant="primary" size="sm">
+                            + Add Orchard
+                        </x-admin.button>
+                    </div>
+
+                    <div class="mt-4 divide-y divide-gray-100">
+                        @forelse($customer->orchards()->latest()->get() as $orchard)
+                            <div class="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <a href="{{ route('admin.orchards.show', $orchard) }}" class="font-bold text-gray-900 hover:text-brand-600 transition">
+                                            {{ $orchard->name }}
+                                        </a>
+                                        <span class="font-mono text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
+                                            {{ $orchard->orchard_id }}
+                                        </span>
+                                        @if($orchard->is_company_established)
+                                            <span class="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                Established by PTA
+                                            </span>
+                                        @else
+                                            <span class="text-[11px] font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                                                Self Registered
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        {{ $orchard->address ?: 'No address specified' }} ·
+                                        <strong class="text-gray-700 font-semibold">{{ number_format($orchard->area_kanals, 1) }} Kanals</strong> ·
+                                        <strong class="text-gray-700 font-semibold">{{ number_format($orchard->tree_count) }} Plants</strong> ·
+                                        <span>Age: {{ $orchard->age ?? 'N/A' }}</span>
+                                    </p>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <x-admin.button href="{{ route('admin.work-orders.create', ['customer_id' => $customer->id, 'orchard_id' => $orchard->id]) }}" variant="secondary" size="sm">
+                                        Book Service
+                                    </x-admin.button>
+                                    <x-admin.button href="{{ route('admin.orchards.show', $orchard) }}" variant="secondary" size="sm">
+                                        View
+                                    </x-admin.button>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="py-6 text-center text-xs text-gray-400">
+                                No orchards registered under this customer yet.
+                            </div>
+                        @endforelse
+                    </div>
                 </div>
 
                 {{-- Work Orders / Services --}}

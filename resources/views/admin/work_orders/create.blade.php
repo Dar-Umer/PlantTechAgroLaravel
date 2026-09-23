@@ -38,7 +38,9 @@
                         <h3 class="text-lg font-semibold text-gray-900 mb-1">Order Details</h3>
                         <p class="text-sm text-gray-500 mb-4">Select the customer and service for this job.</p>
                         <div class="space-y-5">
-                            <x-admin.select name="customer_id" label="Customer" :options="$customers->mapWithKeys(fn ($c) => [$c->id => $c->name . ' — ' . $c->phone])->all()" :value="old('customer_id', $preselectCustomer ?? null)" placeholder="Select a customer" required />
+                            <x-admin.select name="customer_id" label="Customer (Orchardist)" :options="$customers->mapWithKeys(fn ($c) => [$c->id => $c->name . ' (' . ($c->orchardist_id ?? 'OID-N/A') . ') — ' . $c->phone])->all()" :value="old('customer_id', $preselectCustomer ?? null)" placeholder="Select a customer" required />
+
+                            <x-admin.select name="orchard_id" label="Target Orchard (Optional)" :options="$orchards->mapWithKeys(fn ($o) => [$o->id => $o->name . ' (' . $o->orchard_id . ') — ' . $o->area_kanals . ' Kanals'])->all()" :value="old('orchard_id', $preselectOrchard ?? null)" placeholder="-- None / New Orchard Establishment --" helptext="Select existing orchard for maintenance, pruning, or consultations. Leave empty for new orchard establishment." />
 
                             <div>
                                 <label for="service_id" class="block text-sm font-medium text-gray-700 mb-1.5">Service <span class="text-red-500">*</span></label>

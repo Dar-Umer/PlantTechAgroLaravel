@@ -159,6 +159,12 @@ class ProfileController extends Controller
 
     private function userPayload(Customer $customer): array
     {
-        return $customer->only(['id', 'name', 'phone', 'email', 'address', 'area', 'status']);
+        return array_merge(
+            $customer->only(['id', 'orchardist_id', 'name', 'phone', 'email', 'address', 'area', 'status']),
+            [
+                'orchards_count' => $customer->orchards()->count(),
+                'company_orchards_count' => $customer->companyOrchards()->count(),
+            ]
+        );
     }
 }

@@ -23,6 +23,8 @@ class PermissionCatalog
                     'quotations.manage' => ['label' => 'Manage Quotations', 'desc' => 'Create estimates, generate PDF, and approve & start work orders.'],
                     'customers.view' => ['label' => 'View Customers', 'desc' => 'View registered client profiles and transaction histories.'],
                     'customers.manage' => ['label' => 'Manage Customers', 'desc' => 'Create, edit customer profiles, and manage account details.'],
+                    'orchards.view' => ['label' => 'View Orchards', 'desc' => 'Browse registered orchards and customer holdings.'],
+                    'orchards.manage' => ['label' => 'Manage Orchards', 'desc' => 'Create, edit, verify, and tag orchards.'],
                     'invoices.view' => ['label' => 'View Invoices', 'desc' => 'Access service invoices and customer billing records.'],
                     'invoices.manage' => ['label' => 'Manage Invoices', 'desc' => 'Create invoices, record payments, and cancel invoices.'],
                 ],
@@ -119,6 +121,7 @@ class PermissionCatalog
                 'leads.view', 'leads.manage',
                 'quotations.view', 'quotations.manage',
                 'customers.view', 'customers.manage',
+                'orchards.view', 'orchards.manage',
                 'invoices.view', 'invoices.manage',
                 'pos.terminal', 'pos.sales.view', 'pos.customers.manage',
                 'inventory.view', 'inventory.manage', 'inventory.stock-in', 'inventory.stock-out', 'inventory.batches', 'suppliers.manage',
@@ -131,7 +134,7 @@ class PermissionCatalog
             ],
             'Field Agent' => [
                 'work-orders.view', 'work-orders.manage',
-                'leads.view', 'customers.view',
+                'leads.view', 'customers.view', 'orchards.view',
             ],
             'Accountant' => [
                 'invoices.view', 'invoices.manage',

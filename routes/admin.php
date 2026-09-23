@@ -147,6 +147,9 @@ Route::middleware('admin')->group(function () {
     Route::get('customers/{customer}/ledger/pdf', [CustomerController::class, 'ledgerPdf'])->name('admin.customers.ledger.pdf');
     Route::get('customers/{customer}/ledger/csv', [CustomerController::class, 'ledgerCsv'])->name('admin.customers.ledger.csv');
 
+    // Orchards Management
+    Route::resource('orchards', \App\Http\Controllers\Admin\OrchardController::class)->names('admin.orchards');
+
     // Inventory
     Route::resource('products', ProductController::class)->except('show')->names('admin.products');
     Route::post('products/{product}/notify-supplier', [ProductController::class, 'notifySupplier'])->name('admin.products.notify-supplier');

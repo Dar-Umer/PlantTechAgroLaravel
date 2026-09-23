@@ -162,6 +162,7 @@
                             'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 9.75h4.5m-4.5 3h4.5m-4.5 3h4.5m-5.625 3.75h6.75a4.5 4.5 0 004.5-4.5v-3a4.5 4.5 0 00-4.5-4.5H16.5a3 3 0 00-3-3h-3a3 3 0 00-3 3H7.125a4.5 4.5 0 00-4.5 4.5v3a4.5 4.5 0 004.5 4.5h6.75M12 3h.008v.008H12V3z"/>',
                             'items' => [
                                 ['route' => 'admin.work-orders.index', 'label' => 'Work Orders'],
+                                ['route' => 'admin.orchards.index', 'label' => 'Orchards'],
                                 ['route' => 'admin.leads.index', 'label' => 'Leads'],
                                 ['route' => 'admin.quotations.index', 'label' => 'Quotations / Estimates'],
                                 ['route' => 'admin.customers.index', 'label' => 'Customers'],
@@ -227,6 +228,7 @@
                         'admin.pos.terminal' => 'pos.terminal',
                         'admin.pos.sales' => 'pos.sales.view',
                         'admin.work-orders.index' => 'work-orders.view',
+                        'admin.orchards.index' => 'orchards.view',
                         'admin.leads.index' => 'leads.view',
                         'admin.quotations.index' => 'quotations.view',
                         'admin.customers.index' => 'customers.view',
@@ -308,7 +310,8 @@
                         @endforeach
                     @else
                         @php
-                            $hasActive = collect($group['items'])->contains(fn($i) => Route::has($i['route']) && $canView($i['route']) && Route::currentRouteNamed($i['route']));
+                            $isItemActive = fn($r) => Route::currentRouteNamed($r) || (str_ends_with($r, '.index') && Route::is(substr($r, 0, -6) . '.*'));
+                            $hasActive = collect($group['items'])->contains(fn($i) => Route::has($i['route']) && $canView($i['route']) && $isItemActive($i['route']));
                             $visibleRoutes = collect($group['items'])->filter(fn($i) => Route::has($i['route']) && $canView($i['route']));
                         @endphp
 
@@ -331,7 +334,7 @@
                                     @foreach($group['items'] as $item)
                                         @if(Route::has($item['route']) && $canView($item['route']))
                                             <a href="{{ route($item['route']) }}"
-                                               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 {{ Route::currentRouteNamed($item['route']) ? $sidebarActiveChildBg : $sidebarChildText . ' ' . $sidebarTextHover }}">
+                                               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 {{ $isItemActive($item['route']) ? $sidebarActiveChildBg : $sidebarChildText . ' ' . $sidebarTextHover }}">
                                                 {{ $item['label'] }}
                                             </a>
                                         @endif

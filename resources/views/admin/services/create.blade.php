@@ -53,7 +53,10 @@
                 <p class="text-sm text-gray-500 mb-5">Control the order and visibility of this service.</p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <x-admin.input name="sort_order" label="Sort Order" type="number" :value="old('sort_order', 0)" />
-                    <x-admin.checkbox name="is_active" label="Active" :checked="old('is_active', true)" help="Visible on the frontend when active." />
+                    <div class="space-y-4">
+                        <x-admin.checkbox name="is_active" label="Active" :checked="old('is_active', true)" help="Visible on the frontend when active." />
+                        <x-admin.checkbox name="creates_orchard_on_completion" label="Creates Orchard on Completion" :checked="old('creates_orchard_on_completion', false)" help="Automatically establishes a verified 'Established by Plant Tech Agro' orchard when completed." />
+                    </div>
                 </div>
             </div>
 

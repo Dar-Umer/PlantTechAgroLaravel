@@ -13,7 +13,7 @@ class Service extends Model
 
     protected $fillable = [
         'name', 'slug', 'description', 'content', 'icon', 'image',
-        'category', 'book_url', 'sort_order', 'is_active',
+        'category', 'book_url', 'sort_order', 'is_active', 'creates_orchard_on_completion',
     ];
 
     public function scopeActive($query)
@@ -35,6 +35,7 @@ class Service extends Model
     {
         return [
             'is_active' => 'boolean',
+            'creates_orchard_on_completion' => 'boolean',
         ];
     }
 

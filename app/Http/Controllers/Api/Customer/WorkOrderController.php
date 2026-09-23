@@ -23,7 +23,7 @@ class WorkOrderController extends Controller
     public function index(Request $request)
     {
         $query = WorkOrder::where('customer_id', $request->user()->id)
-            ->with(['agent:id,name', 'invoice:id,number,status,grand_total,amount_paid', 'stages:work_order_id,status']);
+            ->with(['agent:id,name', 'orchard:id,orchard_id,name,is_company_established', 'invoice:id,number,status,grand_total,amount_paid', 'stages:work_order_id,status']);
 
         if ($status = $request->query('status')) {
             abort_unless(in_array($status, array_keys(WorkOrder::STATUSES), true), 422, 'Invalid status filter.');
@@ -48,7 +48,7 @@ class WorkOrderController extends Controller
     public function show(Request $request, int $id)
     {
         $workOrder = WorkOrder::where('customer_id', $request->user()->id)
-            ->with(['agent:id,name', 'invoice', 'stages.products', 'stages.attachments', 'service'])
+            ->with(['agent:id,name', 'orchard:id,orchard_id,name,is_company_established,area_kanals,tree_count', 'invoice', 'stages.products', 'stages.attachments', 'service'])
             ->findOrFail($id);
 
         $data = static::summary($workOrder);
@@ -98,12 +98,14 @@ class WorkOrderController extends Controller
 
     public function store(Request $request)
     {
+        $customer = $request->user();
+
         $data = $request->validate([
             'service_id' => ['required', 'integer', Rule::exists('services', 'id')],
+            'orchard_id' => ['nullable', 'integer', Rule::exists('orchards', 'id')->where('customer_id', $customer->id)],
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $customer = $request->user();
         $service = Service::with('stages.products.product')->findOrFail($data['service_id']);
 
         if (! $service->is_active) {
@@ -112,14 +114,17 @@ class WorkOrderController extends Controller
             ]);
         }
 
-        $hasActive = WorkOrder::where('customer_id', $customer->id)
+        $activeQuery = WorkOrder::where('customer_id', $customer->id)
             ->where('service_id', $service->id)
-            ->whereIn('status', ['pending', 'assigned', 'in_progress'])
-            ->exists();
+            ->whereIn('status', ['pending', 'assigned', 'in_progress']);
 
-        if ($hasActive) {
+        if (! empty($data['orchard_id'])) {
+            $activeQuery->where('orchard_id', $data['orchard_id']);
+        }
+
+        if ($activeQuery->exists()) {
             throw ValidationException::withMessages([
-                'service_id' => 'You already have an active request for this service.',
+                'service_id' => 'You already have an active request for this service on this orchard.',
             ]);
         }
 
@@ -129,6 +134,7 @@ class WorkOrderController extends Controller
                 'customer_name' => $customer->name,
                 'service_id' => $service->id,
                 'service_name' => $service->name,
+                'orchard_id' => $data['orchard_id'] ?? null,
                 'assigned_agent_id' => null,
                 'status' => 'pending',
                 'notes' => $data['notes'] ?? null,
@@ -205,6 +211,13 @@ class WorkOrderController extends Controller
             'stages_total' => $total,
             'stages_completed' => $done,
             'progress_percent' => $total > 0 ? (int) round($done / $total * 100) : 0,
+            'orchard' => $workOrder->orchard ? [
+                'id' => $workOrder->orchard->id,
+                'orchard_id' => $workOrder->orchard->orchard_id,
+                'name' => $workOrder->orchard->name,
+                'is_company_established' => (bool) $workOrder->orchard->is_company_established,
+                'company_tag' => $workOrder->orchard->company_tag,
+            ] : null,
             'created_at' => $workOrder->created_at?->toISOString(),
             'started_at' => $workOrder->started_at?->toISOString(),
             'completed_at' => $workOrder->completed_at?->toISOString(),
