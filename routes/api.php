@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('app-config', [AppConfigController::class, 'show']);
 
 Route::prefix('auth')->group(function () {
+    Route::post('register', [AuthController::class, 'register'])->middleware('throttle:customer-login');
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:customer-login');
     Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
