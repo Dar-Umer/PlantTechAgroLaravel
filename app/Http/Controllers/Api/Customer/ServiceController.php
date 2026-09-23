@@ -23,6 +23,7 @@ class ServiceController extends Controller
                 'icon' => $service->icon,
                 'image' => Media::url($service->image),
                 'sort_order' => $service->sort_order,
+                'creates_orchard_on_completion' => (bool) $service->creates_orchard_on_completion,
             ])->values(),
         ]);
     }

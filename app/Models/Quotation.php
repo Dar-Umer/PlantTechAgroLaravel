@@ -77,9 +77,14 @@ class Quotation extends Model
         return $this->status === 'approved';
     }
 
+    public function isValid(): bool
+    {
+        return ! $this->valid_until || $this->valid_until->isFuture() || $this->valid_until->isToday();
+    }
+
     public function canApprove(): bool
     {
-        return $this->status !== 'approved' && ! $this->work_order_id;
+        return $this->status !== 'approved' && ! $this->work_order_id && $this->isValid();
     }
 
     public function statusLabel(): string

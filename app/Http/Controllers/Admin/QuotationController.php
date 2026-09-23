@@ -322,117 +322,14 @@ class QuotationController extends Controller
             return back()->with('error', 'This quotation has already been approved or linked to a work order.');
         }
 
-        $quotation->load(['items', 'lead.service.stages', 'service.stages']);
+        try {
+            $adminId = $request->user('admin')?->id;
+            $workOrder = \App\Services\QuotationApprovalService::approveAndStartWork($quotation, $adminId);
 
-        $workOrder = DB::transaction(function () use ($quotation, $request) {
-            // 1. Resolve or create customer
-            $customer = null;
-            if ($quotation->customer_id) {
-                $customer = Customer::find($quotation->customer_id);
-            }
-
-            if (! $customer) {
-                $customer = Customer::findByPhoneDigits($quotation->customer_phone);
-            }
-
-            if (! $customer) {
-                $customer = Customer::create([
-                    'name' => $quotation->customer_name,
-                    'phone' => $quotation->customer_phone,
-                    'email' => $quotation->customer_email,
-                    'address' => $quotation->customer_address,
-                    'area' => $quotation->customer_area,
-                    'password' => Str::random(12),
-                    'status' => 'active',
-                    'lead_id' => $quotation->lead_id,
-                ]);
-            }
-
-            // 2. Link & convert lead if exists
-            $lead = $quotation->lead;
-            if ($lead && ! $lead->isConverted()) {
-                $lead->update([
-                    'status' => 'converted',
-                    'converted_customer_id' => $customer->id,
-                ]);
-            }
-
-            // 3. Resolve service
-            $service = $quotation->service ?: ($lead?->service);
-            $serviceName = $service?->name ?? 'Agricultural Service Execution';
-
-            // 4. Create active Work Order
-            $notes = trim(implode("\n\n", array_filter([
-                "Created from Approved Quotation #{$quotation->number} (Grand Total: ₹" . number_format((float) $quotation->grand_total, 2) . ")",
-                $quotation->notes ? "Quotation notes: {$quotation->notes}" : null,
-                $lead?->notes ? "Lead notes: {$lead->notes}" : null,
-            ])));
-
-            $workOrder = WorkOrder::create([
-                'customer_id' => $customer->id,
-                'customer_name' => $customer->name,
-                'service_id' => $service?->id,
-                'service_name' => $serviceName,
-                'assigned_agent_id' => null,
-                'status' => 'in_progress', // Active work order
-                'started_at' => now(),
-                'notes' => $notes !== '' ? $notes : null,
-                'created_by' => $request->user('admin')->id ?? null,
-            ]);
-
-            // 5. Populate Work Order Stages & Stage Products
-            if ($service && $service->stages->isNotEmpty()) {
-                foreach ($service->stages->sortBy('sort_order') as $template) {
-                    WorkOrderStage::create([
-                        'work_order_id' => $workOrder->id,
-                        'service_stage_id' => $template->id,
-                        'name' => $template->name,
-                        'description' => $template->description,
-                        'sort_order' => $template->sort_order,
-                        'requires_photo' => $template->requires_photo,
-                        'min_photos' => $template->min_photos,
-                        'requires_pdf' => $template->requires_pdf,
-                    ]);
-                }
-            }
-
-            // Ensure there is at least one active stage to anchor materials
-            $targetStage = $workOrder->stages()->first();
-            if (! $targetStage) {
-                $targetStage = WorkOrderStage::create([
-                    'work_order_id' => $workOrder->id,
-                    'service_stage_id' => null,
-                    'name' => 'Service Execution',
-                    'description' => 'Execution of approved quotation deliverables',
-                    'sort_order' => 1,
-                ]);
-            }
-
-            // Copy quotation items as stage products for operational tracking & invoicing
-            foreach ($quotation->items as $item) {
-                WorkOrderStageProduct::create([
-                    'work_order_stage_id' => $targetStage->id,
-                    'product_id' => $item->product_id,
-                    'name' => $item->name,
-                    'unit' => $item->unit,
-                    'quantity' => (float) $item->qty,
-                    'rate' => (float) $item->rate,
-                    'gst_rate' => (float) $item->gst_rate,
-                ]);
-            }
-
-            // 6. Update quotation to approved and link work order
-            $quotation->update([
-                'status' => 'approved',
-                'approved_at' => now(),
-                'customer_id' => $customer->id,
-                'work_order_id' => $workOrder->id,
-            ]);
-
-            return $workOrder;
-        });
-
-        return redirect()->route('admin.work-orders.show', $workOrder)
-            ->with('success', "Quotation {$quotation->number} approved! Lead converted and active Work Order {$workOrder->number} has been started.");
+            return redirect()->route('admin.work-orders.show', $workOrder)
+                ->with('success', "Quotation {$quotation->number} approved! Lead converted and active Work Order {$workOrder->number} has been started.");
+        } catch (\Throwable $e) {
+            return back()->with('error', $e->getMessage());
+        }
     }
 }

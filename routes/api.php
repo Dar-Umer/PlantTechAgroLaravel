@@ -35,10 +35,16 @@ Route::middleware(['auth:sanctum', \App\Http\Middleware\EnsureCustomerIsActive::
     Route::get('weather', [\App\Http\Controllers\Api\Customer\WeatherController::class, 'show']);
 
     Route::get('services', [ServiceController::class, 'index']);
+    Route::post('service-requests', [\App\Http\Controllers\Api\Customer\ServiceRequestController::class, 'store']);
 
     Route::apiResource('orchards', OrchardController::class);
 
     Route::get('products', [\App\Http\Controllers\Api\Customer\ProductController::class, 'index']);
+
+    Route::get('quotations', [\App\Http\Controllers\Api\Customer\QuotationController::class, 'index']);
+    Route::get('quotations/{id}', [\App\Http\Controllers\Api\Customer\QuotationController::class, 'show']);
+    Route::post('quotations/{id}/approve', [\App\Http\Controllers\Api\Customer\QuotationController::class, 'approve']);
+    Route::post('quotations/{id}/reject', [\App\Http\Controllers\Api\Customer\QuotationController::class, 'reject']);
 
     Route::get('work-orders', [WorkOrderController::class, 'index']);
     Route::post('work-orders', [WorkOrderController::class, 'store']);
