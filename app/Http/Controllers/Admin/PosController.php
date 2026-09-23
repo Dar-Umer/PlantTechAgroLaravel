@@ -63,6 +63,7 @@ class PosController extends Controller
                 'id' => $p->id,
                 'name' => $p->name,
                 'sku' => $p->sku,
+                'image_url' => \App\Support\Media::url($p->image),
                 'type' => $p->type,
                 'unit' => $p->unit,
                 'stock' => (float) $p->stock_qty,
