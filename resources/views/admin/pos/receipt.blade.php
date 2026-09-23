@@ -94,12 +94,11 @@
                 <div style="font-size: 9px; margin-top: 2px;">Modern Orchard & Precision Agriculture</div>
                 <div style="font-size: 9px;">Gourigund, Pulwama, J&K - 192301</div>
                 <div style="font-size: 9px;">Phone: +91 94190 00000 / 0194 000000</div>
-                <div style="font-size: 9px; font-weight: bold;">GSTIN: 01AAAAA0000A1Z5</div>
             </div>
 
             <div class="divider"></div>
 
-            <div class="center bold" style="font-size: 12px; letter-spacing: 1px;">TAX INVOICE / RETAIL RECEIPT</div>
+            <div class="center bold" style="font-size: 12px; letter-spacing: 1px;">RETAIL RECEIPT / CASH BILL</div>
 
             <div class="divider"></div>
 
@@ -110,7 +109,6 @@
                 @if($sale->customer_name && $sale->customer_name !== 'Walk-in Customer')
                     <div><strong>Customer:</strong> {{ $sale->customer_name }}</div>
                     @if($sale->customer_phone) <div><strong>Phone:</strong> {{ $sale->customer_phone }}</div> @endif
-                    @if($sale->customer_gstin) <div><strong>Cust GST:</strong> {{ $sale->customer_gstin }}</div> @endif
                 @else
                     <div><strong>Customer:</strong> Walk-in Customer</div>
                 @endif
@@ -133,7 +131,7 @@
                             <td colspan="4" class="bold">{{ $item->product_name }}</td>
                         </tr>
                         <tr style="font-size: 10px;">
-                            <td style="color: #444;">{{ $item->product?->hsn_code ? 'HSN: '.$item->product->hsn_code : '' }}</td>
+                            <td style="color: #444;">{{ $item->batch?->batch_number ? 'Batch: '.$item->batch->batch_number : '' }}</td>
                             <td class="right">{{ number_format($item->quantity, $item->quantity == (int)$item->quantity ? 0 : 2) }} {{ $item->unit }}</td>
                             <td class="right">₹{{ number_format($item->unit_price, 2) }}</td>
                             <td class="right bold">₹{{ number_format($item->total_price, 2) }}</td>
@@ -149,12 +147,6 @@
                     <td>Items Subtotal:</td>
                     <td class="right">₹{{ number_format($sale->subtotal, 2) }}</td>
                 </tr>
-                @if($sale->gst_amount > 0)
-                    <tr>
-                        <td>Total GST:</td>
-                        <td class="right">₹{{ number_format($sale->gst_amount, 2) }}</td>
-                    </tr>
-                @endif
                 @if($sale->discount_amount > 0)
                     <tr>
                         <td>Discount:</td>
@@ -183,11 +175,35 @@
                     <td>Payment Mode:</td>
                     <td class="right bold">{{ strtoupper(\App\Models\PosSale::PAYMENT_METHODS[$sale->payment_method] ?? $sale->payment_method) }}</td>
                 </tr>
-                @if($sale->payment_method === 'cash')
-                    <tr>
-                        <td>Cash Tendered:</td>
-                        <td class="right">₹{{ number_format($sale->amount_tendered, 2) }}</td>
+
+                @if($sale->payments->count() > 0)
+                    @foreach($sale->payments as $payment)
+                        <tr>
+                            <td style="padding-left: 8px;">- {{ $payment->methodLabel() }}:</td>
+                            <td class="right">₹{{ number_format($payment->amount, 2) }}</td>
+                        </tr>
+                    @endforeach
+                @endif
+
+                <tr>
+                    <td class="bold">Total Paid:</td>
+                    <td class="right bold">₹{{ number_format($sale->amount_paid ?: $sale->grand_total, 2) }}</td>
+                </tr>
+
+                @if((float) $sale->balance_due > 0)
+                    <tr style="color: #b91c1c; font-weight: bold; font-size: 11px;">
+                        <td>BALANCE DUE (DEBT):</td>
+                        <td class="right">₹{{ number_format($sale->balance_due, 2) }}</td>
                     </tr>
+                    @if($sale->customer && (float) $sale->customer->outstanding_balance > 0)
+                        <tr style="color: #b91c1c; font-size: 9px;">
+                            <td>Total Customer Due:</td>
+                            <td class="right">₹{{ number_format($sale->customer->outstanding_balance, 2) }}</td>
+                        </tr>
+                    @endif
+                @endif
+
+                @if((float) $sale->change_amount > 0)
                     <tr>
                         <td>Change Returned:</td>
                         <td class="right bold">₹{{ number_format($sale->change_amount, 2) }}</td>
@@ -199,7 +215,7 @@
 
             <div class="center" style="font-size: 9px; margin-top: 8px;">
                 <div>Thank you for choosing Plant Tech Agro!</div>
-                <div>Keep invoice for warranty/returns within 7 days.</div>
+                <div>Keep receipt for warranty/returns within 7 days.</div>
                 <div style="margin-top: 4px; font-weight: bold;">www.planttechagro.com</div>
             </div>
         </div>

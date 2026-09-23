@@ -40,6 +40,7 @@ class ProductBatch extends Model
         'initial_qty',
         'current_qty',
         'unit_cost',
+        'selling_price',
         'supplier_id',
         'status',
         'notes',
@@ -54,7 +55,25 @@ class ProductBatch extends Model
             'initial_qty' => 'decimal:3',
             'current_qty' => 'decimal:3',
             'unit_cost' => 'decimal:2',
+            'selling_price' => 'decimal:2',
         ];
+    }
+
+    public function effectiveSellingPrice(): float
+    {
+        if ($this->selling_price !== null && (float) $this->selling_price > 0) {
+            return (float) $this->selling_price;
+        }
+
+        if ($this->product && $this->product->selling_price !== null && (float) $this->product->selling_price > 0) {
+            return (float) $this->product->selling_price;
+        }
+
+        if ($this->unit_cost !== null && (float) $this->unit_cost > 0) {
+            return (float) $this->unit_cost;
+        }
+
+        return (float) ($this->product?->rate ?? 0);
     }
 
     public function batchValuation(): float

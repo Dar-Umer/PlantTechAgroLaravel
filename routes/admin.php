@@ -205,6 +205,7 @@ Route::middleware('admin')->group(function () {
     Route::get('pos/products/search', [PosController::class, 'searchProducts'])->name('admin.pos.products.search');
     Route::get('pos/customers/search', [PosController::class, 'searchCustomers'])->name('admin.pos.customers.search');
     Route::post('pos/customers', [PosController::class, 'storeCustomer'])->name('admin.pos.customers.store');
+    Route::post('pos/customers/{customer}/settle-balance', [PosController::class, 'settleBalance'])->name('admin.pos.customers.settle-balance');
     Route::post('pos/checkout', [PosController::class, 'checkout'])->name('admin.pos.checkout');
     Route::get('pos/sales/{sale}', [PosController::class, 'show'])->name('admin.pos.sales.show');
     Route::get('pos/sales/{sale}/receipt', [PosController::class, 'receipt'])->name('admin.pos.receipt');

@@ -12,6 +12,7 @@ class PosCustomer extends Model
     use HasFactory;
 
     protected $fillable = [
+        'customer_id',
         'name',
         'phone',
         'email',
@@ -19,6 +20,7 @@ class PosCustomer extends Model
         'gstin',
         'notes',
         'total_spent',
+        'outstanding_balance',
         'orders_count',
         'created_by',
     ];
@@ -27,8 +29,14 @@ class PosCustomer extends Model
     {
         return [
             'total_spent' => 'decimal:2',
+            'outstanding_balance' => 'decimal:2',
             'orders_count' => 'integer',
         ];
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
     }
 
     public function posSales(): HasMany
