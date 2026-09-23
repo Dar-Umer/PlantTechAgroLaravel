@@ -14,14 +14,11 @@ class QuotationController extends Controller
     {
         $customer = $request->user();
 
-        $quotations = Quotation::where(function ($q) use ($customer) {
-            $q->where('customer_id', $customer->id)
-                ->orWhere('customer_phone', $customer->phone);
-        })
-        ->with(['service:id,name,slug', 'workOrder:id,number,status'])
-        ->latest('date')
-        ->latest('id')
-        ->paginate(15);
+        $quotations = $this->customerScope(Quotation::query(), $customer)
+            ->with(['service:id,name,slug', 'workOrder:id,number,status'])
+            ->latest('date')
+            ->latest('id')
+            ->paginate(15);
 
         return response()->json([
             'quotations' => $quotations->map(fn (Quotation $q) => static::summary($q))->values(),
@@ -37,12 +34,9 @@ class QuotationController extends Controller
     {
         $customer = $request->user();
 
-        $quotation = Quotation::where(function ($q) use ($customer) {
-            $q->where('customer_id', $customer->id)
-                ->orWhere('customer_phone', $customer->phone);
-        })
-        ->with(['service:id,name,slug,description', 'items', 'workOrder:id,number,status'])
-        ->findOrFail($id);
+        $quotation = $this->customerScope(Quotation::query(), $customer)
+            ->with(['service:id,name,slug,description', 'items', 'workOrder:id,number,status'])
+            ->findOrFail($id);
 
         return response()->json([
             'quotation' => [
@@ -97,10 +91,7 @@ class QuotationController extends Controller
     {
         $customer = $request->user();
 
-        $quotation = Quotation::where(function ($q) use ($customer) {
-            $q->where('customer_id', $customer->id)
-                ->orWhere('customer_phone', $customer->phone);
-        })->findOrFail($id);
+        $quotation = $this->customerScope(Quotation::query(), $customer)->findOrFail($id);
 
         if (! $quotation->canApprove()) {
             return response()->json([
@@ -127,10 +118,7 @@ class QuotationController extends Controller
     {
         $customer = $request->user();
 
-        $quotation = Quotation::where(function ($q) use ($customer) {
-            $q->where('customer_id', $customer->id)
-                ->orWhere('customer_phone', $customer->phone);
-        })->findOrFail($id);
+        $quotation = $this->customerScope(Quotation::query(), $customer)->findOrFail($id);
 
         if ($quotation->status === 'approved' || $quotation->work_order_id) {
             return response()->json([
@@ -151,6 +139,21 @@ class QuotationController extends Controller
         return response()->json([
             'message' => 'Quotation declined. Our team has been notified and will reach out with an adjusted proposal.',
         ]);
+    }
+
+    protected function customerScope($query, $customer)
+    {
+        $phoneDigits = \App\Support\Phone::digits($customer->phone);
+
+        return $query->where(function ($q) use ($customer, $phoneDigits) {
+            $q->where('customer_id', $customer->id)
+                ->orWhere('customer_phone', $customer->phone)
+                ->orWhereHas('lead', fn ($lq) => $lq->where('converted_customer_id', $customer->id));
+
+            if (! empty($phoneDigits)) {
+                $q->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(customer_phone, '+', ''), '-', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ['%' . $phoneDigits]);
+            }
+        });
     }
 
     public static function summary(Quotation $q): array

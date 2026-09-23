@@ -127,10 +127,24 @@ class QuotationController extends Controller
                 ];
             }
 
+            $customerId = $data['customer_id'] ?? null;
+            if (! $customerId && ! empty($data['lead_id'])) {
+                $lead = Lead::find($data['lead_id']);
+                if ($lead && $lead->converted_customer_id) {
+                    $customerId = $lead->converted_customer_id;
+                }
+            }
+            if (! $customerId && ! empty($data['customer_phone'])) {
+                $matchedCustomer = Customer::findByPhoneDigits($data['customer_phone']);
+                if ($matchedCustomer) {
+                    $customerId = $matchedCustomer->id;
+                }
+            }
+
             $quotation = Quotation::create([
                 'number' => QuotationNumberer::next(),
                 'lead_id' => $data['lead_id'] ?? null,
-                'customer_id' => $data['customer_id'] ?? null,
+                'customer_id' => $customerId,
                 'service_id' => $data['service_id'] ?? null,
                 'customer_name' => $data['customer_name'],
                 'customer_phone' => $data['customer_phone'],
@@ -245,7 +259,16 @@ class QuotationController extends Controller
                 ];
             }
 
+            $customerId = $quotation->customer_id;
+            if (! $customerId && ! empty($quotation->lead_id)) {
+                $customerId = $quotation->lead?->converted_customer_id;
+            }
+            if (! $customerId && ! empty($data['customer_phone'])) {
+                $customerId = Customer::findByPhoneDigits($data['customer_phone'])?->id;
+            }
+
             $quotation->update([
+                'customer_id' => $customerId,
                 'service_id' => $data['service_id'] ?? null,
                 'customer_name' => $data['customer_name'],
                 'customer_phone' => $data['customer_phone'],
