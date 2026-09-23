@@ -183,7 +183,27 @@ class WorkOrderController extends Controller
             return $workOrder;
         });
 
-        $workOrder->load(['agent:id,name', 'invoice', 'stages']);
+        $workOrder->load(['agent:id,name', 'invoice', 'stages', 'orchard']);
+
+        // Create a corresponding Lead record so the admin sees the booking in /admin/leads as well as /admin/work-orders
+        $orchard = $workOrder->orchard;
+        \App\Models\Lead::create([
+            'name' => $customer->name,
+            'phone' => $customer->phone,
+            'service_id' => $service->id,
+            'status' => 'new',
+            'source' => 'customer_app',
+            'converted_customer_id' => $customer->id,
+            'notes' => $data['notes'] ?? ('Booked via Customer App for ' . ($orchard ? $orchard->name : 'Orchard')),
+            'custom_fields' => array_filter([
+                'orchardist_id' => $customer->orchardist_id,
+                'orchard_id' => $workOrder->orchard_id,
+                'orchard_name' => $orchard?->name,
+                'work_order_id' => $workOrder->id,
+                'work_order_number' => $workOrder->number,
+                'area' => $customer->area ?? $customer->address,
+            ]),
+        ]);
 
         Admin::where('is_active', true)->get()->each->notify(new CustomerBookedService($workOrder));
 

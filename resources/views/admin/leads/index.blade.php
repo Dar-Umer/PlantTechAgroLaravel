@@ -80,9 +80,24 @@
                                 ][$color];
                             @endphp
                             <tr class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 font-medium text-gray-900">{{ $lead->name }}</td>
+                                <td class="px-6 py-4 font-medium text-gray-900">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span>{{ $lead->name }}</span>
+                                        @if($lead->source === 'customer_app')
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800">
+                                                📱 App Booking
+                                            </span>
+                                        @endif
+                                    </div>
+                                    @if(isset($lead->custom_fields['orchardist_id']))
+                                        <div class="font-mono text-xs text-brand-600 font-medium">{{ $lead->custom_fields['orchardist_id'] }}</div>
+                                    @endif
+                                    @if(isset($lead->custom_fields['orchard_name']))
+                                        <div class="text-[11px] text-gray-400">🌳 {{ $lead->custom_fields['orchard_name'] }}</div>
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 text-gray-600">
-                                    <a href="tel:{{ $lead->phone }}" class="hover:text-brand-600">{{ $lead->phone }}</a>
+                                    <a href="tel:{{ $lead->phone }}" class="hover:text-brand-600 font-medium">{{ $lead->phone }}</a>
                                 </td>
                                 <td class="px-6 py-4 text-gray-600">
                                     @if($lead->service)

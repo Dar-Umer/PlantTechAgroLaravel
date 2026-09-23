@@ -24,7 +24,7 @@ class WorkOrderController extends Controller
 {
     public function index(Request $request)
     {
-        $query = WorkOrder::query()->with(['agent', 'invoice'])->latest();
+        $query = WorkOrder::query()->with(['agent', 'invoice', 'customer', 'orchard'])->latest();
 
         if ($status = $request->query('status')) {
             abort_unless(in_array($status, array_keys(WorkOrder::STATUSES), true), 422, 'Invalid status filter.');

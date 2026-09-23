@@ -69,10 +69,32 @@
                                     <a href="{{ route('admin.work-orders.show', $workOrder) }}" class="font-semibold text-brand-600 hover:text-brand-700">{{ $workOrder->number }}</a>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="text-gray-600">{{ $workOrder->customer_name }}</span>
+                                    <div class="font-medium text-gray-900">
+                                        @if($workOrder->customer)
+                                            <a href="{{ route('admin.customers.show', $workOrder->customer) }}" class="hover:text-brand-600 font-semibold">{{ $workOrder->customer_name }}</a>
+                                        @else
+                                            {{ $workOrder->customer_name }}
+                                        @endif
+                                    </div>
+                                    <div class="flex items-center gap-2 mt-0.5 flex-wrap">
+                                        @if($workOrder->customer?->orchardist_id)
+                                            <span class="font-mono text-[11px] font-semibold text-brand-600 bg-brand-50 px-1.5 py-0.5 rounded">{{ $workOrder->customer->orchardist_id }}</span>
+                                        @endif
+                                        @if($workOrder->customer?->phone)
+                                            <a href="tel:{{ $workOrder->customer->phone }}" class="text-xs text-gray-500 hover:text-brand-600 font-mono">{{ $workOrder->customer->phone }}</a>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="text-gray-600">{{ $workOrder->service_name }}</span>
+                                    <div class="font-medium text-gray-900">{{ $workOrder->service_name }}</div>
+                                    @if($workOrder->orchard)
+                                        <div class="text-[11px] text-gray-500 mt-0.5 flex items-center gap-1">
+                                            <span>🌳 {{ $workOrder->orchard->name }}</span>
+                                            @if($workOrder->orchard->area_kanals)
+                                                <span class="text-gray-400">({{ $workOrder->orchard->area_kanals }}K)</span>
+                                            @endif
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4">
                                     @if($workOrder->agent)
