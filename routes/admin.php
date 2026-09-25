@@ -32,6 +32,8 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\StockMovementController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\TestimonialController;
+use App\Http\Controllers\Admin\TicketController;
+use App\Http\Controllers\Admin\SystemHealthController;
 use App\Http\Controllers\Admin\WorkOrderController;
 use Illuminate\Support\Facades\Route;
 
@@ -147,6 +149,18 @@ Route::middleware('admin')->group(function () {
     Route::get('customers/{customer}/ledger/pdf', [CustomerController::class, 'ledgerPdf'])->name('admin.customers.ledger.pdf');
     Route::get('customers/{customer}/ledger/csv', [CustomerController::class, 'ledgerCsv'])->name('admin.customers.ledger.csv');
 
+    // Support Tickets & Farmer Queries
+    Route::get('tickets', [TicketController::class, 'index'])->name('admin.tickets.index');
+    Route::get('tickets/create', [TicketController::class, 'create'])->name('admin.tickets.create');
+    Route::post('tickets', [TicketController::class, 'store'])->name('admin.tickets.store');
+    Route::get('tickets/{ticket}', [TicketController::class, 'show'])->name('admin.tickets.show');
+    Route::patch('tickets/{ticket}/assign', [TicketController::class, 'assign'])->name('admin.tickets.assign');
+    Route::patch('tickets/{ticket}/status', [TicketController::class, 'updateStatus'])->name('admin.tickets.status');
+    Route::patch('tickets/{ticket}/priority', [TicketController::class, 'updatePriority'])->name('admin.tickets.priority');
+    Route::post('tickets/{ticket}/messages', [TicketController::class, 'addMessage'])->name('admin.tickets.messages.store');
+    Route::post('tickets/{ticket}/notes', [TicketController::class, 'addInternalNote'])->name('admin.tickets.notes.store');
+    Route::delete('tickets/{ticket}', [TicketController::class, 'destroy'])->name('admin.tickets.destroy');
+
     // Orchards Management
     Route::resource('orchards', \App\Http\Controllers\Admin\OrchardController::class)->names('admin.orchards');
 
@@ -214,6 +228,13 @@ Route::middleware('admin')->group(function () {
 
     // Notifications
     Route::get('notifications/latest', [NotificationController::class, 'latest'])->name('admin.notifications.latest');
+    Route::get('notifications/{notification}/go', [NotificationController::class, 'go'])->name('admin.notifications.go');
     Route::post('notifications/{notification}/read', [NotificationController::class, 'read'])->name('admin.notifications.read');
     Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('admin.notifications.read-all');
+
+    // System Performance & Health Diagnostics
+    Route::get('system/diagnostics', [SystemHealthController::class, 'index'])->name('admin.system.diagnostics');
+    Route::get('system/health', [SystemHealthController::class, 'stats'])->name('admin.system.health');
+    Route::post('system/clear-views', [SystemHealthController::class, 'clearViews'])->name('admin.system.clear-views');
+    Route::post('system/clear-cache', [SystemHealthController::class, 'clearAllCache'])->name('admin.system.clear-cache');
 });

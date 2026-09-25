@@ -42,6 +42,40 @@ class NotificationController extends Controller
     }
 
     /**
+     * Mark a single notification as read and redirect to its destination.
+     */
+    public function go(Request $request, string $notification)
+    {
+        $item = $request->user('admin')->notifications()->whereKey($notification)->firstOrFail();
+
+        if (! $item->read_at) {
+            $item->markAsRead();
+        }
+
+        $data = $item->data;
+        if (! empty($data['url'])) {
+            return redirect($data['url']);
+        }
+        if (! empty($data['ticket_id'])) {
+            return redirect()->route('admin.tickets.show', $data['ticket_id']);
+        }
+        if (! empty($data['work_order_id'])) {
+            return redirect()->route('admin.work-orders.show', $data['work_order_id']);
+        }
+        if (! empty($data['lead_id'])) {
+            return redirect()->route('admin.leads.show', $data['lead_id']);
+        }
+        if (! empty($data['product_id'])) {
+            return redirect()->route('admin.products.edit', $data['product_id']);
+        }
+        if (! empty($data['product_name'])) {
+            return redirect()->route('admin.products.index');
+        }
+
+        return redirect()->route('admin.dashboard');
+    }
+
+    /**
      * Mark a single notification as read (used by the new-lead popup
      * so an acknowledged lead never pops up again).
      */
@@ -53,7 +87,11 @@ class NotificationController extends Controller
             $item->markAsRead();
         }
 
-        return response()->json(['message' => 'Notification marked as read.']);
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Notification marked as read.']);
+        }
+
+        return back()->with('success', 'Notification marked as read.');
     }
 
     public function readAll(Request $request)

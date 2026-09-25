@@ -59,4 +59,9 @@ class Admin extends Authenticatable
     {
         return true;
     }
+
+    public function assignedTickets(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Ticket::class, 'assigned_to');
+    }
 }

@@ -89,11 +89,12 @@ class CustomerController extends Controller
         $overdueInvoices = $customer->invoices()->where('status', 'overdue')->count();
 
         $lead = $customer->lead;
+        $tickets = $customer->tickets()->with('assignedStaff')->latest()->limit(5)->get();
 
         return view('admin.customers.show', compact(
             'customer', 'lead', 'workOrders', 'invoices', 'servicesAvailed',
             'workOrdersTotal', 'workOrdersActive', 'workOrdersCompleted',
-            'totalPaid', 'outstanding', 'overdueInvoices'
+            'totalPaid', 'outstanding', 'overdueInvoices', 'tickets'
         ));
     }
 

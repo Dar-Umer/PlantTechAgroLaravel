@@ -345,6 +345,33 @@
                     @endif
                 </div>
 
+                {{-- Support Tickets --}}
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex items-center justify-between mb-1">
+                        <h3 class="text-lg font-semibold text-gray-900">Support Tickets</h3>
+                        <a href="{{ route('admin.tickets.index', ['q' => $customer->phone]) }}" class="text-xs font-medium text-brand-600 hover:text-brand-700">View all</a>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-4">Farmer inquiries and crop diagnosis requests.</p>
+                    @if($tickets->isNotEmpty())
+                        <div class="space-y-3">
+                            @foreach($tickets as $t)
+                                <a href="{{ route('admin.tickets.show', $t) }}" class="block rounded-xl bg-gray-50 border border-gray-100 p-3 hover:border-brand-200 transition">
+                                    <div class="flex items-center justify-between gap-2 mb-1">
+                                        <span class="font-mono text-xs font-bold text-brand-600">{{ $t->ticket_number }}</span>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium {{ $t->statusBadgeClasses() }}">
+                                            {{ $t->statusLabel() }}
+                                        </span>
+                                    </div>
+                                    <p class="text-xs font-semibold text-gray-800 line-clamp-1">{{ $t->subject }}</p>
+                                    <p class="text-[11px] text-gray-400 mt-1">{{ $t->created_at->format('d M Y') }} · {{ $t->assignedStaff ? $t->assignedStaff->name : 'Unassigned' }}</p>
+                                </a>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-sm text-gray-500 text-center py-6">No support tickets raised yet.</p>
+                    @endif
+                </div>
+
                 @if($lead)
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                         <h3 class="text-lg font-semibold text-gray-900 mb-1">Origin</h3>

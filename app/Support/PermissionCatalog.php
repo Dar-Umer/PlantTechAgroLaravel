@@ -27,6 +27,9 @@ class PermissionCatalog
                     'orchards.manage' => ['label' => 'Manage Orchards', 'desc' => 'Create, edit, verify, and tag orchards.'],
                     'invoices.view' => ['label' => 'View Invoices', 'desc' => 'Access service invoices and customer billing records.'],
                     'invoices.manage' => ['label' => 'Manage Invoices', 'desc' => 'Create invoices, record payments, and cancel invoices.'],
+                    'tickets.view' => ['label' => 'View Support Tickets', 'desc' => 'Browse and inspect farmer support tickets and queries.'],
+                    'tickets.manage' => ['label' => 'Manage Support Tickets', 'desc' => 'Respond to tickets, resolve, close, or add internal notes.'],
+                    'tickets.assign' => ['label' => 'Assign Support Tickets', 'desc' => 'Assign and reassign farmer queries to specific support staff.'],
                 ],
             ],
             'Point of Sale (POS)' => [
@@ -127,6 +130,7 @@ class PermissionCatalog
                 'inventory.view', 'inventory.manage', 'inventory.stock-in', 'inventory.stock-out', 'inventory.batches', 'suppliers.manage',
                 'services.view', 'services.manage', 'services.stages.manage',
                 'reports.gst', 'customers.ledger',
+                'tickets.view', 'tickets.manage', 'tickets.assign',
             ],
             'POS & Stock Operator' => [
                 'pos.terminal', 'pos.sales.view', 'pos.sales.cancel', 'pos.customers.manage',
@@ -135,6 +139,7 @@ class PermissionCatalog
             'Field Agent' => [
                 'work-orders.view', 'work-orders.manage',
                 'leads.view', 'customers.view', 'orchards.view',
+                'tickets.view', 'tickets.manage',
             ],
             'Accountant' => [
                 'invoices.view', 'invoices.manage',

@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Customer\NotificationController;
 use App\Http\Controllers\Api\Customer\OrchardController;
 use App\Http\Controllers\Api\Customer\ProfileController;
 use App\Http\Controllers\Api\Customer\ServiceController;
+use App\Http\Controllers\Api\Customer\TicketController;
 use App\Http\Controllers\Api\Customer\WorkOrderController;
 use Illuminate\Support\Facades\Route;
 
@@ -56,4 +57,13 @@ Route::middleware(['auth:sanctum', \App\Http\Middleware\EnsureCustomerIsActive::
     Route::get('notifications', [NotificationController::class, 'index']);
     Route::post('notifications/read-all', [NotificationController::class, 'readAll']);
     Route::post('notifications/{notification}/read', [NotificationController::class, 'read']);
+
+    // Farmer Support Tickets
+    Route::get('tickets', [TicketController::class, 'index']);
+    Route::get('tickets/categories', [TicketController::class, 'categories']);
+    Route::post('tickets', [TicketController::class, 'store']);
+    Route::get('tickets/{id}', [TicketController::class, 'show']);
+    Route::post('tickets/{id}/reply', [TicketController::class, 'reply']);
+    Route::post('tickets/{id}/close', [TicketController::class, 'close']);
+    Route::post('tickets/{id}/reopen', [TicketController::class, 'reopen']);
 });

@@ -82,6 +82,11 @@ class Customer extends Authenticatable
         return $this->hasMany(Invoice::class);
     }
 
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class);
+    }
+
     public function isActive(): bool
     {
         return $this->status === 'active';
