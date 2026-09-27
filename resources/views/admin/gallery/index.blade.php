@@ -40,7 +40,7 @@
             @forelse($images as $image)
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group relative">
                     <div class="aspect-square bg-gray-50">
-                        <img src="{{ asset('storage/' . $image->image) }}" alt="{{ $image->caption ?? 'Gallery image' }}" class="w-full h-full object-cover">
+                        <img src="{{ \App\Support\Media::url($image->image) }}" alt="{{ $image->caption ?? 'Gallery image' }}" class="w-full h-full object-cover">
                     </div>
                     <div class="p-3">
                         @if($image->caption)

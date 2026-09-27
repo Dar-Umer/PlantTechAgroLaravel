@@ -15,7 +15,7 @@ class StockMovementController extends Controller
 {
     public function index(Request $request)
     {
-        $query = $this->applyFilters($request, StockMovement::query()->with(['product', 'supplier', 'createdBy'])->latest());
+        $query = $this->applyFilters($request, StockMovement::query()->with(['product', 'supplier', 'createdBy', 'purchaseBill'])->latest());
 
         $movements = $query->paginate(25)->withQueryString();
 

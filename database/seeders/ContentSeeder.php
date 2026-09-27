@@ -22,6 +22,7 @@ class ContentSeeder extends Seeder
         $this->seedFaqEntries();
         $this->seedTestimonials();
         $this->seedSamplePosts();
+        $this->seedGallery();
     }
 
     private function seedServices(): void
@@ -146,6 +147,58 @@ class ContentSeeder extends Seeder
                 'is_published' => true,
                 'published_at' => now(),
             ]);
+        }
+    }
+
+    private function seedGallery(): void
+    {
+        $images = [
+            [
+                'image' => '/images/hero/slide-1.jpg',
+                'caption' => 'High-Density M9 Apple Orchard & Galvanized Trellis',
+                'category' => 'High-Density Orchards',
+                'sort_order' => 1,
+                'is_active' => true,
+            ],
+            [
+                'image' => '/images/hero/slide-3.jpg',
+                'caption' => 'Automated Micro-Drip Irrigation & Fertigation Setup',
+                'category' => 'Micro Irrigation',
+                'sort_order' => 2,
+                'is_active' => true,
+            ],
+            [
+                'image' => '/images/hero/slide-4.jpg',
+                'caption' => 'Anti-Hail Netting Infrastructure for Weather Protection',
+                'category' => 'Trellis & Nets',
+                'sort_order' => 3,
+                'is_active' => true,
+            ],
+            [
+                'image' => '/images/hero/slide-2.jpg',
+                'caption' => 'Scientific Pruning & Canopy Architecture Management',
+                'category' => 'High-Density Orchards',
+                'sort_order' => 4,
+                'is_active' => true,
+            ],
+            [
+                'image' => 'sections/By91b9nsj7923RDMiDnD0bHtZpIf2sJ1vrycf01Q.jpg',
+                'caption' => 'Bumper Apple Harvest Sorted for Cold Storage Logistics',
+                'category' => 'Harvest',
+                'sort_order' => 5,
+                'is_active' => true,
+            ],
+            [
+                'image' => 'varieties/B1rBOfuA08fZWW0cjxruzXZdVoLWvNyPNUDEaI1t.jpg',
+                'caption' => 'Early-Bearing Red Velox & Jeromine Apple Clusters',
+                'category' => 'Varieties',
+                'sort_order' => 6,
+                'is_active' => true,
+            ],
+        ];
+
+        foreach ($images as $data) {
+            \App\Models\GalleryImage::firstOrCreate(['caption' => $data['caption']], $data);
         }
     }
 }

@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProjectController;
+use App\Http\Controllers\Admin\PurchaseBillController;
 use App\Http\Controllers\Admin\QuotationController;
 use App\Http\Controllers\Admin\ResetPasswordController;
 use App\Http\Controllers\Admin\RoleController;
@@ -167,7 +168,14 @@ Route::middleware('admin')->group(function () {
     // Inventory
     Route::resource('products', ProductController::class)->except('show')->names('admin.products');
     Route::post('products/{product}/notify-supplier', [ProductController::class, 'notifySupplier'])->name('admin.products.notify-supplier');
-    Route::resource('suppliers', SupplierController::class)->except('show')->names('admin.suppliers');
+    // Suppliers & Procurement
+    Route::resource('suppliers', SupplierController::class)->names('admin.suppliers');
+    Route::post('suppliers/{supplier}/payments', [SupplierController::class, 'recordPayment'])->name('admin.suppliers.payments.store');
+
+    // Purchase Bills (Inward Stock & Invoicing)
+    Route::resource('purchase-bills', PurchaseBillController::class)->parameters(['purchase-bills' => 'purchaseBill'])->except(['edit', 'update'])->names('admin.purchase-bills');
+    Route::get('purchase-bills/{purchaseBill}/print', [PurchaseBillController::class, 'print'])->name('admin.purchase-bills.print');
+    Route::post('purchase-bills/{purchaseBill}/payments', [PurchaseBillController::class, 'recordPayment'])->name('admin.purchase-bills.payments.store');
     Route::get('stock-movements', [StockMovementController::class, 'index'])->name('admin.stock-movements.index');
     Route::get('stock-movements/export', [StockMovementController::class, 'export'])->name('admin.stock-movements.export');
     Route::get('stock-movements/create', [StockMovementController::class, 'create'])->name('admin.stock-movements.create');

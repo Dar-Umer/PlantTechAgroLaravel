@@ -16,6 +16,6 @@
     </div>
 </div>
 
-<div class="flex justify-end">
+<div class="flex justify-end mt-6">
     <x-admin.button type="submit">{{ $submitLabel }}</x-admin.button>
 </div>

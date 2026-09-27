@@ -152,13 +152,19 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-gray-600">
-                                    @if($movement->reference)
+                                    @if($movement->purchaseBill)
+                                        <a href="{{ route('admin.purchase-bills.show', $movement->purchaseBill) }}" onclick="event.stopPropagation()" class="font-mono text-xs font-semibold text-brand-600 hover:underline">
+                                            {{ $movement->purchaseBill->bill_number }}
+                                        </a>
+                                    @elseif($movement->reference)
                                         <span class="font-mono text-xs font-medium text-gray-700">{{ $movement->reference }}</span>
                                     @else
                                         <span class="text-gray-300">—</span>
                                     @endif
                                     @if($movement->supplier)
-                                        <span class="block text-xs text-gray-400">{{ $movement->supplier->name }}</span>
+                                        <a href="{{ route('admin.suppliers.show', $movement->supplier) }}" onclick="event.stopPropagation()" class="block text-xs text-gray-500 hover:text-brand-600">
+                                            {{ $movement->supplier->name }}
+                                        </a>
                                     @endif
                                     @if($movement->note)
                                         <span class="block text-xs text-gray-400 max-w-[220px] truncate" title="{{ $movement->note }}">{{ $movement->note }}</span>

@@ -100,6 +100,21 @@ class Product extends Model
         return round($this->stockValuation() / $totalQty, 2);
     }
 
+    public function latestCostPrice(): float
+    {
+        $cost = $this->batches()->whereNotNull('unit_cost')->latest()->value('unit_cost');
+        if ($cost !== null) {
+            return (float) $cost;
+        }
+
+        $mvCost = $this->movements()->where('type', 'in')->whereNotNull('unit_cost')->latest()->value('unit_cost');
+        if ($mvCost !== null) {
+            return (float) $mvCost;
+        }
+
+        return (float) ($this->rate ?? 0);
+    }
+
     public function isLowStock(): bool
     {
         return $this->low_stock_threshold > 0

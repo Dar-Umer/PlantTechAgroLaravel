@@ -26,4 +26,44 @@ class Supplier extends Model
     {
         return $this->hasMany(Product::class);
     }
+
+    public function purchaseBills()
+    {
+        return $this->hasMany(PurchaseBill::class);
+    }
+
+    public function purchase_bills()
+    {
+        return $this->purchaseBills();
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(SupplierPayment::class);
+    }
+
+    public function stockMovements()
+    {
+        return $this->hasMany(StockMovement::class);
+    }
+
+    public function batches()
+    {
+        return $this->hasMany(ProductBatch::class);
+    }
+
+    public function getTotalPurchasedAttribute(): float
+    {
+        return (float) $this->purchaseBills()->sum('total_amount');
+    }
+
+    public function getTotalPaidAttribute(): float
+    {
+        return (float) $this->payments()->sum('amount');
+    }
+
+    public function getBalanceDueAttribute(): float
+    {
+        return (float) $this->purchaseBills()->sum('balance_due');
+    }
 }

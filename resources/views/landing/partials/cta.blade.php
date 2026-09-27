@@ -61,7 +61,7 @@
 
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {{-- Card Container with Hero-Matched Styling and Rain Drops Effect --}}
-        <div class="relative rounded-3xl border border-gray-800 bg-gray-900/90 dark:bg-gray-900/95 backdrop-blur-md p-8 sm:p-12 lg:p-14 shadow-2xl shadow-brand-950/20 transition duration-300 overflow-hidden group">
+        <div class="relative rounded-3xl border border-gray-800 bg-gray-900/90 dark:bg-gray-900/95 backdrop-blur-md p-6 sm:p-10 lg:p-14 shadow-2xl shadow-brand-950/20 transition duration-300 overflow-hidden group">
             {{-- Hero-matching Ellipse Glow inside Card --}}
             <div class="absolute inset-0 opacity-25 bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.35),transparent_60%)] pointer-events-none"></div>
             {{-- Hero-matching Grid Texture inside Card --}}
@@ -79,7 +79,7 @@
             </div>
 
             {{-- Subtle Sparkle Dots at Bottom Left (matching reference design) --}}
-            <div class="absolute bottom-6 left-8 sm:left-12 flex items-center gap-1.5 opacity-30 pointer-events-none" aria-hidden="true">
+            <div class="absolute bottom-4 sm:bottom-6 left-6 sm:left-12 flex items-center gap-1.5 opacity-30 pointer-events-none" aria-hidden="true">
                 <span class="w-1 h-1 rounded-full bg-brand-400"></span>
                 <span class="w-1.5 h-1.5 rounded-full bg-brand-400/80 -mt-1.5"></span>
                 <span class="w-1 h-1 rounded-full bg-brand-400/60 mt-1"></span>
@@ -88,30 +88,31 @@
             </div>
 
             {{-- Inner Flex Layout --}}
-            <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 sm:gap-12">
+            <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 sm:gap-10 lg:gap-12">
                 {{-- Left Text Column --}}
                 <div class="max-w-xl text-left">
-                    <p class="text-xs sm:text-sm font-semibold tracking-widest uppercase text-brand-500 mb-3">
-                        {{ strtoupper($siteName) }}
-                    </p>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-[11px] sm:text-xs font-bold uppercase tracking-widest mb-3">
+                        <span class="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse"></span>
+                        <span>{{ strtoupper($siteName) }}</span>
+                    </div>
 
-                    <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
-                        <span class="block sm:inline">{{ $line1 }}</span>
+                    <h2 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
+                        {{ $line1 }}
                         @if($line2)
-                            <span class="block sm:inline text-brand-500"> {{ $line2 }}</span>
+                            <span class="text-brand-500"> {{ $line2 }}</span>
                         @endif
                     </h2>
 
-                    <p class="mt-4 text-sm sm:text-base text-gray-400 max-w-lg leading-relaxed">
+                    <p class="mt-3 sm:mt-4 text-xs sm:text-base text-gray-400 max-w-lg leading-relaxed">
                         {{ $subtitle }}
                     </p>
                 </div>
 
-                {{-- Right Actions Column --}}
-                <div class="flex flex-wrap items-center gap-4 lg:shrink-0">
+                {{-- Right Actions Column (Side-by-side on mobile and PC) --}}
+                <div class="flex flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto lg:shrink-0 pt-2 sm:pt-0">
                     {{-- Primary Sprout Action Button --}}
                     <button type="button" onclick="openBookModal()"
-                            class="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-full bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm sm:text-base transition-all duration-300 shadow-lg shadow-brand-900/40 hover:shadow-brand-600/30 hover:scale-[1.02] focus:outline-none">
+                            class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-8 py-3.5 sm:py-4 rounded-full bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs sm:text-base transition-all duration-300 shadow-lg shadow-brand-900/40 hover:shadow-brand-600/30 hover:scale-[1.02] focus:outline-none whitespace-nowrap">
                         {{-- Sprout Plant SVG Icon --}}
                         <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M7 20h10"/>
@@ -124,7 +125,7 @@
 
                     {{-- Secondary Dark Glass Contact Button --}}
                     <a href="#contact"
-                       class="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-full bg-gray-900/80 hover:bg-gray-800 border border-gray-700/80 hover:border-gray-600 text-gray-200 hover:text-white font-semibold text-sm sm:text-base backdrop-blur-md transition-all duration-300 hover:scale-[1.02] focus:outline-none shadow-sm">
+                       class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-8 py-3.5 sm:py-4 rounded-full bg-gray-900/80 hover:bg-gray-800 border border-gray-700/80 hover:border-gray-600 text-gray-200 hover:text-white font-semibold text-xs sm:text-base backdrop-blur-md transition-all duration-300 hover:scale-[1.02] focus:outline-none shadow-sm whitespace-nowrap">
                         {{-- Phone Receiver SVG Icon --}}
                         <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>

@@ -50,6 +50,7 @@ class PermissionCatalog
                     'inventory.stock-out' => ['label' => 'Record Stock Out & Adjustments', 'desc' => 'Record consumption, write-offs, and stock count corrections.'],
                     'inventory.batches' => ['label' => 'Batches & Expiry Tracking', 'desc' => 'Monitor batch/lot numbers, purchase costs, and shelf life.'],
                     'suppliers.manage' => ['label' => 'Manage Suppliers', 'desc' => 'Manage vendor directory, contact details, and stock alerts.'],
+                    'purchase-bills.manage' => ['label' => 'Purchase Bills & Inward Stock', 'desc' => 'Record inward purchase bills, line items, batches, and supplier payments.'],
                 ],
             ],
             'Services & Workflow' => [

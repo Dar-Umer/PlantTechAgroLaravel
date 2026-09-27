@@ -81,6 +81,12 @@ class OrchardController extends Controller
     {
         $orchard = Orchard::where('customer_id', $request->user()->id)->findOrFail($id);
 
+        if ($orchard->is_company_established) {
+            throw ValidationException::withMessages([
+                'orchard' => 'Company-established orchards cannot be edited. Please contact Plant Tech Agro support for any changes.',
+            ]);
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'address' => ['required', 'string', 'max:1000'],
