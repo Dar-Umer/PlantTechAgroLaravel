@@ -887,8 +887,8 @@ class ProformaInvoiceQuotationTest extends TestCase
         $createRes->assertSee('Village Keller, Shopian');
         $createRes->assertSee('4.5 Kanal');
         // Check that initial item was prefilled with lead qty (4.5) and variation rate (140000)
-        $createRes->assertSee('&quot;qty&quot;:4.5', false);
-        $createRes->assertSee('&quot;rate&quot;:140000', false);
+        $createRes->assertSee('"qty":4.5', false);
+        $createRes->assertSee('"rate":140000', false);
 
         // 3. Admin submits the quotation with an override on rate (e.g. negotiated to 138000)
         $postPayload = [

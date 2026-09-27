@@ -84,7 +84,7 @@
         'gst_rate' => (float) $p->gst_rate,
     ]);
 
-    $company = $companySettings ?? [
+    $company = array_merge([
         'company_name' => config('shop.site_name', 'Plant Tech Agro'),
         'company_tagline' => config('quotation.company_tagline', 'Complete Orchard Solution'),
         'company_slogan' => config('quotation.company_slogan', 'From Planning to Plantation We Build Better Orchards.'),
@@ -98,255 +98,10 @@
         'bank_branch' => config('shop.bank_branch', 'Migrant Colony Hall Pulwama'),
         'bank_ifsc' => config('shop.bank_ifsc', 'JAKA0MIGRNT'),
         'prefix' => config('quotation.prefix', 'QT'),
-    ];
+    ], $companySettings ?? []);
 @endphp
 
-<div class="space-y-6"
-     x-data="{
-        services: {{ json_encode($servicesJson) }},
-        products: {{ json_encode($productsJson) }},
-        items: {{ json_encode($initialItems) }},
-        milestones: {{ json_encode($initialMilestones) }},
-        variations: {{ json_encode($initialDefaults['variations'] ?? []) }},
-        selectedVariationIndex: '{{ old('variation_index', $matchedVariationIndex !== null ? (string)$matchedVariationIndex : '') }}',
-        selectedServiceId: '{{ $selectedSvcId }}',
-        serviceType: '{{ $initialServiceType }}',
-        accentColor: '{{ $initialDefaults['accent_color'] ?? '#064e3b' }}',
-        documentTitle: '{{ addslashes($initialDefaults['document_title'] ?? 'PROFORMA INVOICE') }}',
-        documentSubtitle: '{{ addslashes($initialDefaults['document_subtitle'] ?? ($selectedSvc?->description ?? 'PRICE ESTIMATE & QUOTATION')) }}',
-        showVarietyDetails: {{ $initialShowVariety ? 'true' : 'false' }},
-        showPackageInclusions: {{ $initialShowPackage ? 'true' : 'false' }},
-        showLivePreview: true,
-
-        // Client info (bound for live document simulation)
-        customerName: '{{ addslashes(old('customer_name', $leadData['customer_name'] ?? '')) }}',
-        customerPhone: '{{ addslashes(old('customer_phone', $leadData['customer_phone'] ?? '')) }}',
-        customerEmail: '{{ addslashes(old('customer_email', $leadData['customer_email'] ?? '')) }}',
-        customerArea: '{{ addslashes(old('customer_area', $leadData['customer_area'] ?? '')) }}',
-        customerAddress: '{{ addslashes(old('customer_address', $leadData['customer_address'] ?? '')) }}',
-        quotationDate: '{{ old('date', date('Y-m-d')) }}',
-        validUntil: '{{ old('valid_until', date('Y-m-d', strtotime('+12 days'))) }}',
-
-        // Scope, Variety and Package specs
-        selectedVariety: '{{ old('variety_name', $leadData['variety_name'] ?? ($initialDefaults['variety_name'] ?? '')) }}',
-        varietySpecification: '{{ old('variety_specification', $leadData['variety_specification'] ?? ($leadData['variety_name'] ?? ($initialDefaults['variety_name'] ?? ''))) }}',
-        rootstock: '{{ old('rootstock', $leadData['rootstock'] ?: ($initialDefaults['rootstock'] ?? '')) }}',
-        plantsPerKanal: '{{ old('plants_per_kanal', $leadData['plants_per_kanal'] ?: ($initialDefaults['plants_per_kanal'] ?? '')) }}',
-        scopeTitle: '{{ old('scope_title', $leadData['scope_title'] ?: ($initialDefaults['label'] ?? ($selectedSvc?->name ?? ''))) }}',
-        scopeSubtitle: '{{ old('scope_subtitle', $leadData['scope_subtitle'] ?: ($initialDefaults['document_subtitle'] ?? ($selectedSvc?->description ?? ''))) }}',
-        packageTitle: '{{ old('package_title', $initialDefaults['package_title'] ?? ($defaults['package_title'] ?? 'Per Kanal Standard Package')) }}',
-        packagePoles: {{ old('package_poles', $initialDefaults['package_poles'] ?? ($defaults['package_poles'] ?? 19)) ?? 0 }},
-        packageAnchors: {{ old('package_anchors', $initialDefaults['package_anchors'] ?? ($defaults['package_anchors'] ?? 6)) ?? 0 }},
-        packagePlants: {{ old('package_plants', $initialDefaults['package_plants'] ?? ($defaults['package_plants'] ?? 150)) ?? 0 }},
-        additionalNotes: {{ json_encode(old('additional_notes', $initialDefaults['additional_notes'] ?? ($defaults['additional_notes'] ?? ''))) }},
-        terms: {{ json_encode(old('terms', $initialDefaults['terms'] ?? ($defaults['terms'] ?? ''))) }},
-
-        init() {
-            if (this.selectedServiceId) {
-                const svc = this.services.find(s => String(s.id) === String(this.selectedServiceId));
-                if (svc) {
-                    const defs = svc.defaults || {};
-                    this.variations = (defs.variations && Array.isArray(defs.variations)) ? defs.variations : [];
-                    if (!this.accentColor) this.accentColor = defs.accent_color || '#064e3b';
-                    if (!this.documentTitle) this.documentTitle = defs.document_title || 'PROFORMA INVOICE';
-                    if (!this.documentSubtitle) this.documentSubtitle = defs.document_subtitle || (svc.description || 'PRICE ESTIMATE & QUOTATION');
-                    if (!this.terms) this.terms = defs.terms || '';
-                    if (!this.additionalNotes) this.additionalNotes = defs.additional_notes || '';
-
-                    if (this.selectedVariationIndex !== '' && this.variations[this.selectedVariationIndex]) {
-                        const v = this.variations[this.selectedVariationIndex];
-                        if (v.plants_per_kanal && !this.plantsPerKanal) this.plantsPerKanal = v.plants_per_kanal;
-                        if (v.package_poles !== undefined && v.package_poles !== null && !this.packagePoles) this.packagePoles = v.package_poles;
-                        if (v.package_anchors !== undefined && v.package_anchors !== null && !this.packageAnchors) this.packageAnchors = v.package_anchors;
-                        if (v.package_plants !== undefined && v.package_plants !== null && !this.packagePlants) this.packagePlants = v.package_plants;
-                        if (v.variety_name && !this.selectedVariety) {
-                            this.selectedVariety = v.variety_name;
-                            this.varietySpecification = v.variety_name;
-                        }
-                        if (v.rootstock && !this.rootstock) this.rootstock = v.rootstock;
-                    }
-                }
-            }
-        },
-
-        onServiceChange(event) {
-            const sId = event.target.value;
-            this.selectedServiceId = sId;
-            const svc = this.services.find(s => String(s.id) === String(sId));
-            if (svc) {
-                const defs = svc.defaults || {};
-                this.serviceType = svc.quotation_type || 'general';
-                this.accentColor = defs.accent_color || '#064e3b';
-                this.documentTitle = defs.document_title || 'PROFORMA INVOICE';
-                this.documentSubtitle = defs.document_subtitle || (svc.description || 'PRICE ESTIMATE & QUOTATION');
-                this.showVarietyDetails = !!defs.show_variety;
-                this.showPackageInclusions = !!defs.show_package;
-
-                this.scopeTitle = svc.name;
-                this.scopeSubtitle = defs.document_subtitle || svc.description || '';
-
-                this.packageTitle = defs.package_title || (defs.show_package ? 'Per Kanal Standard Package' : '');
-                this.packagePoles = (defs.package_poles !== undefined && defs.package_poles !== null) ? defs.package_poles : (defs.show_package ? 19 : 0);
-                this.packageAnchors = (defs.package_anchors !== undefined && defs.package_anchors !== null) ? defs.package_anchors : (defs.show_package ? 6 : 0);
-                this.packagePlants = (defs.package_plants !== undefined && defs.package_plants !== null) ? defs.package_plants : (defs.show_package ? 150 : 0);
-
-                this.selectedVariety = defs.variety_name || '';
-                this.varietySpecification = defs.variety_name || '';
-                this.rootstock = defs.rootstock || '';
-                this.plantsPerKanal = defs.plants_per_kanal || '';
-
-                this.variations = (defs.variations && Array.isArray(defs.variations)) ? defs.variations : [];
-                this.selectedVariationIndex = '';
-
-                if (defs.payment_schedule && Array.isArray(defs.payment_schedule) && defs.payment_schedule.length > 0) {
-                    this.milestones = JSON.parse(JSON.stringify(defs.payment_schedule));
-                }
-                this.additionalNotes = defs.additional_notes || '';
-                this.terms = defs.terms || '';
-
-                if (this.items.length === 1 && (!this.items[0].name || this.items[0].name === '' || this.isDefaultServiceName(this.items[0].name))) {
-                    this.items[0].name = svc.name;
-                    if (defs.base_price) {
-                        this.items[0].rate = parseFloat(defs.base_price) || 0;
-                    }
-                    if (defs.unit) {
-                        this.items[0].unit = defs.unit;
-                    }
-                }
-            } else {
-                this.serviceType = 'general';
-                this.accentColor = '#064e3b';
-                this.documentTitle = 'PROFORMA INVOICE';
-                this.documentSubtitle = 'PRICE ESTIMATE & QUOTATION';
-                this.showVarietyDetails = false;
-                this.showPackageInclusions = false;
-                this.variations = [];
-                this.selectedVariationIndex = '';
-            }
-        },
-
-        applyVariation(vIdx) {
-            this.selectedVariationIndex = vIdx;
-            if (vIdx === '' || vIdx === null || vIdx === undefined) return;
-            const v = this.variations[vIdx];
-            if (!v) return;
-
-            if (v.plants_per_kanal !== undefined && v.plants_per_kanal !== null && v.plants_per_kanal !== '') {
-                this.plantsPerKanal = v.plants_per_kanal;
-            }
-            if (v.package_poles !== undefined && v.package_poles !== null) {
-                this.packagePoles = v.package_poles;
-            }
-            if (v.package_anchors !== undefined && v.package_anchors !== null) {
-                this.packageAnchors = v.package_anchors;
-            }
-            if (v.package_plants !== undefined && v.package_plants !== null) {
-                this.packagePlants = v.package_plants;
-            }
-            if (v.variety_name) {
-                this.selectedVariety = v.variety_name;
-                this.varietySpecification = v.variety_name;
-            }
-            if (v.rootstock) {
-                this.rootstock = v.rootstock;
-            }
-
-            if (this.items.length > 0) {
-                if (v.rate !== undefined && v.rate !== null && v.rate !== '') {
-                    this.items[0].rate = parseFloat(v.rate) || 0;
-                }
-                if (v.unit) {
-                    this.items[0].unit = v.unit;
-                }
-                const svc = this.services.find(s => String(s.id) === String(this.selectedServiceId));
-                const svcName = svc ? svc.name : 'Service Deliverable';
-                this.items[0].name = svcName + ' (' + v.name + ')';
-            }
-        },
-
-        isDefaultServiceName(name) {
-            return this.services.some(s => s.name === name) || name === 'Service Deliverable';
-        },
-
-        formatStyleName(t) {
-            return {
-                'orchard': 'High-Density Orchard Establishment Style',
-                'plants': 'Plant Nursery & Booking Style',
-                'installation': 'Netting & Trellis Infrastructure Style',
-                'technical': 'Diagnostics & Laboratory Testing Style',
-                'general': 'Standard Quotation Style'
-            }[t] || 'Standard Quotation Style';
-        },
-
-        addItem() {
-            this.items.push({
-                product_id: '',
-                name: '',
-                unit: 'Kanal',
-                qty: 1,
-                rate: 0,
-                discount: 0,
-                gst_rate: 0
-            });
-        },
-        removeItem(index) {
-            if (this.items.length > 1) {
-                this.items.splice(index, 1);
-            }
-        },
-        addMilestone() {
-            this.milestones.push({
-                percent: 0,
-                stage: ''
-            });
-        },
-        removeMilestone(index) {
-            if (this.milestones.length > 1) {
-                this.milestones.splice(index, 1);
-            }
-        },
-        lineTaxable(item) {
-            const base = (parseFloat(item.qty || 0) * parseFloat(item.rate || 0)) - parseFloat(item.discount || 0);
-            return Math.max(0, base);
-        },
-        lineTax(item) {
-            return this.lineTaxable(item) * (parseFloat(item.gst_rate || 0) / 100);
-        },
-        lineTotal(item) {
-            return this.lineTaxable(item) + this.lineTax(item);
-        },
-        get subtotal() {
-            return this.items.reduce((acc, it) => acc + this.lineTaxable(it), 0);
-        },
-        get discountTotal() {
-            return this.items.reduce((acc, it) => acc + parseFloat(it.discount || 0), 0);
-        },
-        get gstTotal() {
-            return this.items.reduce((acc, it) => acc + this.lineTax(it), 0);
-        },
-        get grandTotal() {
-            return this.items.reduce((acc, it) => acc + this.lineTotal(it), 0);
-        },
-        milestoneAmount(pct) {
-            const val = (this.grandTotal * (parseFloat(pct || 0) / 100));
-            return this.formatMoney(val);
-        },
-        formatMoney(val) {
-            return parseFloat(val || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        },
-        getNotesList() {
-            if (!this.additionalNotes) return [];
-            return this.additionalNotes.split('\n')
-                .map(l => l.trim().replace(/^[•\-\*]\s*/, ''))
-                .filter(l => l.length > 0);
-        },
-        getTermsList() {
-            if (!this.terms) return [];
-            return this.terms.split('\n')
-                .map(l => l.trim().replace(/^\d+[\.\)]\s*/, ''))
-                .filter(l => l.length > 0);
-        }
-     }">
+<div class="space-y-6" x-data="quotationForm()">
 
     {{-- Page Header & Active Service Design Status Banner --}}
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -411,7 +166,8 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
             {{-- Left Column: Configuration & Form Inputs --}}
-            <div :class="showLivePreview ? 'lg:col-span-7' : 'lg:col-span-12'" class="space-y-6">
+            <div class="lg:col-span-7 space-y-6 transition-all duration-300"
+                 :class="{ 'lg:col-span-12': !showLivePreview, 'lg:col-span-7': showLivePreview }">
 
                 {{-- 1. Client & Document Information --}}
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
@@ -907,7 +663,7 @@
             </div>
 
             {{-- Right Column: Live Interactive Quotation Design Preview (from Designer) --}}
-            <div x-show="showLivePreview" class="lg:col-span-5 sticky top-6 space-y-4">
+            <div x-show="showLivePreview" x-cloak class="lg:col-span-5 sticky top-6 space-y-4">
                 <div class="flex items-center justify-between px-1">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full animate-pulse shadow-xs" :style="{ backgroundColor: accentColor }"></span>
@@ -927,16 +683,16 @@
                             <span class="font-extrabold text-base tracking-tight" :style="{ color: accentColor }">
                                 Plant<span class="text-orange-500">Tech</span> Agro
                             </span>
-                            <p class="text-[9px] font-semibold text-gray-400 uppercase tracking-widest mt-0.5">{{ $company['company_tagline'] }}</p>
-                            <p class="text-[9px] text-gray-500 mt-1 italic">{{ $company['company_slogan'] }}</p>
-                            <p class="text-[9px] text-gray-400 mt-0.5">{{ $company['company_address'] }}</p>
+                            <p class="text-[9px] font-semibold text-gray-400 uppercase tracking-widest mt-0.5">{{ $company['company_tagline'] ?? '' }}</p>
+                            <p class="text-[9px] text-gray-500 mt-1 italic">{{ $company['company_slogan'] ?? '' }}</p>
+                            <p class="text-[9px] text-gray-400 mt-0.5">{{ $company['company_address'] ?? '' }}</p>
                         </div>
                         <div class="text-right flex-shrink-0">
                             <span class="px-2.5 py-1 rounded-md text-[10px] font-extrabold text-white block shadow-xs transition-colors"
                                   :style="{ backgroundColor: accentColor }"
                                   x-text="documentTitle"></span>
                             <span class="text-[9px] font-bold text-gray-500 block mt-1" x-text="documentSubtitle"></span>
-                            <span class="text-[9px] font-mono text-gray-400 block mt-0.5">{{ $company['prefix'] }}/{{ date('Y') }}-{{ date('y', strtotime('+1 year')) }}/0042</span>
+                            <span class="text-[9px] font-mono text-gray-400 block mt-0.5">{{ $company['prefix'] ?? 'QT' }}/{{ date('Y') }}-{{ date('y', strtotime('+1 year')) }}/0042</span>
                             <span class="text-[9px] text-gray-500 block" x-text="'Date: ' + (quotationDate || 'Today')"></span>
                         </div>
                     </div>
@@ -1076,9 +832,9 @@
                     <div class="rounded-xl border border-emerald-200 bg-emerald-50/50 p-2.5 flex items-center justify-between text-[9.5px]">
                         <div>
                             <span class="font-bold text-emerald-950 block">Bank Settlement Coordinates</span>
-                            <span class="text-gray-600 font-mono text-[8.5px]">{{ $company['bank_name'] }} • {{ $company['bank_account_no'] }}</span>
+                            <span class="text-gray-600 font-mono text-[8.5px]">{{ $company['bank_name'] ?? '' }} • {{ $company['bank_account_no'] ?? '' }}</span>
                         </div>
-                        <span class="font-mono text-emerald-800 font-bold text-[8.5px]">IFSC: {{ $company['bank_ifsc'] }}</span>
+                        <span class="font-mono text-emerald-800 font-bold text-[8.5px]">IFSC: {{ $company['bank_ifsc'] ?? '' }}</span>
                     </div>
 
                     {{-- 8. Additional Notes & Terms Previews (Collapsible / Compact) --}}
@@ -1106,4 +862,256 @@
         </div>
     </form>
 </div>
+
+@push('scripts')
+<script>
+function quotationForm() {
+    return {
+        services: @json($servicesJson),
+        products: @json($productsJson),
+        items: @json($initialItems),
+        milestones: @json($initialMilestones),
+        variations: @json($initialDefaults['variations'] ?? []),
+        selectedVariationIndex: @json(old('variation_index', $matchedVariationIndex !== null ? (string)$matchedVariationIndex : '')),
+        selectedServiceId: @json((string)$selectedSvcId),
+        serviceType: @json($initialServiceType),
+        accentColor: @json($initialDefaults['accent_color'] ?? '#064e3b'),
+        documentTitle: @json($initialDefaults['document_title'] ?? 'PROFORMA INVOICE'),
+        documentSubtitle: @json($initialDefaults['document_subtitle'] ?? ($selectedSvc?->description ?? 'PRICE ESTIMATE & QUOTATION')),
+        showVarietyDetails: {{ $initialShowVariety ? 'true' : 'false' }},
+        showPackageInclusions: {{ $initialShowPackage ? 'true' : 'false' }},
+        showLivePreview: true,
+
+        // Client info (bound for live document simulation)
+        customerName: @json(old('customer_name', $leadData['customer_name'] ?? '')),
+        customerPhone: @json(old('customer_phone', $leadData['customer_phone'] ?? '')),
+        customerEmail: @json(old('customer_email', $leadData['customer_email'] ?? '')),
+        customerArea: @json(old('customer_area', $leadData['customer_area'] ?? '')),
+        customerAddress: @json(old('customer_address', $leadData['customer_address'] ?? '')),
+        quotationDate: @json(old('date', date('Y-m-d'))),
+        validUntil: @json(old('valid_until', date('Y-m-d', strtotime('+12 days')))),
+
+        // Scope, Variety and Package specs
+        selectedVariety: @json(old('variety_name', $leadData['variety_name'] ?? ($initialDefaults['variety_name'] ?? ''))),
+        varietySpecification: @json(old('variety_specification', $leadData['variety_specification'] ?? ($leadData['variety_name'] ?? ($initialDefaults['variety_name'] ?? '')))),
+        rootstock: @json(old('rootstock', $leadData['rootstock'] ?: ($initialDefaults['rootstock'] ?? ''))),
+        plantsPerKanal: @json(old('plants_per_kanal', $leadData['plants_per_kanal'] ?: ($initialDefaults['plants_per_kanal'] ?? ''))),
+        scopeTitle: @json(old('scope_title', $leadData['scope_title'] ?: ($initialDefaults['label'] ?? ($selectedSvc?->name ?? '')))),
+        scopeSubtitle: @json(old('scope_subtitle', $leadData['scope_subtitle'] ?: ($initialDefaults['document_subtitle'] ?? ($selectedSvc?->description ?? '')))),
+        packageTitle: @json(old('package_title', $initialDefaults['package_title'] ?? ($defaults['package_title'] ?? 'Per Kanal Standard Package'))),
+        packagePoles: {{ (int) old('package_poles', $initialDefaults['package_poles'] ?? ($defaults['package_poles'] ?? 19)) }},
+        packageAnchors: {{ (int) old('package_anchors', $initialDefaults['package_anchors'] ?? ($defaults['package_anchors'] ?? 6)) }},
+        packagePlants: {{ (int) old('package_plants', $initialDefaults['package_plants'] ?? ($defaults['package_plants'] ?? 150)) }},
+        additionalNotes: @json(old('additional_notes', $initialDefaults['additional_notes'] ?? ($defaults['additional_notes'] ?? ''))),
+        terms: @json(old('terms', $initialDefaults['terms'] ?? ($defaults['terms'] ?? ''))),
+
+        init() {
+            if (this.selectedServiceId) {
+                const svc = this.services.find(s => String(s.id) === String(this.selectedServiceId));
+                if (svc) {
+                    const defs = svc.defaults || {};
+                    this.variations = (defs.variations && Array.isArray(defs.variations)) ? defs.variations : [];
+                    if (!this.accentColor) this.accentColor = defs.accent_color || '#064e3b';
+                    if (!this.documentTitle) this.documentTitle = defs.document_title || 'PROFORMA INVOICE';
+                    if (!this.documentSubtitle) this.documentSubtitle = defs.document_subtitle || (svc.description || 'PRICE ESTIMATE & QUOTATION');
+                    if (!this.terms) this.terms = defs.terms || '';
+                    if (!this.additionalNotes) this.additionalNotes = defs.additional_notes || '';
+
+                    if (this.selectedVariationIndex !== '' && this.variations[this.selectedVariationIndex]) {
+                        const v = this.variations[this.selectedVariationIndex];
+                        if (v.plants_per_kanal && !this.plantsPerKanal) this.plantsPerKanal = v.plants_per_kanal;
+                        if (v.package_poles !== undefined && v.package_poles !== null && !this.packagePoles) this.packagePoles = v.package_poles;
+                        if (v.package_anchors !== undefined && v.package_anchors !== null && !this.packageAnchors) this.packageAnchors = v.package_anchors;
+                        if (v.package_plants !== undefined && v.package_plants !== null && !this.packagePlants) this.packagePlants = v.package_plants;
+                        if (v.variety_name && !this.selectedVariety) {
+                            this.selectedVariety = v.variety_name;
+                            this.varietySpecification = v.variety_name;
+                        }
+                        if (v.rootstock && !this.rootstock) this.rootstock = v.rootstock;
+                    }
+                }
+            }
+        },
+
+        onServiceChange(event) {
+            const sId = event.target.value;
+            this.selectedServiceId = sId;
+            const svc = this.services.find(s => String(s.id) === String(sId));
+            if (svc) {
+                const defs = svc.defaults || {};
+                this.serviceType = svc.quotation_type || 'general';
+                this.accentColor = defs.accent_color || '#064e3b';
+                this.documentTitle = defs.document_title || 'PROFORMA INVOICE';
+                this.documentSubtitle = defs.document_subtitle || (svc.description || 'PRICE ESTIMATE & QUOTATION');
+                this.showVarietyDetails = !!defs.show_variety;
+                this.showPackageInclusions = !!defs.show_package;
+
+                this.scopeTitle = svc.name;
+                this.scopeSubtitle = defs.document_subtitle || svc.description || '';
+
+                this.packageTitle = defs.package_title || (defs.show_package ? 'Per Kanal Standard Package' : '');
+                this.packagePoles = (defs.package_poles !== undefined && defs.package_poles !== null) ? defs.package_poles : (defs.show_package ? 19 : 0);
+                this.packageAnchors = (defs.package_anchors !== undefined && defs.package_anchors !== null) ? defs.package_anchors : (defs.show_package ? 6 : 0);
+                this.packagePlants = (defs.package_plants !== undefined && defs.package_plants !== null) ? defs.package_plants : (defs.show_package ? 150 : 0);
+
+                this.selectedVariety = defs.variety_name || '';
+                this.varietySpecification = defs.variety_name || '';
+                this.rootstock = defs.rootstock || '';
+                this.plantsPerKanal = defs.plants_per_kanal || '';
+
+                this.variations = (defs.variations && Array.isArray(defs.variations)) ? defs.variations : [];
+                this.selectedVariationIndex = '';
+
+                if (defs.payment_schedule && Array.isArray(defs.payment_schedule) && defs.payment_schedule.length > 0) {
+                    this.milestones = JSON.parse(JSON.stringify(defs.payment_schedule));
+                }
+                this.additionalNotes = defs.additional_notes || '';
+                this.terms = defs.terms || '';
+
+                if (this.items.length === 1 && (!this.items[0].name || this.items[0].name === '' || this.isDefaultServiceName(this.items[0].name))) {
+                    this.items[0].name = svc.name;
+                    if (defs.base_price) {
+                        this.items[0].rate = parseFloat(defs.base_price) || 0;
+                    }
+                    if (defs.unit) {
+                        this.items[0].unit = defs.unit;
+                    }
+                }
+            } else {
+                this.serviceType = 'general';
+                this.accentColor = '#064e3b';
+                this.documentTitle = 'PROFORMA INVOICE';
+                this.documentSubtitle = 'PRICE ESTIMATE & QUOTATION';
+                this.showVarietyDetails = false;
+                this.showPackageInclusions = false;
+                this.variations = [];
+                this.selectedVariationIndex = '';
+            }
+        },
+
+        applyVariation(vIdx) {
+            this.selectedVariationIndex = vIdx;
+            if (vIdx === '' || vIdx === null || vIdx === undefined) return;
+            const v = this.variations[vIdx];
+            if (!v) return;
+
+            if (v.plants_per_kanal !== undefined && v.plants_per_kanal !== null && v.plants_per_kanal !== '') {
+                this.plantsPerKanal = v.plants_per_kanal;
+            }
+            if (v.package_poles !== undefined && v.package_poles !== null) {
+                this.packagePoles = v.package_poles;
+            }
+            if (v.package_anchors !== undefined && v.package_anchors !== null) {
+                this.packageAnchors = v.package_anchors;
+            }
+            if (v.package_plants !== undefined && v.package_plants !== null) {
+                this.packagePlants = v.package_plants;
+            }
+            if (v.variety_name) {
+                this.selectedVariety = v.variety_name;
+                this.varietySpecification = v.variety_name;
+            }
+            if (v.rootstock) {
+                this.rootstock = v.rootstock;
+            }
+
+            if (this.items.length > 0) {
+                if (v.rate !== undefined && v.rate !== null && v.rate !== '') {
+                    this.items[0].rate = parseFloat(v.rate) || 0;
+                }
+                if (v.unit) {
+                    this.items[0].unit = v.unit;
+                }
+                const svc = this.services.find(s => String(s.id) === String(this.selectedServiceId));
+                const svcName = svc ? svc.name : 'Service Deliverable';
+                this.items[0].name = svcName + ' (' + v.name + ')';
+            }
+        },
+
+        isDefaultServiceName(name) {
+            return this.services.some(s => s.name === name) || name === 'Service Deliverable';
+        },
+
+        formatStyleName(t) {
+            return {
+                'orchard': 'High-Density Orchard Establishment Style',
+                'plants': 'Plant Nursery & Booking Style',
+                'installation': 'Netting & Trellis Infrastructure Style',
+                'technical': 'Diagnostics & Laboratory Testing Style',
+                'general': 'Standard Quotation Style'
+            }[t] || 'Standard Quotation Style';
+        },
+
+        addItem() {
+            this.items.push({
+                product_id: '',
+                name: '',
+                unit: 'Kanal',
+                qty: 1,
+                rate: 0,
+                discount: 0,
+                gst_rate: 0
+            });
+        },
+        removeItem(index) {
+            if (this.items.length > 1) {
+                this.items.splice(index, 1);
+            }
+        },
+        addMilestone() {
+            this.milestones.push({
+                percent: 0,
+                stage: ''
+            });
+        },
+        removeMilestone(index) {
+            if (this.milestones.length > 1) {
+                this.milestones.splice(index, 1);
+            }
+        },
+        lineTaxable(item) {
+            const base = (parseFloat(item.qty || 0) * parseFloat(item.rate || 0)) - parseFloat(item.discount || 0);
+            return Math.max(0, base);
+        },
+        lineTax(item) {
+            return this.lineTaxable(item) * (parseFloat(item.gst_rate || 0) / 100);
+        },
+        lineTotal(item) {
+            return this.lineTaxable(item) + this.lineTax(item);
+        },
+        get subtotal() {
+            return this.items.reduce((acc, it) => acc + this.lineTaxable(it), 0);
+        },
+        get discountTotal() {
+            return this.items.reduce((acc, it) => acc + parseFloat(it.discount || 0), 0);
+        },
+        get gstTotal() {
+            return this.items.reduce((acc, it) => acc + this.lineTax(it), 0);
+        },
+        get grandTotal() {
+            return this.items.reduce((acc, it) => acc + this.lineTotal(it), 0);
+        },
+        milestoneAmount(pct) {
+            const val = (this.grandTotal * (parseFloat(pct || 0) / 100));
+            return this.formatMoney(val);
+        },
+        formatMoney(val) {
+            return parseFloat(val || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        },
+        getNotesList() {
+            if (!this.additionalNotes) return [];
+            return this.additionalNotes.split('\n')
+                .map(l => l.trim().replace(/^[•\-\*]\s*/, ''))
+                .filter(l => l.length > 0);
+        },
+        getTermsList() {
+            if (!this.terms) return [];
+            return this.terms.split('\n')
+                .map(l => l.trim().replace(/^\d+[\.\)]\s*/, ''))
+                .filter(l => l.length > 0);
+        }
+    };
+}
+</script>
+@endpush
 @endsection
