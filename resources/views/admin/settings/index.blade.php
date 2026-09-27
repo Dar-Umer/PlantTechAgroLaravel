@@ -11,43 +11,50 @@
         {{-- Tab Navigation --}}
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 px-2 py-1">
             <nav class="flex gap-1 overflow-x-auto" aria-label="Settings tabs">
-                <button @click="activeTab = 'general'"
+                <button type="button" @click="activeTab = 'general'"
                     :class="activeTab === 'general' ? 'bg-brand-50 text-brand-700 border-brand-200' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'"
                     class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                     General
                 </button>
-                <button @click="activeTab = 'appearance'"
+                <button type="button" @click="activeTab = 'appearance'"
                     :class="activeTab === 'appearance' ? 'bg-brand-50 text-brand-700 border-brand-200' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'"
                     class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
                     Appearance
                 </button>
-                <button @click="activeTab = 'invoice'"
+                <button type="button" @click="activeTab = 'invoice'"
                     :class="activeTab === 'invoice' ? 'bg-brand-50 text-brand-700 border-brand-200' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'"
                     class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8h4m-4 4h4"/></svg>
-                    Invoice
+                    Invoices &amp; Quotations
                 </button>
-                <button @click="activeTab = 'seo'"
+                <button type="button" @click="activeTab = 'seo'"
                     :class="activeTab === 'seo' ? 'bg-brand-50 text-brand-700 border-brand-200' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'"
                     class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.1-4.4a5.5 5.5 0 11-11 0 5.5 5.5 0 0111 0z"/></svg>
                     SEO
                 </button>
-                <button @click="activeTab = 'weather'"
+                <button type="button" @click="activeTab = 'weather'"
                     :class="activeTab === 'weather' ? 'bg-brand-50 text-brand-700 border-brand-200' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'"
                     class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z"/></svg>
                     Weather
                 </button>
-                <button @click="activeTab = 'apis'"
+                <button type="button" @click="activeTab = 'apis'"
                     :class="activeTab === 'apis' ? 'bg-brand-50 text-brand-700 border-brand-200' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'"
                     class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                     APIs
                 </button>
-                <button @click="activeTab = 'smtp'"
+                <button type="button" @click="activeTab = 'media'"
+                    :class="activeTab === 'media' ? 'bg-brand-50 text-brand-700 border-brand-200' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Photo Compression
+                    <span class="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800">Space Saver</span>
+                </button>
+                <button type="button" @click="activeTab = 'smtp'"
                     :class="activeTab === 'smtp' ? 'bg-brand-50 text-brand-700 border-brand-200' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'"
                     class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border transition-all whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
@@ -65,12 +72,124 @@
             <div x-show="activeTab === 'general'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
                 <div class="space-y-6">
 
+                    {{-- 1. Store & Official Contact Information --}}
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-1">Store Information</h3>
-                        <p class="text-sm text-gray-500 mb-5">Basic details about your platform.</p>
+                        <div class="flex items-center gap-3 mb-1">
+                            <div class="w-9 h-9 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Store & Contact Information</h3>
+                                <p class="text-sm text-gray-500">Official company identity, contact numbers, email, physical office address, and support hours shown on the website, receipts, and client communications.</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 space-y-5">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <x-admin.input name="site_name" label="Store Name" :value="$settings['site_name'] ?? ''" />
-                            <x-admin.input name="return_policy_text" label="Return Policy Text" :value="$settings['return_policy_text'] ?? ''" helptext="Shown on the product detail page." />
+                                <x-admin.input name="site_name" label="Store / Company Name" :value="$settings['site_name'] ?? ''" placeholder="Plant Tech Agro" required />
+                                <x-admin.input name="site_email" label="Official Contact Email" type="email" :value="$settings['site_email'] ?? ''" placeholder="info@plantechagro.com" helptext="Displayed in website footer, header, and official inquiries." />
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <x-admin.input name="site_phone" label="Official Contact Phone" :value="$settings['site_phone'] ?? ''" placeholder="0194-796-1490" helptext="Helpline number shown in frontend footer and quotation headers." />
+                                <x-admin.input name="support_hours" label="Support / Working Hours" :value="$settings['support_hours'] ?? ''" placeholder="Mon – Sat, 9 AM – 6 PM" helptext="Shown to clients and customers on support pages." />
+                            </div>
+
+                            <div>
+                                <x-admin.textarea name="site_address" label="Physical Office Address" :value="$settings['site_address'] ?? ''" rows="3" placeholder="56 Murad House, Pine Lane-8, Kurso Rajbagh, Srinagar-190008, Jammu & Kashmir" helptext="Official physical address used across frontend website footer, Google Maps directions, quotations, invoices, and receipts." />
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <x-admin.input name="footer_tagline" label="Footer Mission / Slogan" :value="$settings['footer_tagline'] ?? ''" placeholder="Transforming orchards across Kashmir through high-density farming, drip irrigation, and precision agriculture." helptext="Summary text appearing next to the logo in the website footer." />
+                                <x-admin.input name="return_policy_text" label="Return Policy Text" :value="$settings['return_policy_text'] ?? ''" helptext="Shown on product detail and warranty pages." />
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- 2. Bank Account Details --}}
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <div class="flex items-center justify-between flex-wrap gap-4 mb-1">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="text-lg font-semibold text-gray-900">Bank Account Details</h3>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                                            Official Settlement Account
+                                        </span>
+                                    </div>
+                                    <p class="text-sm text-gray-500">Official bank coordinates used for customer NEFT, RTGS, IMPS bank payments, quotations, invoices, and website footer.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 space-y-5">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <x-admin.input name="bank_account_name" label="Account Name" :value="$settings['bank_account_name'] ?? 'Plant Tech Agro'" placeholder="Plant Tech Agro" required helptext="Exact legal name as registered in the bank account." />
+                                <x-admin.input name="bank_name" label="Bank Name" :value="$settings['bank_name'] ?? 'J&K Bank'" placeholder="J&K Bank" required helptext="e.g. Jammu & Kashmir Bank (J&K Bank)" />
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                <x-admin.input name="bank_account_no" label="Account Number" :value="$settings['bank_account_no'] ?? '0942 0100 0000 0275'" placeholder="0942 0100 0000 0275" required class="font-mono" helptext="Primary account number for RTGS/NEFT settlements." />
+                                <x-admin.input name="bank_branch" label="Branch Name" :value="$settings['bank_branch'] ?? 'Migrant Colony Hall Pulwama'" placeholder="Migrant Colony Hall Pulwama" required helptext="Bank branch location." />
+                                <x-admin.input name="bank_ifsc" label="IFSC Code" :value="$settings['bank_ifsc'] ?? 'JAKA0MIGRNT'" placeholder="JAKA0MIGRNT" required class="font-mono uppercase" helptext="11-character Indian Financial System Code." />
+                            </div>
+
+                            {{-- Visual Preview Card --}}
+                            <div class="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-900">Live Client Document Preview</span>
+                                    </div>
+                                    <span class="text-[11px] font-mono font-bold text-emerald-700">RTGS / NEFT / IMPS</span>
+                                </div>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                                    <div>
+                                        <span class="text-gray-500 text-[10.5px] block font-medium">Bank</span>
+                                        <span class="font-bold text-gray-900">{{ $settings['bank_name'] ?? 'J&K Bank' }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500 text-[10.5px] block font-medium">Account Name</span>
+                                        <span class="font-bold text-gray-900">{{ $settings['bank_account_name'] ?? 'Plant Tech Agro' }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500 text-[10.5px] block font-medium">Account No.</span>
+                                        <span class="font-mono font-bold text-emerald-800 text-sm tracking-wide">{{ $settings['bank_account_no'] ?? '0942 0100 0000 0275' }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-500 text-[10.5px] block font-medium">IFSC Code</span>
+                                        <span class="font-mono font-bold text-gray-900 text-sm tracking-wider">{{ $settings['bank_ifsc'] ?? 'JAKA0MIGRNT' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- 3. Social Media Links --}}
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <div class="flex items-center gap-3 mb-1">
+                            <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Social Media Links</h3>
+                                <p class="text-sm text-gray-500">Official profile URLs linked in the website footer and customer touchpoints. Leave blank to hide.</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <x-admin.input name="social_facebook" label="Facebook URL" :value="$settings['social_facebook'] ?? ''" placeholder="https://facebook.com/planttechagro" />
+                                <x-admin.input name="social_instagram" label="Instagram URL" :value="$settings['social_instagram'] ?? ''" placeholder="https://instagram.com/planttechagro" />
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <x-admin.input name="social_youtube" label="YouTube Channel" :value="$settings['social_youtube'] ?? ''" placeholder="https://youtube.com/@planttechagro" />
+                                <x-admin.input name="social_whatsapp" label="WhatsApp Number / Link" :value="$settings['social_whatsapp'] ?? ''" placeholder="https://wa.me/917780995003" />
+                                <x-admin.input name="social_x" label="X (Twitter) URL" :value="$settings['social_x'] ?? ''" placeholder="https://x.com/planttechagro" />
+                            </div>
                         </div>
                     </div>
 
@@ -234,56 +353,95 @@
                 </div>
             </div>
 
-            {{-- Invoice Tab --}}
+            {{-- Invoices & Quotations Tab --}}
             <div x-show="activeTab === 'invoice'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-cloak class="space-y-6">
 
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Company Details</h3>
-                    <p class="text-sm text-gray-500 mb-5">Shown on every generated invoice.</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <x-admin.input name="invoice_company_name" label="Company Name" :value="$invoiceSettings['company_name']" required />
-                        <x-admin.input name="invoice_gst_no" label="GST Number" :value="$invoiceSettings['gst_no']" placeholder="e.g. 01ABCDE1234F1Z5" />
-                        <x-admin.input name="invoice_phone" label="Phone Number" :value="$invoiceSettings['phone']" />
-                        <x-admin.input name="invoice_email" label="Email" type="email" :value="$invoiceSettings['email']" />
-                    </div>
-                    <div class="mt-5">
-                        <x-admin.textarea name="invoice_address" label="Address" :value="$invoiceSettings['address']" rows="2" />
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Invoice Branding & Numbering</h3>
-                    <p class="text-sm text-gray-500 mb-5">Logo and invoice number format. Invoice numbers are generated as PREFIX/YEAR/0001.</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <x-admin.input name="invoice_prefix" label="Invoice Prefix" :value="$invoiceSettings['prefix']" required helptext="Letters, numbers and dashes only. e.g. PTA" />
+                <div class="bg-gradient-to-r from-emerald-50 via-teal-50 to-blue-50 border border-emerald-200 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        </div>
                         <div>
-                            @if(!empty($invoiceSettings['logo']))
-                                <p class="text-sm font-medium text-gray-700 mb-1.5">Current Logo</p>
-                                <div class="w-32 h-16 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden mb-3 flex items-center justify-center">
-                                    <img src="{{ \App\Support\Media::url($invoiceSettings['logo']) }}" alt="Invoice logo" class="max-h-full max-w-full object-contain">
-                                </div>
-                            @endif
-                            <label for="invoice_logo_file" class="block text-sm font-medium text-gray-700 mb-1.5">Invoice Logo</label>
-                            <input type="file" name="invoice_logo_file" id="invoice_logo_file" accept="image/png,image/jpeg,image/svg+xml"
-                                   class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 transition file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
-                            <p class="mt-1.5 text-xs text-gray-400">PNG, JPG, or SVG. Shown on the invoice header.</p>
-                            @if(!empty($invoiceSettings['logo']))
-                                <label class="mt-2 flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-                                    <input type="checkbox" name="remove_invoice_logo" value="1" class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500">
-                                    Remove current logo
-                                </label>
-                            @endif
-                            @error('invoice_logo_file')
-                                <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
-                            @enderror
+                            <h4 class="text-base font-bold text-gray-900">Services &amp; Work Stages Integration</h4>
+                            <p class="text-xs text-gray-600 mt-0.5">Looking to configure pricing units (Kanals, Acres, Meters), package variations (150 vs 170 plants), or service workflow stages? Manage them directly under each service.</p>
                         </div>
                     </div>
+                    <a href="{{ route('admin.services.index') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold rounded-xl shadow-sm transition whitespace-nowrap">
+                        <span>Go to Services</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </a>
                 </div>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Terms & Conditions</h3>
-                    <p class="text-sm text-gray-500 mb-5">Default terms printed at the bottom of every invoice.</p>
-                    <x-admin.textarea name="invoice_terms" label="Invoice Terms" :value="$invoiceSettings['terms']" rows="4" />
+                {{-- Company Billing Information --}}
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-0.5">Company Billing Details</h3>
+                        <p class="text-sm text-gray-500">Official business identity displayed on generated invoices, estimates, and quotations.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <x-admin.input name="invoice_company_name" label="Legal Business Name" :value="$invoiceSettings['company_name']" required />
+                        <x-admin.input name="invoice_gst_no" label="GST Number" :value="$invoiceSettings['gst_no']" placeholder="e.g. 01ABCDE1234F1Z5" />
+                        <x-admin.input name="invoice_phone" label="Billing Phone" :value="$invoiceSettings['phone']" />
+                        <x-admin.input name="invoice_email" label="Billing Email" type="email" :value="$invoiceSettings['email']" />
+                    </div>
+                    <div>
+                        <x-admin.textarea name="invoice_address" label="Billing / Dispatch Address" :value="$invoiceSettings['address']" rows="2" />
+                    </div>
+                </div>
+
+                {{-- Numbering Sequences & Document Prefixes --}}
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-0.5">Document Numbering &amp; Prefixes</h3>
+                        <p class="text-sm text-gray-500">Configure prefixes used for tax invoices and quotation estimates.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <x-admin.input name="invoice_prefix" label="Invoice Prefix" :value="$invoiceSettings['prefix']" required helptext="e.g. PTA -> formats as PTA/2026-27/0001" />
+                        </div>
+                        <div>
+                            <x-admin.input name="quotation_prefix" label="Quotation / Estimate Prefix" :value="$quotationSettings['prefix'] ?? 'QT'" helptext="e.g. QT -> formats as QT/2026-27/0001" />
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-100">
+                        @if(!empty($invoiceSettings['logo']))
+                            <p class="text-sm font-medium text-gray-700 mb-1.5">Current Document Logo</p>
+                            <div class="w-32 h-16 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden mb-3 flex items-center justify-center">
+                                <img src="{{ \App\Support\Media::url($invoiceSettings['logo']) }}" alt="Invoice logo" class="max-h-full max-w-full object-contain">
+                            </div>
+                        @endif
+                        <label for="invoice_logo_file" class="block text-sm font-medium text-gray-700 mb-1.5">Upload Document Logo</label>
+                        <input type="file" name="invoice_logo_file" id="invoice_logo_file" accept="image/png,image/jpeg,image/svg+xml"
+                               class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 transition file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                        <p class="mt-1.5 text-xs text-gray-400">PNG, JPG, or SVG shown on document headers.</p>
+                        @if(!empty($invoiceSettings['logo']))
+                            <label class="mt-2 flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                                <input type="checkbox" name="remove_invoice_logo" value="1" class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500">
+                                Remove current logo
+                            </label>
+                        @endif
+                        @error('invoice_logo_file')
+                            <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                {{-- Default Terms & Conditions --}}
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-0.5">Global Terms &amp; Conditions</h3>
+                        <p class="text-sm text-gray-500">Default legal terms printed at the bottom of invoices and quotations when no service-specific terms apply.</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <x-admin.textarea name="invoice_terms" label="Default Invoice Terms & Conditions" :value="$invoiceSettings['terms']" rows="4" placeholder="Default payment terms, bank transfer timelines, jurisdiction..." />
+                        </div>
+                        <div>
+                            <x-admin.textarea name="quotation_terms" label="Default Quotation Terms & Conditions" :value="$quotationSettings['terms'] ?? ''" rows="4" placeholder="Default validity, advance payment terms, site access terms..." />
+                        </div>
+                    </div>
                 </div>
 
             </div>
@@ -505,11 +663,188 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <x-admin.input name="apis_recaptcha_site_key" label="Site Key" :value="$apisSettings['recaptcha_site_key'] ?? ''" placeholder="6Lc..." helptext="Public key — embedded in the lead form and login page." />
                         <x-admin.input name="apis_recaptcha_secret_key" label="Secret Key" type="password" :value="''" placeholder="{{ ($apisSettings['has_secret_key'] ?? false) ? 'Saved — leave blank to keep it' : '6Lc...' }}" helptext="{{ ($apisSettings['has_secret_key'] ?? false) ? 'A secret is already saved. Leave blank to keep it.' : 'Private key — never shown again after saving.' }}" />
-                        <x-admin.input name="apis_recaptcha_min_score" label="Minimum Score (0–1)" type="number" step="0.1" :value="$apisSettings['recaptcha_min_score'] ?? 0.5" helptext="0.5 recommended. Higher is stricter." />
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900">Firebase Cloud Messaging (FCM Push)</h3>
+                                <p class="text-xs text-gray-500">Google HTTP v1 Push Notifications for Customer Mobile App (tickets, order status, broadcasts).</p>
+                            </div>
+                        </div>
+                        <a href="{{ route('admin.mobile-apps.index', ['tab' => 'push']) }}" class="px-4 py-2 rounded-xl bg-brand-50 text-brand-700 hover:bg-brand-100 text-xs font-semibold transition flex items-center gap-1.5">
+                            <span>Manage Firebase & Push</span>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
                     </div>
                 </div>
 
             </div>
+
+            {{-- Photo Compression & Media Tab --}}
+            <div x-show="activeTab === 'media'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-cloak class="space-y-6">
+                
+                {{-- Master Configuration Card --}}
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-6">
+                    <div class="flex items-start justify-between gap-4 pb-4 border-b border-gray-100">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-lg font-semibold text-gray-900">Automatic Photo Compression</h3>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    Admin Panel + Mobile App
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-500 mt-1">
+                                Automatically downscales and compresses all photos uploaded by farmers, field agents, and admins to maximize storage efficiency and accelerate mobile app load speeds.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-5">
+                        <x-admin.checkbox name="media_compression_enabled" label="Enable Automatic Photo Compression" :checked="$mediaSettings['compression_enabled'] ?? true" help="When enabled, all photos uploaded through the Admin Panel or Mobile App are optimized before saving." />
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Maximum Dimension (px)</label>
+                                <select name="media_max_dimension" class="w-full text-sm rounded-xl border-gray-200 focus:border-brand-500 focus:ring-brand-500 py-2.5">
+                                    <option value="1280" {{ ($mediaSettings['max_dimension'] ?? 1920) == 1280 ? 'selected' : '' }}>1280 px (Compact & Ultra Fast)</option>
+                                    <option value="1600" {{ ($mediaSettings['max_dimension'] ?? 1920) == 1600 ? 'selected' : '' }}>1600 px (Standard Web)</option>
+                                    <option value="1920" {{ ($mediaSettings['max_dimension'] ?? 1920) == 1920 ? 'selected' : '' }}>1920 px (Full HD — Recommended)</option>
+                                    <option value="2560" {{ ($mediaSettings['max_dimension'] ?? 1920) == 2560 ? 'selected' : '' }}>2560 px (High Res 2K)</option>
+                                </select>
+                                <p class="text-xs text-gray-400 mt-1">Photos larger than this bounding box are proportionally downscaled to save memory and space.</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Compression Quality (1 - 100)</label>
+                                <div class="flex items-center gap-3">
+                                    <input type="number" name="media_quality" min="30" max="100" value="{{ $mediaSettings['quality'] ?? 82 }}" class="w-28 text-sm rounded-xl border-gray-200 focus:border-brand-500 focus:ring-brand-500 py-2">
+                                    <span class="text-xs text-gray-500">Recommended: <strong>80 – 85%</strong> (Imperceptible quality difference, massive size reduction)</span>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-1">Lower quality uses less disk space; higher quality preserves more uncompressed details.</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-3 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <x-admin.checkbox name="media_convert_to_webp" label="Auto-convert Photos to WebP" :checked="$mediaSettings['convert_to_webp'] ?? true" help="Saves an additional ~30-40% storage space compared to standard JPG without visual quality loss." />
+
+                            <x-admin.checkbox name="media_auto_orient" label="Auto-orient from Phone Camera Sensors (EXIF)" :checked="$mediaSettings['auto_orient'] ?? true" help="Fixes rotated/upside-down photos automatically based on the smartphone's camera orientation." />
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Interactive Live Test Tool --}}
+                <div class="bg-gradient-to-br from-gray-50 to-white rounded-2xl shadow-sm border border-gray-200 p-6" x-data="{
+                    testing: false,
+                    result: null,
+                    error: null,
+                    testCompress() {
+                        const fileInput = document.getElementById('test-photo-input');
+                        if (!fileInput.files || fileInput.files.length === 0) {
+                            alert('Please select an image file to test.');
+                            return;
+                        }
+
+                        this.testing = true;
+                        this.result = null;
+                        this.error = null;
+
+                        const formData = new FormData();
+                        formData.append('test_image', fileInput.files[0]);
+                        formData.append('_token', '{{ csrf_token() }}');
+
+                        fetch('{{ route('admin.settings.media.test') }}', {
+                            method: 'POST',
+                            headers: { 'Accept': 'application/json' },
+                            body: formData
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            this.testing = false;
+                            if (data.success) {
+                                this.result = data.data;
+                            } else {
+                                this.error = data.message || 'Compression test failed.';
+                            }
+                        })
+                        .catch(err => {
+                            this.testing = false;
+                            this.error = 'Network error during test.';
+                        });
+                    },
+                    formatBytes(bytes) {
+                        if (bytes === 0) return '0 Bytes';
+                        const k = 1024;
+                        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                        const i = Math.floor(Math.log(bytes) / Math.log(k));
+                        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                    }
+                }">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-9 h-9 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900">Live Compression Preview Tool</h3>
+                            <p class="text-xs text-gray-500">Pick any photo from your computer to see how much space the system will save.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-center gap-3">
+                        <input type="file" id="test-photo-input" accept="image/jpeg,image/png,image/webp" class="block w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+                        <button type="button" @click="testCompress()" :disabled="testing" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs transition shadow-sm flex items-center justify-center gap-2 flex-shrink-0 disabled:opacity-50">
+                            <span x-show="!testing">Run Test</span>
+                            <span x-show="testing" x-cloak class="flex items-center gap-1.5">
+                                <svg class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                Compressing...
+                            </span>
+                        </button>
+                    </div>
+
+                    {{-- Error message --}}
+                    <div x-show="error" x-cloak class="mt-4 p-3 rounded-xl bg-red-50 text-red-700 text-xs border border-red-200" x-text="error"></div>
+
+                    {{-- Success Results Card --}}
+                    <div x-show="result" x-cloak class="mt-4 p-4 rounded-xl bg-emerald-50/80 border border-emerald-200 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                Optimization Complete!
+                            </span>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-600 text-white shadow-xs">
+                                <span x-text="result ? result.saved_percent + '% Space Saved' : ''"></span>
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1">
+                            <div class="bg-white/80 p-2.5 rounded-lg border border-emerald-100">
+                                <span class="text-gray-400 block text-[10px] uppercase font-semibold">Original Size</span>
+                                <span class="font-bold text-gray-800 text-sm" x-text="result ? formatBytes(result.original_size) : ''"></span>
+                                <span class="text-[10px] text-gray-500 block" x-text="result ? result.original_dimensions : ''"></span>
+                            </div>
+                            <div class="bg-white/80 p-2.5 rounded-lg border border-emerald-100">
+                                <span class="text-gray-400 block text-[10px] uppercase font-semibold">Optimized Size</span>
+                                <span class="font-bold text-emerald-700 text-sm" x-text="result ? formatBytes(result.compressed_size) : ''"></span>
+                                <span class="text-[10px] text-emerald-600 font-semibold block" x-text="result ? result.compressed_dimensions + ' (' + result.output_format + ')' : ''"></span>
+                            </div>
+                            <div class="bg-white/80 p-2.5 rounded-lg border border-emerald-100">
+                                <span class="text-gray-400 block text-[10px] uppercase font-semibold">Total Saved</span>
+                                <span class="font-bold text-emerald-800 text-sm" x-text="result ? formatBytes(result.saved_bytes) : ''"></span>
+                                <span class="text-[10px] text-gray-500 block">Preserved Quality</span>
+                            </div>
+                            <div class="bg-white/80 p-2.5 rounded-lg border border-emerald-100">
+                                <span class="text-gray-400 block text-[10px] uppercase font-semibold">Reduction Ratio</span>
+                                <span class="font-bold text-brand-700 text-sm" x-text="result ? result.saved_percent + '%' : ''"></span>
+                                <span class="text-[10px] text-brand-600 block">Lower Storage Bill</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             {{-- Save Button --}}
             <div class="flex justify-end">

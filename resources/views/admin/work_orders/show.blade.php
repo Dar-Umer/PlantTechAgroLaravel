@@ -96,6 +96,9 @@
                                     @if($stage->requires_pdf)
                                         <span class="text-[11px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-700">📄 PDF</span>
                                     @endif
+                                    @if($stage->notify_customer ?? true)
+                                        <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-medium">🔔 Push</span>
+                                    @endif
                                 </div>
                                 @if($stage->description)
                                     <p class="text-xs text-gray-500 mt-0.5 truncate">{{ $stage->description }}</p>
@@ -299,7 +302,20 @@
                                                 </div>
                                             @endif
 
-                                            <div class="mt-3 flex justify-end gap-2">
+                                            <div class="mt-4 p-3 bg-white rounded-xl border border-gray-200">
+                                                <label class="flex items-center gap-2.5 cursor-pointer select-none">
+                                                    <input type="checkbox" name="notify_customer" value="1" {{ ($stage->notify_customer ?? true) ? 'checked' : '' }} class="rounded border-gray-300 text-brand-600 focus:ring-brand-500 w-4 h-4">
+                                                    <span class="text-xs font-semibold text-gray-800 flex items-center gap-1.5">
+                                                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                                                        Send Firebase Push Notification & Stage Progress to Customer
+                                                    </span>
+                                                </label>
+                                                <p class="text-[11px] text-gray-500 mt-1 pl-6">
+                                                    Farmer will receive an instant rich push alert (including uploaded stage photos) on their mobile app.
+                                                </p>
+                                            </div>
+
+                                            <div class="mt-4 flex justify-end gap-2">
                                                 <x-admin.button type="button" variant="secondary" size="sm" @click="completing = false">Cancel</x-admin.button>
                                                 <x-admin.button type="submit">Confirm Completion</x-admin.button>
                                             </div>

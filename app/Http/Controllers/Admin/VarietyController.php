@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Variety;
+use App\Support\Media;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -62,7 +63,7 @@ class VarietyController extends Controller
         ]);
 
         if (isset($data['image']) && $data['image']) {
-            $data['image'] = $request->file('image')->store('varieties', 'public');
+            $data['image'] = Media::storeImage($request->file('image'), 'varieties');
         }
 
         $data['slug'] = Str::slug($data['name']);
@@ -99,7 +100,7 @@ class VarietyController extends Controller
         ]);
 
         if (isset($data['image']) && $data['image']) {
-            $data['image'] = $request->file('image')->store('varieties', 'public');
+            $data['image'] = Media::storeImage($request->file('image'), 'varieties');
         } else {
             unset($data['image']);
         }

@@ -444,16 +444,25 @@
                 @csrf
                 @method('PUT')
 
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Footer & Contact Info</h3>
-                    <p class="text-sm text-gray-500 mb-6">These appear in the site footer (tagline, contact details and social links).</p>
-                    <div class="space-y-5">
-                        <x-admin.input name="site_name" label="Site Name" :value="$settings['site_name'] ?? ''" />
-                        <x-admin.textarea name="footer_tagline" label="Footer Tagline" :value="$settings['footer_tagline'] ?? ''" rows="2" />
-                        <x-admin.input name="site_email" label="Contact Email" type="email" :value="$settings['site_email'] ?? ''" />
-                        <x-admin.input name="site_phone" label="Contact Phone" :value="$settings['site_phone'] ?? ''" />
-                        <x-admin.input name="support_hours" label="Support Hours" :value="$settings['support_hours'] ?? ''" helptext="Shown in the footer contact section." />
-                        <x-admin.textarea name="site_address" label="Address" :value="$settings['site_address'] ?? ''" rows="2" />
+                {{-- Notice: Company & Contact Details Managed in General Settings --}}
+                <div class="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 rounded-2xl border border-emerald-200 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                        </div>
+                        <div>
+                            <h4 class="text-base font-bold text-emerald-950">Company &amp; Contact Details Managed in Settings</h4>
+                            <p class="text-xs text-emerald-800/80 mt-1 max-w-2xl leading-relaxed">
+                                Store name, official contact email (<span class="font-semibold">{{ config('shop.site_email', 'info@plantechagro.com') }}</span>), phone number (<span class="font-semibold">{{ config('shop.site_phone', '0194-796-1490') }}</span>), physical office address, bank account details, and support hours are configured centrally under <strong class="text-emerald-900">Settings &rarr; General</strong>. Any updates made there automatically update the footer and other pages.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="shrink-0">
+                        <a href="{{ route('admin.settings.index', ['tab' => 'general']) }}"
+                           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition shadow-sm whitespace-nowrap">
+                            <span>Open Settings &rarr; General</span>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                        </a>
                     </div>
                 </div>
 

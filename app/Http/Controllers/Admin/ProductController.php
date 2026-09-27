@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Supplier;
 use App\Services\StockService;
+use App\Support\Media;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -58,7 +59,7 @@ class ProductController extends Controller
         $data = $this->validated($request);
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('products', 'public');
+            $data['image'] = Media::storeImage($request->file('image'), 'products');
         }
 
         $openingStock = (float) ($data['stock_qty'] ?? 0);
@@ -88,7 +89,7 @@ class ProductController extends Controller
         $data = $this->validated($request, $product->id);
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('products', 'public');
+            $data['image'] = Media::storeImage($request->file('image'), 'products');
         } else {
             unset($data['image']);
         }

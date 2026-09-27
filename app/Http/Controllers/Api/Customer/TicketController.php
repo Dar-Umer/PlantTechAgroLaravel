@@ -10,6 +10,7 @@ use App\Models\TicketAttachment;
 use App\Models\TicketMessage;
 use App\Notifications\FarmerTicketCreated;
 use App\Notifications\TicketCustomerReplyAlert;
+use App\Support\Media;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -401,7 +402,7 @@ class TicketController extends Controller
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
                 if ($file && $file->isValid()) {
-                    $path = $file->store('tickets/' . $ticket->id, 'public');
+                    $path = Media::storeImage($file, 'tickets/' . $ticket->id);
                     TicketAttachment::create([
                         'ticket_id' => $ticket->id,
                         'message_id' => $message->id,
@@ -418,7 +419,7 @@ class TicketController extends Controller
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             if ($file && $file->isValid()) {
-                $path = $file->store('tickets/' . $ticket->id, 'public');
+                $path = Media::storeImage($file, 'tickets/' . $ticket->id);
                 TicketAttachment::create([
                     'ticket_id' => $ticket->id,
                     'message_id' => $message->id,
@@ -452,7 +453,9 @@ class TicketController extends Controller
             if ($file && $file->isValid()) {
                 $mime = $file->getMimeType() ?: '';
                 $type = str_contains($mime, 'image') ? 'image' : (str_contains($mime, 'audio') ? 'audio' : 'document');
-                $path = $file->store('tickets/' . $ticket->id, 'public');
+                $path = $type === 'image'
+                    ? Media::storeImage($file, 'tickets/' . $ticket->id)
+                    : $file->store('tickets/' . $ticket->id, 'public');
                 TicketAttachment::create([
                     'ticket_id' => $ticket->id,
                     'message_id' => $message->id,

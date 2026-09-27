@@ -64,4 +64,14 @@ class Admin extends Authenticatable
     {
         return $this->hasMany(Ticket::class, 'assigned_to');
     }
+
+    public function deviceTokens(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(DeviceToken::class, 'tokenable');
+    }
+
+    public function routeNotificationForFcm(): array
+    {
+        return $this->deviceTokens()->pluck('token')->filter()->all();
+    }
 }

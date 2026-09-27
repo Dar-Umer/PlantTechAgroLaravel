@@ -24,6 +24,10 @@ class WorkOrderCreator
      */
     public static function fromConversion(Lead $lead, Customer $customer, ?int $adminId = null): WorkOrder
     {
+        if (! $lead->hasApprovedQuotation()) {
+            throw new \DomainException('Work order creation blocked: Quotation must be approved before a work order can be created for this lead.');
+        }
+
         $service = $lead->service;
 
         if (! $service instanceof Service || ! $service->is_active) {
@@ -59,6 +63,9 @@ class WorkOrderCreator
                 'requires_photo' => $template->requires_photo,
                 'min_photos' => $template->min_photos,
                 'requires_pdf' => $template->requires_pdf,
+                'notify_customer' => $template->notify_customer ?? true,
+                'notification_title' => $template->notification_title,
+                'notification_body' => $template->notification_body,
             ]);
 
             foreach ($template->products as $templateProduct) {

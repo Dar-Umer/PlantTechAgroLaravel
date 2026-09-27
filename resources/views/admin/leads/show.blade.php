@@ -19,10 +19,12 @@
 
     $custom = (array) ($lead->custom_fields ?? []);
     $email = $custom['email'] ?? null;
-    $area = $custom['area'] ?? null;
-    $address = $custom['address'] ?? null;
+    $address = $lead->getAddress();
+    $variation = $lead->getVariation();
+    $requirement = $lead->formattedRequirement();
+    $area = $requirement ?: ($custom['area'] ?? null);
 
-    $knownCustom = ['name', 'phone', 'service_id', 'email', 'area', 'address'];
+    $knownCustom = ['name', 'phone', 'service_id', 'service_variation', 'email', 'area', 'address', 'unit'];
     $extraCustom = collect($custom)
         ->reject(fn ($value, $key) => in_array($key, $knownCustom, true))
         ->filter(fn ($value) => ! empty($value));
@@ -64,21 +66,42 @@
                     <x-admin.button href="{{ route('admin.leads.index') }}" variant="secondary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>'>Back</x-admin.button>
                     @if($statusKey !== 'converted')
                         <x-admin.button href="{{ route('admin.leads.edit', $lead) }}" variant="secondary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>'>Edit</x-admin.button>
-                        <x-admin.button href="{{ route('admin.quotations.create', ['lead_id' => $lead->id]) }}" variant="secondary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>'>Create Quotation</x-admin.button>
+                        <x-admin.button href="{{ route('admin.quotations.create', ['lead_id' => $lead->id]) }}" variant="primary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>'>Create Quotation</x-admin.button>
                     @endif
-                    @if($statusKey !== 'converted' && empty($existingCustomer))
+                    @if($statusKey !== 'converted' && $lead->hasApprovedQuotation() && empty($existingCustomer))
                         <x-admin.button href="{{ route('admin.leads.convert', $lead) }}" variant="primary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>'>Convert to Customer</x-admin.button>
-                    @elseif($statusKey !== 'converted' && !empty($existingCustomer))
+                    @elseif($statusKey !== 'converted' && $lead->hasApprovedQuotation() && !empty($existingCustomer))
                         <form action="{{ route('admin.leads.work-order', $lead) }}" method="POST" class="inline">
                             @csrf
                             <x-admin.button type="submit" variant="primary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 9.75h4.5m-4.5 3h4.5m-4.5 3h4.5m-5.625 3.75h6.75a4.5 4.5 0 004.5-4.5v-3a4.5 4.5 0 00-4.5-4.5H16.5a3 3 0 00-3-3h-3a3 3 0 00-3 3H7.125a4.5 4.5 0 00-4.5 4.5v3a4.5 4.5 0 004.5 4.5h6.75M12 3h.008v.008H12V3z"/></svg>'>New Work Order</x-admin.button>
                         </form>
-                    @else
+                    @elseif($statusKey === 'converted')
                         <x-admin.button href="{{ route('admin.customers.show', $lead->convertedCustomer) }}" variant="primary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>'>View Customer</x-admin.button>
                     @endif
                 </div>
             </div>
         </div>
+
+        @if($statusKey !== 'converted' && ! $lead->hasApprovedQuotation())
+            <div class="flex items-center gap-3 rounded-2xl bg-amber-50 border border-amber-200 px-5 py-4">
+                <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-amber-900">Quotation Approval Required Before Work Order</p>
+                    <p class="text-xs text-amber-700 mt-0.5">
+                        @if($lead->quotations->isEmpty())
+                            No quotation has been generated for this lead yet. Please create a quotation and obtain approval before opening a work order.
+                        @else
+                            A quotation has been issued but is awaiting approval. Review and approve the quotation below to activate the work order.
+                        @endif
+                    </p>
+                </div>
+                @if($lead->quotations->isEmpty())
+                    <x-admin.button href="{{ route('admin.quotations.create', ['lead_id' => $lead->id]) }}" variant="primary" size="sm">Create Quotation</x-admin.button>
+                @endif
+            </div>
+        @endif
 
         @if($statusKey === 'converted' && $lead->convertedCustomer)
             <div class="flex items-center gap-3 rounded-2xl bg-green-50 border border-green-100 px-5 py-4">
@@ -101,7 +124,7 @@
             </div>
         @endif
 
-        @if($statusKey !== 'converted' && !empty($existingCustomer))
+        @if($statusKey !== 'converted' && !empty($existingCustomer) && $lead->hasApprovedQuotation())
             <div class="flex items-center gap-3 rounded-2xl bg-sky-50 border border-sky-100 px-5 py-4">
                 <div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center flex-shrink-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -112,7 +135,7 @@
                         <a href="{{ route('admin.customers.show', $existingCustomer) }}" class="font-medium hover:underline">
                             {{ $existingCustomer->name }}
                         </a>
-                        · {{ $existingCustomer->phone }} — use New Work Order instead of Convert.
+                        · {{ $existingCustomer->phone }} — quotation is approved, you can start the work order.
                     </p>
                 </div>
                 <form action="{{ route('admin.leads.work-order', $lead) }}" method="POST" class="flex-shrink-0">
@@ -140,15 +163,21 @@
                 <p class="text-xs text-gray-400 mt-1">where the lead came from</p>
             </div>
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                <p class="text-sm font-medium text-gray-500">Interested In</p>
-                <p class="text-sm font-bold text-gray-900 mt-3 leading-snug">
+                <p class="text-sm font-medium text-gray-500">Service & Package</p>
+                <p class="text-sm font-bold text-gray-900 mt-2 leading-snug">
                     @if($lead->service)
                         {{ $lead->service->name }}
+                        @if($variation)
+                            <span class="block text-xs font-semibold text-emerald-700 mt-0.5">· {{ $variation }}</span>
+                        @endif
                     @else
                         <span class="text-gray-300">Not specified</span>
                     @endif
                 </p>
-                <p class="text-xs text-gray-400 mt-2">selected service</p>
+                @if($requirement)
+                    <p class="text-xs font-bold text-gray-700 mt-1">Qty: {{ $requirement }}</p>
+                @endif
+                <p class="text-xs text-gray-400 mt-1">lead selection</p>
             </div>
         </div>
 
@@ -269,16 +298,30 @@
                             </dd>
                         </div>
                         <div>
-                            <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">Area / Locality</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $area ?: '—' }}</dd>
-                        </div>
-                        <div>
                             <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">Service Interested In</dt>
                             <dd class="mt-1 text-sm">
                                 @if($lead->service)
-                                    <a href="{{ route('admin.leads.index', ['service_id' => $lead->service_id]) }}" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-50 text-brand-700 hover:bg-brand-100 transition">{{ $lead->service->name }}</a>
+                                    <a href="{{ route('admin.leads.index', ['service_id' => $lead->service_id]) }}" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 hover:bg-brand-100 transition">{{ $lead->service->name }}</a>
                                 @else
                                     <span class="text-gray-400">Not specified</span>
+                                @endif
+                            </dd>
+                        </div>
+                        @if($variation)
+                            <div>
+                                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">Selected Package / Variation</dt>
+                                <dd class="mt-1 text-sm">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">{{ $variation }}</span>
+                                </dd>
+                            </div>
+                        @endif
+                        <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">Required Area / Quantity</dt>
+                            <dd class="mt-1 text-sm font-bold text-gray-900">
+                                @if($lead->service && ! $lead->service->requiresUnit())
+                                    <span class="text-xs font-semibold text-gray-400">Not Applicable (Call / Advisory)</span>
+                                @else
+                                    {{ $area ?: '—' }}
                                 @endif
                             </dd>
                         </div>
@@ -302,12 +345,33 @@
                         @endif
                         @if($address)
                             <div class="sm:col-span-2">
-                                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">Address</dt>
-                                <dd class="mt-1 text-sm text-gray-900">{{ $address }}</dd>
+                                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wide">Address / Location</dt>
+                                <dd class="mt-1 text-sm text-gray-900 font-medium">{{ $address }}</dd>
                             </div>
                         @endif
                     </dl>
                 </div>
+
+                {{-- Service Workflow Pipeline --}}
+                @if($lead->service && $lead->service->stages->isNotEmpty())
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Service Workflow Pipeline</h3>
+                                <p class="text-xs text-gray-500">Standard operational stages for {{ $lead->service->name }} once quotation is approved.</p>
+                            </div>
+                            <span class="text-xs font-bold text-gray-500">{{ $lead->service->stages->count() }} Stages</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                            @foreach($lead->service->stages->sortBy('sort_order') as $stg)
+                                <div class="p-3 rounded-xl border border-gray-100 bg-gray-50/70 flex items-center gap-2.5">
+                                    <span class="w-6 h-6 rounded-full bg-brand-100 text-brand-800 text-xs font-bold flex items-center justify-center shrink-0">{{ $loop->iteration }}</span>
+                                    <span class="text-xs font-semibold text-gray-800 truncate">{{ $stg->name }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
 
                 {{-- Additional details (custom fields) --}}
                 @if($extraCustom->isNotEmpty())
@@ -390,13 +454,22 @@
                             <x-admin.button href="{{ route('admin.leads.edit', $lead) }}" variant="secondary" class="w-full">Edit Lead Details</x-admin.button>
                             <x-admin.button href="{{ route('admin.quotations.create', ['lead_id' => $lead->id]) }}" variant="secondary" class="w-full">Create Quotation / Estimate</x-admin.button>
                         @endif
-                        @if($statusKey !== 'converted' && empty($existingCustomer))
-                            <x-admin.button href="{{ route('admin.leads.convert', $lead) }}" variant="primary" class="w-full">Convert to Customer</x-admin.button>
-                        @elseif($statusKey !== 'converted' && !empty($existingCustomer))
-                            <form action="{{ route('admin.leads.work-order', $lead) }}" method="POST">
-                                @csrf
-                                <x-admin.button type="submit" variant="primary" class="w-full">New Work Order</x-admin.button>
-                            </form>
+                        @if($statusKey !== 'converted')
+                            @if($lead->hasApprovedQuotation())
+                                @if(empty($existingCustomer))
+                                    <x-admin.button href="{{ route('admin.leads.convert', $lead) }}" variant="primary" class="w-full">Convert to Customer</x-admin.button>
+                                @else
+                                    <form action="{{ route('admin.leads.work-order', $lead) }}" method="POST">
+                                        @csrf
+                                        <x-admin.button type="submit" variant="primary" class="w-full">New Work Order</x-admin.button>
+                                    </form>
+                                @endif
+                            @else
+                                <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-800 text-center">
+                                    <span class="font-medium">Quotation Approval Required</span><br>
+                                    Approve a quotation before converting or creating a work order.
+                                </div>
+                            @endif
                         @endif
                     </div>
                 </div>

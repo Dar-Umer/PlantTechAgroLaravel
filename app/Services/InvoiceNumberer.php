@@ -15,9 +15,12 @@ class InvoiceNumberer
             : $now->copy()->subYear()->format('Y').'-'.$now->format('y');
     }
 
-    public static function next(): string
+    public static function next(?\App\Models\Service $service = null): string
     {
-        $prefix = trim((string) config('invoice.prefix', 'PTA'), '/') ?: 'PTA';
+        $prefix = ($service && !empty($service->invoice_settings['invoice_prefix']))
+            ? trim($service->invoice_settings['invoice_prefix'], '/')
+            : (trim((string) config('invoice.prefix', 'PTA'), '/') ?: 'PTA');
+
         $fy = self::fiscalYear();
 
         $seq = Invoice::where('number', 'like', $prefix.'/'.$fy.'/%')->count() + 1;

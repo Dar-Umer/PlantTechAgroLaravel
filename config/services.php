@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'firebase' => [
+        'enabled' => env('FIREBASE_NOTIFICATIONS_ENABLED', true),
+        'project_id' => env('FIREBASE_PROJECT_ID'),
+        'credentials_file' => env('FIREBASE_CREDENTIALS_FILE', storage_path('app/firebase/service-account.json')),
+        'credentials_json' => env('FIREBASE_CREDENTIALS_JSON'),
+    ],
+
 ];

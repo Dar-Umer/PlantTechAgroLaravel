@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\AutomationController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DocumentDesignController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\ForgotPasswordController;
 use App\Http\Controllers\Admin\FrontendController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Admin\LeadFormFieldController;
 use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\Admin\MobileAppController;
 use App\Http\Controllers\Admin\NotificationController;
+use App\Http\Controllers\Admin\NotificationTemplateController;
 use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\ProductController;
@@ -63,17 +65,33 @@ Route::middleware('admin')->group(function () {
 
         Route::put('settings', [SettingController::class, 'update'])->name('admin.settings.update');
 
-        Route::get('mobile-apps', [MobileAppController::class, 'index'])->name('admin.mobile-apps.index');
+        // Invoices & Quotations Designer
+        Route::get('document-settings', [DocumentDesignController::class, 'index'])->name('admin.document-settings.index');
+        Route::put('document-settings/prefixes', [DocumentDesignController::class, 'updatePrefixes'])->name('admin.document-settings.prefixes.update');
+        Route::put('document-settings/quotations', [DocumentDesignController::class, 'updateQuotations'])->name('admin.document-settings.quotations.update');
+        Route::put('document-settings/invoices', [DocumentDesignController::class, 'updateInvoices'])->name('admin.document-settings.invoices.update');
+        Route::put('document-settings/services/{service}', [DocumentDesignController::class, 'updateService'])->name('admin.document-settings.service.update');
+        Route::post('document-settings/services/{service}/reset', [DocumentDesignController::class, 'resetService'])->name('admin.document-settings.service.reset');
 
+        Route::get('mobile-apps', [MobileAppController::class, 'index'])->name('admin.mobile-apps.index');
         Route::put('mobile-apps', [MobileAppController::class, 'update'])->name('admin.mobile-apps.update');
+        Route::post('mobile-apps/firebase/test', [MobileAppController::class, 'testPush'])->name('admin.mobile-apps.firebase.test');
+        Route::post('mobile-apps/firebase/broadcast', [MobileAppController::class, 'broadcastPush'])->name('admin.mobile-apps.firebase.broadcast');
 
         Route::post('settings/mail', [SettingController::class, 'smtpUpdate'])->name('admin.settings.mail.update');
 
         Route::post('settings/mail/test', [SettingController::class, 'smtpTest'])->middleware('throttle:6,1')->name('admin.settings.mail.test');
 
+        Route::post('settings/media/test', [SettingController::class, 'testMediaCompression'])->name('admin.settings.media.test');
+
         Route::get('automation', [AutomationController::class, 'index'])->name('admin.automation.index');
 
         Route::put('automation', [AutomationController::class, 'update'])->name('admin.automation.update');
+
+        // Notification Templates
+        Route::get('notification-templates', [NotificationTemplateController::class, 'index'])->name('admin.notification-templates.index');
+        Route::put('notification-templates/system', [NotificationTemplateController::class, 'updateSystem'])->name('admin.notification-templates.system.update');
+        Route::put('notification-templates/stage/{stage}', [NotificationTemplateController::class, 'updateStage'])->name('admin.notification-templates.stage.update');
 
         // Staff
         Route::get('staff', [StaffController::class, 'index'])->name('admin.staff.index');

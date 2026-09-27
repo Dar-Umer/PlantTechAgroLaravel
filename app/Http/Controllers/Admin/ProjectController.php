@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Support\HtmlSanitizer;
+use App\Support\Media;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -43,13 +44,13 @@ class ProjectController extends Controller
         $data['description'] = strip_tags((string) ($data['description'] ?? ''));
 
         if (isset($data['featured_image']) && $data['featured_image']) {
-            $data['featured_image'] = $request->file('featured_image')->store('projects', 'public');
+            $data['featured_image'] = Media::storeImage($request->file('featured_image'), 'projects');
         }
 
         if (! empty($data['gallery'])) {
             $paths = [];
             foreach ($data['gallery'] as $file) {
-                $paths[] = $file->store('projects/gallery', 'public');
+                $paths[] = Media::storeImage($file, 'projects/gallery');
             }
             $data['gallery'] = $paths;
         }
@@ -79,7 +80,7 @@ class ProjectController extends Controller
         ]);
 
         if (isset($data['featured_image']) && $data['featured_image']) {
-            $data['featured_image'] = $request->file('featured_image')->store('projects', 'public');
+            $data['featured_image'] = Media::storeImage($request->file('featured_image'), 'projects');
         } else {
             unset($data['featured_image']);
         }

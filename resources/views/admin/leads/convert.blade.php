@@ -15,7 +15,7 @@
 
         @if(!empty($serviceUsable))
             <div class="bg-sky-50 border border-sky-100 rounded-2xl p-4 text-sm text-sky-800">
-                Confirming will also open a <span class="font-semibold">pending work order for {{ $service->name }}</span> from this lead's submitted details — no stock is deducted. You will be redirected to the new work order.
+                Confirming will activate the customer account and open a <span class="font-semibold">work order for {{ $service->name }}</span> linked to approved quotation #{{ $lead->approvedQuotation()?->number ?? 'Approved' }}. You will be redirected to the new work order.
             </div>
         @else
             <div class="bg-red-50 border border-red-200 rounded-2xl p-4 text-sm text-red-700">

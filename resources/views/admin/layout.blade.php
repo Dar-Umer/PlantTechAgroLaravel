@@ -143,8 +143,26 @@
                         $openTicketsCount = 0;
                     }
 
+                    $newLeadsCount = 0;
+                    try {
+                        if (class_exists(\App\Models\Lead::class) && \Illuminate\Support\Facades\Schema::hasTable('leads')) {
+                            $newLeadsCount = \App\Models\Lead::where('status', 'new')->count();
+                        }
+                    } catch (\Throwable $e) {
+                        $newLeadsCount = 0;
+                    }
+
+                    $activeWorkOrdersCount = 0;
+                    try {
+                        if (class_exists(\App\Models\WorkOrder::class) && \Illuminate\Support\Facades\Schema::hasTable('work_orders')) {
+                            $activeWorkOrdersCount = \App\Models\WorkOrder::whereIn('status', ['in_progress', 'scheduled'])->count();
+                        }
+                    } catch (\Throwable $e) {
+                        $activeWorkOrdersCount = 0;
+                    }
+
                     $groups = [
-                        // Core Direct Navigation
+                        // Core Direct Overview
                         [
                             'label' => null,
                             'items' => [
@@ -156,43 +174,59 @@
                             ],
                         ],
 
-                        // Support & Communications
+                        // 1. CRM & Pipeline (Inquiries, Proposals, Farmers & Landholdings)
                         [
-                            'label' => 'Support',
-                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>',
+                            'label' => 'CRM & Pipeline',
+                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>',
                             'items' => [
                                 [
-                                    'route' => 'admin.tickets.index',
-                                    'label' => 'Support Tickets',
-                                    'badge' => $openTicketsCount > 0 ? $openTicketsCount . ' open' : null,
+                                    'route' => 'admin.leads.index',
+                                    'label' => 'Leads & Enquiries',
+                                    'badge' => $newLeadsCount > 0 ? $newLeadsCount . ' new' : null,
+                                    'badgeClass' => 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
+                                ],
+                                [
+                                    'route' => 'admin.quotations.index',
+                                    'label' => 'Quotations & Estimates',
+                                ],
+                                [
+                                    'route' => 'admin.customers.index',
+                                    'label' => 'Farmers Directory',
+                                ],
+                                [
+                                    'route' => 'admin.orchards.index',
+                                    'label' => 'Farmer Orchards',
                                 ],
                             ],
                         ],
 
-                        // Farmers & CRM
+                        // 2. Field Operations & Services (Agro Projects & Execution)
                         [
-                            'label' => 'Farmers & CRM',
-                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>',
+                            'label' => 'Field Operations',
+                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/>',
                             'items' => [
-                                ['route' => 'admin.customers.index', 'label' => 'Farmers Directory'],
-                                ['route' => 'admin.orchards.index', 'label' => 'Farmer Orchards'],
-                                ['route' => 'admin.leads.index', 'label' => 'Leads & Enquiries'],
+                                [
+                                    'route' => 'admin.work-orders.index',
+                                    'label' => 'Work Orders (Jobs)',
+                                    'badge' => $activeWorkOrdersCount > 0 ? $activeWorkOrdersCount . ' active' : null,
+                                    'badgeClass' => 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
+                                ],
+                                [
+                                    'route' => 'admin.services.index',
+                                    'label' => 'Services & Stages',
+                                ],
+                                [
+                                    'route' => 'admin.invoices.index',
+                                    'label' => 'Invoices & Billing',
+                                ],
+                                [
+                                    'route' => 'admin.reports.gst',
+                                    'label' => 'GST & Tax Reports',
+                                ],
                             ],
                         ],
 
-                        // Sales & Operations
-                        [
-                            'label' => 'Sales & Operations',
-                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/>',
-                            'items' => [
-                                ['route' => 'admin.work-orders.index', 'label' => 'Work Orders (Field Jobs)'],
-                                ['route' => 'admin.invoices.index', 'label' => 'Invoices & Billing'],
-                                ['route' => 'admin.quotations.index', 'label' => 'Quotations / Estimates'],
-                                ['route' => 'admin.reports.gst', 'label' => 'GST & Tax Reports'],
-                            ],
-                        ],
-
-                        // Retail POS
+                        // 3. Retail POS (Storefront Cashier)
                         [
                             'label' => 'Point of Sale (POS)',
                             'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>',
@@ -202,7 +236,7 @@
                             ],
                         ],
 
-                        // Inventory & Warehouse
+                        // 4. Inventory & Stock (Products, Batches & Warehouse Movements)
                         [
                             'label' => 'Inventory & Stock',
                             'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/>',
@@ -213,45 +247,58 @@
                             ],
                         ],
 
-                        // Procurement & Suppliers
+                        // 5. Procurement & Suppliers (Inward Procurement)
                         [
-                            'label' => 'Suppliers & Bills',
+                            'label' => 'Suppliers & Purchases',
                             'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.25V3.75a.75.75 0 00-.75-.75H3.75A.75.75 0 003 3.75v10.5c0 .621.504 1.125 1.125 1.125H5.25m11.25-7.5h2.25l2.625 3.75H16.5V7.5z"/>',
                             'items' => [
                                 ['route' => 'admin.suppliers.index', 'label' => 'Suppliers Directory'],
                                 ['route' => 'admin.purchase-bills.index', 'label' => 'Purchase Bills (Inward)'],
-                                ['route' => 'admin.purchase-bills.create', 'label' => '+ New Purchase Bill'],
                             ],
                         ],
 
-                        // Website & CMS
+                        // 6. Customer Support & Tickets
+                        [
+                            'label' => 'Customer Support',
+                            'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>',
+                            'items' => [
+                                [
+                                    'route' => 'admin.tickets.index',
+                                    'label' => 'Support Tickets',
+                                    'badge' => $openTicketsCount > 0 ? $openTicketsCount . ' open' : null,
+                                    'badgeClass' => 'bg-amber-500/20 text-amber-400 border border-amber-500/30',
+                                ],
+                            ],
+                        ],
+
+                        // 7. Public Website & CMS Content
                         [
                             'label' => 'CMS & Content',
                             'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>',
                             'items' => [
                                 ['route' => 'admin.posts.index', 'label' => 'Blog & Advisory Posts'],
                                 ['route' => 'admin.varieties.index', 'label' => 'Crop & Fruit Varieties'],
-                                ['route' => 'admin.services.index', 'label' => 'Agro Services'],
                                 ['route' => 'admin.projects.index', 'label' => 'Field Projects'],
                                 ['route' => 'admin.partners.index', 'label' => 'Brand Partners'],
                                 ['route' => 'admin.testimonials.index', 'label' => 'Farmer Testimonials'],
                                 ['route' => 'admin.gallery.index', 'label' => 'Photo Gallery'],
                                 ['route' => 'admin.faqs.index', 'label' => 'FAQs'],
-                                ['route' => 'admin.frontend.index', 'label' => 'Frontend Editor'],
+                                ['route' => 'admin.frontend.index', 'label' => 'Frontend Theme Editor'],
                             ],
                         ],
 
-                        // System Administration
+                        // 8. System Administration & Configuration
                         [
                             'label' => 'Settings & System',
                             'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>',
                             'items' => [
+                                ['route' => 'admin.settings.index', 'label' => 'Settings (General & Documents)'],
                                 ['route' => 'admin.staff.index', 'label' => 'Staff Accounts'],
                                 ['route' => 'admin.roles.index', 'label' => 'Roles & Permissions'],
                                 ['route' => 'admin.mobile-apps.index', 'label' => 'Mobile Apps Manager'],
+                                ['route' => 'admin.notification-templates.index', 'label' => 'Notification Templates'],
                                 ['route' => 'admin.automation.index', 'label' => 'Automation Rules'],
-                                ['route' => 'admin.system.diagnostics', 'label' => 'System Health & Performance'],
-                                ['route' => 'admin.settings.index', 'label' => 'General Settings'],
+                                ['route' => 'admin.system.diagnostics', 'label' => 'System Health & Diagnostics'],
                             ],
                         ],
                     ];
@@ -259,7 +306,7 @@
 
                 @php
                     $currentAdmin = Auth::guard('admin')->user();
-                    $superOnlyRoutes = ['admin.roles.index', 'admin.staff.index', 'admin.automation.index', 'admin.settings.index', 'admin.mobile-apps.index'];
+                    $superOnlyRoutes = ['admin.roles.index', 'admin.staff.index', 'admin.automation.index', 'admin.settings.index', 'admin.mobile-apps.index', 'admin.notification-templates.index', 'admin.document-settings.index'];
                     $isPosOnlyUser = $currentAdmin?->isPosOnly();
                     $posAndStockAllowed = [
                         'admin.dashboard',
@@ -302,7 +349,9 @@
                         'admin.roles.index' => 'roles.manage',
                         'admin.staff.index' => ['staff.view', 'staff.manage'],
                         'admin.mobile-apps.index' => 'automation.manage',
+                        'admin.notification-templates.index' => 'automation.manage',
                         'admin.automation.index' => 'automation.manage',
+                        'admin.document-settings.index' => 'settings.manage',
                         'admin.settings.index' => 'settings.manage',
                         'admin.system.diagnostics' => null,
                     ];
@@ -951,25 +1000,52 @@
                 selectedIndex: 0,
                 items: [
                     { title: 'Dashboard', category: 'Navigation', url: '{{ route('admin.dashboard') }}', icon: 'M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25' },
-                    { title: 'Support Tickets & Farmer Queries', category: 'Support & Advisory', url: '{{ route('admin.tickets.index') }}', icon: 'M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z' },
-                    { title: 'New Support Ticket', category: 'Actions', url: '{{ route('admin.tickets.create') }}', icon: 'M12 4v16m8-8H4' },
-                    { title: 'POS Terminal (Billing & Counter)', category: 'Point of Sale', url: '{{ route('admin.pos.terminal') }}', icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z' },
+                    
+                    // Quick Actions
+                    { title: 'New Quotation / Estimate', category: 'Quick Actions', url: '{{ route('admin.quotations.create') }}', icon: 'M12 4v16m8-8H4' },
+                    { title: 'New Work Order', category: 'Quick Actions', url: '{{ route('admin.work-orders.create') }}', icon: 'M12 4v16m8-8H4' },
+                    { title: 'New Invoice', category: 'Quick Actions', url: '{{ route('admin.invoices.create') }}', icon: 'M12 4v16m8-8H4' },
+                    { title: 'New Support Ticket', category: 'Quick Actions', url: '{{ route('admin.tickets.create') }}', icon: 'M12 4v16m8-8H4' },
+
+                    // CRM & Pipeline
+                    { title: 'Leads & Enquiries', category: 'CRM & Pipeline', url: '{{ route('admin.leads.index') }}', icon: 'M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75' },
+                    { title: 'Quotations & Estimates', category: 'CRM & Pipeline', url: '{{ route('admin.quotations.index') }}', icon: 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z' },
+                    { title: 'Farmers Directory', category: 'CRM & Pipeline', url: '{{ route('admin.customers.index') }}', icon: 'M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z' },
+                    { title: 'Farmer Orchards', category: 'CRM & Pipeline', url: '{{ route('admin.orchards.index') }}', icon: 'M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z' },
+
+                    // Field Operations
+                    { title: 'Work Orders (Jobs)', category: 'Field Operations', url: '{{ route('admin.work-orders.index') }}', icon: 'M9.75 9.75h4.5m-4.5 3h4.5m-4.5 3h4.5m-5.625 3.75h6.75a4.5 4.5 0 004.5-4.5v-3a4.5 4.5 0 00-4.5-4.5H16.5a3 3 0 00-3-3h-3a3 3 0 00-3 3H7.125a4.5 4.5 0 00-4.5 4.5v3a4.5 4.5 0 004.5 4.5h6.75M12 3h.008v.008H12V3z' },
+                    { title: 'Services & Work Stages', category: 'Field Operations', url: '{{ route('admin.services.index') }}', icon: 'M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z' },
+                    { title: 'Invoices & Billing', category: 'Field Operations', url: '{{ route('admin.invoices.index') }}', icon: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75z' },
+                    { title: 'GST & Tax Reports (GSTR-1)', category: 'Field Operations', url: '{{ route('admin.reports.gst') }}', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+
+                    // Point of Sale (POS)
+                    { title: 'POS Terminal (Billing Counter)', category: 'Point of Sale', url: '{{ route('admin.pos.terminal') }}', icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z' },
                     { title: 'POS Sales & Invoices', category: 'Point of Sale', url: '{{ route('admin.pos.sales') }}', icon: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75z' },
-                    { title: 'New Work Order', category: 'Actions', url: '{{ route('admin.work-orders.create') }}', icon: 'M12 4v16m8-8H4' },
-                    { title: 'All Work Orders', category: 'Operations', url: '{{ route('admin.work-orders.index') }}', icon: 'M9.75 9.75h4.5m-4.5 3h4.5m-4.5 3h4.5m-5.625 3.75h6.75a4.5 4.5 0 004.5-4.5v-3a4.5 4.5 0 00-4.5-4.5H16.5a3 3 0 00-3-3h-3a3 3 0 00-3 3H7.125a4.5 4.5 0 00-4.5 4.5v3a4.5 4.5 0 004.5 4.5h6.75M12 3h.008v.008H12V3z' },
-                    { title: 'New Invoice', category: 'Actions', url: '{{ route('admin.invoices.create') }}', icon: 'M12 4v16m8-8H4' },
-                    { title: 'Invoices List', category: 'Finance', url: '{{ route('admin.invoices.index') }}', icon: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75z' },
-                    { title: 'GST & Tax Reports (GSTR-1)', category: 'Finance', url: '{{ route('admin.reports.gst') }}', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-                    { title: 'Customers Directory', category: 'CRM', url: '{{ route('admin.customers.index') }}', icon: 'M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z' },
-                    { title: 'Farmer Orchards', category: 'Operations', url: '{{ route('admin.orchards.index') }}', icon: 'M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z' },
-                    { title: 'Leads & Enquiries', category: 'CRM', url: '{{ route('admin.leads.index') }}', icon: 'M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75' },
-                    { title: 'Products & Inventory', category: 'Inventory', url: '{{ route('admin.products.index') }}', icon: 'M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9' },
-                    { title: 'Batches & Expiry Tracking', category: 'Inventory', url: '{{ route('admin.product-batches.index') }}', icon: 'M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z' },
-                    { title: 'Stock Movement (Stock In/Out)', category: 'Inventory', url: '{{ route('admin.stock-movements.create') }}', icon: 'M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5' },
-                    { title: 'Suppliers Management', category: 'Inventory', url: '{{ route('admin.suppliers.index') }}', icon: 'M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.948c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h2.25' },
-                    { title: 'System Health & Performance Diagnostics', category: 'Diagnostics', url: '{{ route('admin.system.diagnostics') }}', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
-                    { title: 'General & Weather Settings', category: 'Settings', url: '{{ route('admin.settings.index') }}', icon: 'M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z' },
-                    { title: 'Staff Accounts & Roles', category: 'Settings', url: '{{ route('admin.staff.index') }}', icon: 'M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z' }
+
+                    // Inventory & Stock
+                    { title: 'Products Catalogue', category: 'Inventory & Stock', url: '{{ route('admin.products.index') }}', icon: 'M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9' },
+                    { title: 'Batches & Expiry Tracking', category: 'Inventory & Stock', url: '{{ route('admin.product-batches.index') }}', icon: 'M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z' },
+                    { title: 'Stock Movements (In/Out)', category: 'Inventory & Stock', url: '{{ route('admin.stock-movements.create') }}', icon: 'M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5' },
+
+                    // Suppliers & Purchases
+                    { title: 'Suppliers Management', category: 'Suppliers & Purchases', url: '{{ route('admin.suppliers.index') }}', icon: 'M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.948c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h2.25' },
+                    { title: 'Purchase Bills (Inward)', category: 'Suppliers & Purchases', url: '{{ route('admin.purchase-bills.index') }}', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+
+                    // Customer Support
+                    { title: 'Support Tickets & Farmer Queries', category: 'Customer Support', url: '{{ route('admin.tickets.index') }}', icon: 'M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z' },
+
+                    // CMS & Content
+                    { title: 'Blog & Advisory Posts', category: 'CMS & Content', url: '{{ route('admin.posts.index') }}', icon: 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z' },
+                    { title: 'Crop & Fruit Varieties', category: 'CMS & Content', url: '{{ route('admin.varieties.index') }}', icon: 'M12 3v18m-6-6h12' },
+                    { title: 'Frontend Theme Editor', category: 'CMS & Content', url: '{{ route('admin.frontend.index') }}', icon: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z' },
+
+                    // Settings & System
+                    { title: 'General & Document Settings', category: 'Settings & System', url: '{{ route('admin.settings.index') }}', icon: 'M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z' },
+                    { title: 'Staff Accounts & Roles', category: 'Settings & System', url: '{{ route('admin.staff.index') }}', icon: 'M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z' },
+                    { title: 'Mobile Apps Manager', category: 'Settings & System', url: '{{ route('admin.mobile-apps.index') }}', icon: 'M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3' },
+                    { title: 'Notification Templates', category: 'Settings & System', url: '{{ route('admin.notification-templates.index') }}', icon: 'M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0' },
+                    { title: 'System Health & Performance Diagnostics', category: 'Settings & System', url: '{{ route('admin.system.diagnostics') }}', icon: 'M13 10V3L4 14h7v7l9-11h-7z' }
                 ],
                 init() {
                     this.$watch('search', () => {

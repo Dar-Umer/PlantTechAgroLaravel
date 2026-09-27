@@ -90,10 +90,10 @@
 
         <div class="receipt">
             <div class="center">
-                <div class="bold" style="font-size: 15px;">PLANT TECH AGRO</div>
-                <div style="font-size: 9px; margin-top: 2px;">Modern Orchard & Precision Agriculture</div>
-                <div style="font-size: 9px;">Gourigund, Pulwama, J&K - 192301</div>
-                <div style="font-size: 9px;">Phone: +91 94190 00000 / 0194 000000</div>
+                <div class="bold" style="font-size: 15px;">{{ strtoupper(config('shop.site_name', 'PLANT TECH AGRO')) }}</div>
+                <div style="font-size: 9px; margin-top: 2px;">{{ config('shop.footer_tagline', 'Modern Orchard & Precision Agriculture') }}</div>
+                <div style="font-size: 9px;">{{ config('shop.site_address', '56 Murad House, Pine Lane-8, Kurso Rajbagh, Srinagar-190008, Jammu & Kashmir') }}</div>
+                <div style="font-size: 9px;">Phone: {{ config('shop.site_phone', '0194-796-1490') }}</div>
             </div>
 
             <div class="divider"></div>

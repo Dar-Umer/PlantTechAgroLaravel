@@ -38,10 +38,10 @@
             {{-- Header --}}
             <div class="flex justify-between items-start border-b border-gray-200 pb-6">
                 <div>
-                    <h1 class="text-2xl font-black text-green-800 tracking-tight">PLANT TECH AGRO</h1>
-                    <p class="text-xs text-gray-500 font-medium mt-0.5">High Density Modern Orchard Systems & Agri Technologies</p>
-                    <p class="text-xs text-gray-600 mt-2">Gourigund, Pulwama, Jammu & Kashmir - 192301</p>
-                    <p class="text-xs text-gray-600">Phone: +91 94190 00000 | Email: contact@planttechagro.com</p>
+                    <h1 class="text-2xl font-black text-green-800 tracking-tight">{{ strtoupper(config('shop.site_name', 'Plant Tech Agro')) }}</h1>
+                    <p class="text-xs text-gray-500 font-medium mt-0.5">{{ config('shop.footer_tagline', 'High Density Modern Orchard Systems & Agri Technologies') }}</p>
+                    <p class="text-xs text-gray-600 mt-2">{{ config('shop.site_address', '56 Murad House, Pine Lane-8, Kurso Rajbagh, Srinagar-190008, Jammu & Kashmir') }}</p>
+                    <p class="text-xs text-gray-600">Phone: {{ config('shop.site_phone', '0194-796-1490') }} | Email: {{ config('shop.site_email', 'info@plantechagro.com') }}</p>
                 </div>
                 <div class="text-right">
                     <span class="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold uppercase tracking-wider">
@@ -171,6 +171,23 @@
                     @endif
                 </div>
             </div>
+
+            {{-- Bank Settlement Box --}}
+            @if(config('shop.bank_account_no', config('quotation.bank_account_no')))
+                <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-xl text-xs space-y-1">
+                    <div class="font-bold text-green-900 uppercase tracking-wider text-[11px] flex items-center justify-between">
+                        <span>Direct Bank Payment / Settlement Coordinates:</span>
+                        <span class="font-mono text-gray-500 font-semibold">NEFT / RTGS / IMPS</span>
+                    </div>
+                    <div class="text-gray-600 flex flex-wrap gap-x-4 gap-y-1 pt-1">
+                        <span>A/C Name: <strong class="text-gray-900">{{ config('shop.bank_account_name', config('quotation.bank_account_name', 'Plant Tech Agro')) }}</strong></span>
+                        <span>Bank: <strong class="text-gray-900">{{ config('shop.bank_name', config('quotation.bank_name', 'J&K Bank')) }}</strong></span>
+                        <span>Account No: <strong class="font-mono text-green-800 text-sm font-black">{{ config('shop.bank_account_no', config('quotation.bank_account_no', '0942 0100 0000 0275')) }}</strong></span>
+                        <span>IFSC Code: <strong class="font-mono text-gray-900">{{ config('shop.bank_ifsc', config('quotation.bank_ifsc', 'JAKA0MIGRNT')) }}</strong></span>
+                        <span>Branch: <span class="text-gray-800">{{ config('shop.bank_branch', config('quotation.bank_branch', 'Migrant Colony Hall Pulwama')) }}</span></span>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 </body>

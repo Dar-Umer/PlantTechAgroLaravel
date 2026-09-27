@@ -37,4 +37,18 @@ class TicketStaffReplyNotification extends Notification
             'type' => 'ticket_reply',
         ];
     }
+
+    public function toFcm(object $notifiable): array
+    {
+        return [
+            'title' => 'Support reply on #' . $this->ticket->ticket_number,
+            'body' => Str::limit($this->ticketMessage->message, 150),
+            'data' => [
+                'type' => 'ticket_reply',
+                'ticket_id' => (string) $this->ticket->id,
+                'ticket_number' => (string) $this->ticket->ticket_number,
+                'click_action' => 'OPEN_TICKET',
+            ],
+        ];
+    }
 }

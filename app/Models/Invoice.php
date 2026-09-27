@@ -25,7 +25,7 @@ class Invoice extends Model
     ];
 
     protected $fillable = [
-        'number', 'customer_id', 'customer_name', 'work_order_id', 'invoice_date', 'due_date',
+        'number', 'customer_id', 'service_id', 'customer_name', 'work_order_id', 'invoice_date', 'due_date',
         'status', 'subtotal', 'discount_total', 'gst_total', 'grand_total', 'amount_paid',
         'terms', 'notes', 'created_by',
     ];
@@ -46,6 +46,11 @@ class Invoice extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(Service::class);
     }
 
     public function workOrder(): BelongsTo
@@ -81,5 +86,39 @@ class Invoice extends Model
     public function isOverdue(): bool
     {
         return $this->status === 'overdue';
+    }
+
+    public function getService(): ?Service
+    {
+        return $this->service ?? $this->workOrder?->service;
+    }
+
+    public function getDocumentTitle(): string
+    {
+        if ($service = $this->getService()) {
+            $defaults = $service->getInvoiceDefaults();
+            return $defaults['document_title'] ?? $defaults['doc_title'] ?? config('invoice.document_title', 'TAX INVOICE');
+        }
+
+        return config('invoice.document_title', 'TAX INVOICE');
+    }
+
+    public function getDocumentSubtitle(): string
+    {
+        if ($service = $this->getService()) {
+            $defaults = $service->getInvoiceDefaults();
+            return $defaults['document_subtitle'] ?? $defaults['doc_subtitle'] ?? '';
+        }
+
+        return '';
+    }
+
+    public function getAccentColor(): string
+    {
+        if ($service = $this->getService()) {
+            return $service->getInvoiceDefaults()['accent_color'] ?? config('invoice.accent_color', '#16a34a');
+        }
+
+        return config('invoice.accent_color', '#16a34a');
     }
 }

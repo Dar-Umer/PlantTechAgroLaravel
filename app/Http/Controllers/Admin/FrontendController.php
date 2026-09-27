@@ -201,21 +201,39 @@ class FrontendController extends Controller
             'site_map_enabled' => ['nullable', 'in:0,1'],
         ]);
 
-        $settingsService->set([
-            'site_name' => $validated['site_name'] ?? config('shop.site_name'),
-            'footer_tagline' => $validated['footer_tagline'] ?? '',
-            'site_email' => $validated['site_email'] ?? '',
-            'site_phone' => $validated['site_phone'] ?? '',
-            'site_address' => $validated['site_address'] ?? '',
-            'support_hours' => $validated['support_hours'] ?? '',
-            'social_facebook' => $validated['social_facebook'] ?? '',
-            'social_instagram' => $validated['social_instagram'] ?? '',
-            'social_youtube' => $validated['social_youtube'] ?? '',
-            'social_whatsapp' => $validated['social_whatsapp'] ?? '',
-            'social_x' => $validated['social_x'] ?? '',
-            'site_map_embed' => $validated['site_map_embed'] ?? '',
-            'site_map_enabled' => ($request->input('site_map_enabled', '0') === '1'),
-        ], 'shop');
+        $payload = [];
+        if ($request->has('site_map_embed')) {
+            $payload['site_map_embed'] = $validated['site_map_embed'] ?? '';
+        }
+        $payload['site_map_enabled'] = ($request->input('site_map_enabled', '0') === '1');
+
+        foreach (['social_facebook', 'social_instagram', 'social_youtube', 'social_whatsapp', 'social_x'] as $soc) {
+            if ($request->has($soc)) {
+                $payload[$soc] = $validated[$soc] ?? '';
+            }
+        }
+        if ($request->has('site_name')) {
+            $payload['site_name'] = $validated['site_name'];
+        }
+        if ($request->has('footer_tagline')) {
+            $payload['footer_tagline'] = $validated['footer_tagline'];
+        }
+        if ($request->has('site_email')) {
+            $payload['site_email'] = $validated['site_email'];
+        }
+        if ($request->has('site_phone')) {
+            $payload['site_phone'] = $validated['site_phone'];
+        }
+        if ($request->has('site_address')) {
+            $payload['site_address'] = $validated['site_address'];
+        }
+        if ($request->has('support_hours')) {
+            $payload['support_hours'] = $validated['support_hours'];
+        }
+
+        if (! empty($payload)) {
+            $settingsService->set($payload, 'shop');
+        }
 
         return redirect()->route('admin.frontend.index', ['tab' => 'footer'])
             ->with('success', 'Footer settings updated.');

@@ -50,8 +50,8 @@
         <button type="button" @click="toastMessage = ''" class="text-emerald-600 hover:text-emerald-800 font-bold">&times;</button>
     </div>
 
-    {{-- 4 Core KPI Summary Cards (Matching PTA Dashboard Architecture) --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    {{-- 3 Core KPI Summary Cards (Matching PTA Dashboard Architecture) --}}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         {{-- Total Page Load (Live Client) --}}
         <div class="group bg-white rounded-2xl shadow-xs hover:shadow-md border border-gray-100/90 p-5 transition-all duration-200">
             <div class="flex items-center justify-between mb-3">
@@ -100,23 +100,6 @@
             <div class="flex items-center gap-1.5 mt-2 text-xs text-gray-500">
                 <span class="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
                 <span>PHP Limit: <strong class="font-medium text-gray-700">{{ $stats['server']['memory_limit'] }}</strong></span>
-            </div>
-        </div>
-
-        {{-- Free Disk Space --}}
-        <div class="group bg-white rounded-2xl shadow-xs hover:shadow-md border border-gray-100/90 p-5 transition-all duration-200">
-            <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-semibold uppercase tracking-wider text-gray-400 group-hover:text-teal-600 transition-colors">Storage Volume</span>
-                <div class="w-9 h-9 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center transition-all">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
-                </div>
-            </div>
-            <p class="text-3xl font-bold text-gray-900 tracking-tight">
-                {{ $stats['storage']['free_gb'] }} <span class="text-sm font-normal text-gray-400">GB free</span>
-            </p>
-            <div class="flex items-center gap-1.5 mt-2 text-xs text-gray-500">
-                <span class="inline-block w-1.5 h-1.5 rounded-full bg-teal-500"></span>
-                <span>{{ $stats['storage']['total_gb'] }} GB Total ({{ $stats['storage']['used_percent'] }}% used)</span>
             </div>
         </div>
     </div>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Post;
 use App\Models\PostCategory;
 use App\Support\HtmlSanitizer;
+use App\Support\Media;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -77,7 +78,7 @@ class PostController extends Controller
         $data['excerpt'] = strip_tags((string) ($data['excerpt'] ?? ''));
 
         if (isset($data['featured_image']) && $data['featured_image']) {
-            $data['featured_image'] = $request->file('featured_image')->store('posts', 'public');
+            $data['featured_image'] = Media::storeImage($request->file('featured_image'), 'posts');
         }
 
         if (! empty($data['is_published']) && empty($data['published_at'])) {
@@ -111,7 +112,7 @@ class PostController extends Controller
         ]);
 
         if (isset($data['featured_image']) && $data['featured_image']) {
-            $data['featured_image'] = $request->file('featured_image')->store('posts', 'public');
+            $data['featured_image'] = Media::storeImage($request->file('featured_image'), 'posts');
         } else {
             unset($data['featured_image']);
         }

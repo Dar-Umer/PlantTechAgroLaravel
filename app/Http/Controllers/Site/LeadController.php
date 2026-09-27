@@ -25,6 +25,10 @@ class LeadController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:10', 'regex:/^[0-9]{10}$/'],
             'service_id' => ['required', Rule::exists('services', 'id')->where('is_active', true)],
+            'address' => ['nullable', 'string', 'max:1000'],
+            'service_variation' => ['nullable', 'string', 'max:255'],
+            'area' => ['nullable', 'numeric', 'min:0'],
+            'unit' => ['nullable', 'string', 'max:50'],
         ], [
             'service_id.required' => 'Please select a service.',
             'phone.regex' => 'Please enter a valid 10-digit phone number.',
@@ -46,10 +50,19 @@ class LeadController extends Controller
             ]);
         }
 
+        $service = \App\Models\Service::find($data['service_id']);
+        $requiresUnit = $service ? $service->requiresUnit() : true;
+        $unit = $requiresUnit ? ($data['unit'] ?? ($service?->default_unit ?? 'Kanal')) : null;
+        $area = $requiresUnit && isset($data['area']) && $data['area'] !== '' ? (float) $data['area'] : null;
+
         $lead = Lead::create([
             'name' => $data['name'],
             'phone' => $data['phone'],
+            'address' => $data['address'] ?? null,
             'service_id' => $data['service_id'],
+            'service_variation' => $data['service_variation'] ?? null,
+            'area' => $area,
+            'unit' => $unit,
             'custom_fields' => $custom,
             'status' => 'new',
             'source' => 'landing',

@@ -20,7 +20,15 @@
                     <x-admin.input name="phone" label="Phone Number" :value="old('phone', $lead->phone)" required />
                 </div>
                 <div class="mt-5">
+                    <x-admin.input name="address" label="Address / Location" :value="old('address', $lead->getAddress())" placeholder="e.g. Village, District" />
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
                     <x-admin.select name="service_id" label="Service Interested In" :options="$services->pluck('name', 'id')->all()" :value="(string) old('service_id', $lead->service_id)" placeholder="Not specified" />
+                    <x-admin.input name="service_variation" label="Selected Package / Variation" :value="old('service_variation', $lead->getVariation())" placeholder="e.g. 150 Plants / Kanal (Standard)" />
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+                    <x-admin.input name="area" label="Area / Quantity Required" type="number" step="0.01" :value="old('area', $lead->getArea())" placeholder="e.g. 2, 4, 10" />
+                    <x-admin.input name="unit" label="Unit" :value="old('unit', $lead->getUnit())" placeholder="Kanal, Meter, Sample" />
                 </div>
                 <div class="mt-5">
                     <x-admin.textarea name="notes" label="Notes" :value="old('notes', $lead->notes)" rows="4" helptext="Internal notes about calls and discussions." />

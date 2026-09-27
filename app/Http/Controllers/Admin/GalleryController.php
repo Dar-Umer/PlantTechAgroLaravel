@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\GalleryImage;
+use App\Support\Media;
 use Illuminate\Http\Request;
 
 class GalleryController extends Controller
@@ -23,7 +24,7 @@ class GalleryController extends Controller
             'category' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $path = $request->file('image')->store('gallery', 'public');
+        $path = Media::storeImage($request->file('image'), 'gallery');
 
         GalleryImage::create([
             'image' => $path,

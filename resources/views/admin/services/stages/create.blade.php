@@ -35,6 +35,30 @@
                 </div>
             </div>
 
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6" x-data="{ notifyCustomer: {{ old('notify_customer', true) ? 'true' : 'false' }} }">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-lg font-semibold text-gray-900">Push Notification (Firebase)</h3>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                Mobile App
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-0.5">Send a real-time push notification with photo attachments to the farmer upon stage completion.</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <x-admin.checkbox name="notify_customer" label="Notify Customer when stage is completed" :checked="old('notify_customer', true)" help="Delivers instant alert to Farmer Mobile App via Firebase Cloud Messaging" @change="notifyCustomer = $event.target.checked" />
+
+                    <div x-show="notifyCustomer" x-cloak x-collapse class="space-y-4 pt-2 border-t border-gray-100">
+                        <x-admin.input name="notification_title" label="Custom Notification Title (Optional)" :value="old('notification_title')" placeholder="e.g. Stage Completed: {stage_name}" helptext="Available tags: {stage_name}, {work_order_number}, {service_name}, {orchard_name}, {customer_name}" />
+
+                        <x-admin.textarea name="notification_body" label="Custom Notification Message (Optional)" :value="old('notification_body')" rows="2" placeholder="e.g. Work for {stage_name} has been finished on your orchard." helptext="Leave empty to use the system default notification template." />
+                    </div>
+                </div>
+            </div>
+
             <div class="flex justify-end">
                 <x-admin.button type="submit">Add Stage</x-admin.button>
             </div>

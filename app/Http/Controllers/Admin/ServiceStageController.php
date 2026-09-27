@@ -73,13 +73,22 @@ class ServiceStageController extends Controller
 
     private function validated(Request $request): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'sort_order' => ['nullable', 'integer'],
             'requires_photo' => ['nullable', 'boolean'],
             'min_photos' => ['nullable', 'integer', 'min:1', 'max:20'],
             'requires_pdf' => ['nullable', 'boolean'],
+            'notify_customer' => ['nullable', 'boolean'],
+            'notification_title' => ['nullable', 'string', 'max:120'],
+            'notification_body' => ['nullable', 'string', 'max:500'],
         ]);
+
+        $data['requires_photo'] = (bool) $request->boolean('requires_photo');
+        $data['requires_pdf'] = (bool) $request->boolean('requires_pdf');
+        $data['notify_customer'] = (bool) $request->boolean('notify_customer');
+
+        return $data;
     }
 }

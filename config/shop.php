@@ -23,4 +23,9 @@ return [
     'seo_og_image' => '',
     'site_map_embed' => '',
     'site_map_enabled' => true,
+    'bank_name' => 'J&K Bank',
+    'bank_account_name' => 'Plant Tech Agro',
+    'bank_account_no' => '0942 0100 0000 0275',
+    'bank_branch' => 'Migrant Colony Hall Pulwama',
+    'bank_ifsc' => 'JAKA0MIGRNT',
 ];

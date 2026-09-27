@@ -12,11 +12,15 @@ use App\Models\WorkOrderStage;
 use App\Models\WorkOrderStageAttachment;
 use App\Models\WorkOrderStageProduct;
 use App\Notifications\WorkOrderAssigned;
+use App\Notifications\WorkOrderCompletedNotification;
+use App\Notifications\WorkOrderStageCompletedNotification;
 use App\Services\StockService;
 use App\Services\WorkOrderInvoiceService;
 use App\Support\Format;
+use App\Support\Media;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -54,6 +58,16 @@ class WorkOrderController extends Controller
 
     public function create(Request $request)
     {
+        if ($leadId = $request->query('lead_id')) {
+            if (is_numeric($leadId)) {
+                $lead = \App\Models\Lead::find($leadId);
+                if ($lead && ! $lead->hasApprovedQuotation()) {
+                    return redirect()->route('admin.leads.show', $lead)
+                        ->with('error', 'Cannot create a work order for this lead before quotation approval. Please create and approve a quotation first.');
+                }
+            }
+        }
+
         // Prefill support for the existing-customer lead handoff
         // (?customer_id=&service_id=). Invalid ids fall back to blank.
         $preselectCustomer = $request->query('customer_id');
@@ -84,9 +98,20 @@ class WorkOrderController extends Controller
 
     public function store(Request $request)
     {
+        if ($leadId = $request->input('lead_id')) {
+            if (is_numeric($leadId)) {
+                $lead = \App\Models\Lead::find($leadId);
+                if ($lead && ! $lead->hasApprovedQuotation()) {
+                    return redirect()->route('admin.leads.show', $lead)
+                        ->with('error', 'Cannot create a work order for this lead before quotation approval. Please create and approve a quotation first.');
+                }
+            }
+        }
+
         $data = $request->validate([
             'customer_id' => ['required', 'exists:customers,id'],
             'service_id' => ['required', 'exists:services,id'],
+            'lead_id' => ['nullable', 'exists:leads,id'],
             'orchard_id' => ['nullable', 'exists:orchards,id'],
             'assigned_agent_id' => ['nullable', 'exists:admins,id'],
             'notes' => ['nullable', 'string'],
@@ -118,6 +143,9 @@ class WorkOrderController extends Controller
                     'requires_photo' => $template->requires_photo,
                     'min_photos' => $template->min_photos,
                     'requires_pdf' => $template->requires_pdf,
+                    'notify_customer' => $template->notify_customer ?? true,
+                    'notification_title' => $template->notification_title,
+                    'notification_body' => $template->notification_body,
                 ]);
 
                 foreach ($template->products as $templateProduct) {
@@ -219,6 +247,7 @@ class WorkOrderController extends Controller
 
         $rules = [
             'notes' => ['nullable', 'string', 'max:2000'],
+            'notify_customer' => ['nullable', 'boolean'],
         ];
 
         if ($stage->requires_photo) {
@@ -242,7 +271,7 @@ class WorkOrderController extends Controller
             foreach ($request->file('photos') as $photo) {
                 $stage->attachments()->create([
                     'type' => 'photo',
-                    'file_path' => $photo->store('work-orders/stages', 'public'),
+                    'file_path' => Media::storeImage($photo, 'work-orders/stages'),
                     'original_name' => $photo->getClientOriginalName(),
                 ]);
             }
@@ -255,6 +284,26 @@ class WorkOrderController extends Controller
                 'file_path' => $pdf->store('work-orders/stages', 'public'),
                 'original_name' => $pdf->getClientOriginalName(),
             ]);
+        }
+
+        // Deliver Firebase Push notification if enabled
+        $shouldNotify = $request->has('notify_customer')
+            ? (bool) $request->boolean('notify_customer')
+            : (bool) ($stage->notify_customer ?? true);
+
+        if ($shouldNotify && $workOrder->customer) {
+            $firstPhoto = $stage->attachments()->where('type', 'photo')->first();
+            $photoUrl = $firstPhoto ? Media::url($firstPhoto->file_path) : null;
+
+            try {
+                $workOrder->customer->notify(new WorkOrderStageCompletedNotification(
+                    $stage,
+                    $stage->notes,
+                    $photoUrl
+                ));
+            } catch (\Throwable $e) {
+                Log::warning('WorkOrderController: Stage completion notification error: '.$e->getMessage());
+            }
         }
 
         $this->refreshWorkOrderStatus($workOrder);
@@ -387,6 +436,7 @@ class WorkOrderController extends Controller
 
         $allDone = $workOrder->stages->every(fn ($s) => in_array($s->status, ['completed', 'skipped'], true));
         $anyDone = $workOrder->stages->contains(fn ($s) => in_array($s->status, ['completed', 'skipped'], true));
+        $wasCompleted = $workOrder->status === 'completed';
 
         if ($allDone && $workOrder->stages->isNotEmpty()) {
             $workOrder->update([
@@ -396,6 +446,14 @@ class WorkOrderController extends Controller
             ]);
 
             app(\App\Services\OrchardService::class)->createFromWorkOrder($workOrder);
+
+            if (! $wasCompleted && $workOrder->customer) {
+                try {
+                    $workOrder->customer->notify(new WorkOrderCompletedNotification($workOrder));
+                } catch (\Throwable $e) {
+                    Log::warning('WorkOrderController: Work order completed notification error: '.$e->getMessage());
+                }
+            }
         } elseif ($anyDone && ! in_array($workOrder->status, ['completed'], true)) {
             $workOrder->update([
                 'status' => 'in_progress',

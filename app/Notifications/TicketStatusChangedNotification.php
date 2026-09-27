@@ -37,4 +37,19 @@ class TicketStatusChangedNotification extends Notification
             'type' => 'ticket_status_change',
         ];
     }
+
+    public function toFcm(object $notifiable): array
+    {
+        return [
+            'title' => 'Ticket #' . $this->ticket->ticket_number . ' ' . $this->ticket->statusLabel(),
+            'body' => 'Your ticket status is now ' . $this->ticket->statusLabel(),
+            'data' => [
+                'type' => 'ticket_status_change',
+                'ticket_id' => (string) $this->ticket->id,
+                'ticket_number' => (string) $this->ticket->ticket_number,
+                'status' => (string) $this->ticket->status,
+                'click_action' => 'OPEN_TICKET',
+            ],
+        ];
+    }
 }

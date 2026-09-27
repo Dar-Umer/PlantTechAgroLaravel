@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -95,6 +96,19 @@ class Customer extends Authenticatable
     public function isB2B(): bool
     {
         return ! empty($this->gstin);
+    }
+
+    public function deviceTokens(): MorphMany
+    {
+        return $this->morphMany(DeviceToken::class, 'tokenable');
+    }
+
+    /**
+     * Specifies the customer's FCM device tokens for Firebase Push notifications.
+     */
+    public function routeNotificationForFcm(): array
+    {
+        return $this->deviceTokens()->pluck('token')->filter()->all();
     }
 
     public static function findByPhoneDigits(string $phone): ?self

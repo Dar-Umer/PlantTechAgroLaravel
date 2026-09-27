@@ -35,4 +35,12 @@ class Media
 
         return is_file(public_path($relative));
     }
+
+    /**
+     * Store and automatically compress an uploaded photo using system settings.
+     */
+    public static function storeImage(mixed $file, string $directory = 'uploads', string $disk = 'public', array $options = []): string
+    {
+        return \App\Services\ImageOptimizerService::store($file, $directory, $disk, $options);
+    }
 }

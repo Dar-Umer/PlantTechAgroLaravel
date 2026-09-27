@@ -4,6 +4,13 @@
     $leadFormButtonText = config('frontend.lead_form.button_text', 'Submit Request');
     $leadFormSuccessMessage = config('frontend.lead_form.success_message', 'Thank you! Our team will contact you soon.');
     $services = $services ?? collect();
+    $servicesData = $services->map(fn($s) => [
+        'id' => (string) $s->id,
+        'name' => $s->name,
+        'requires_unit' => $s->requiresUnit(),
+        'unit' => $s->requiresUnit() ? ($s->quotation_settings['unit'] ?? ($s->default_unit ?? 'Kanal')) : '',
+        'variations' => $s->quotation_settings['variations'] ?? [],
+    ])->values();
     $leadFormFields = $leadFormFields ?? collect();
     $formSubmitted = request('submitted') === '1';
     $formErrored = $errors->any() && (old('name') || old('phone') || old('service_id') || old()->hasAny(array_map(fn ($f) => 'custom.' . $f->name, $leadFormFields->all())));
@@ -11,15 +18,40 @@
 
 <div x-data="{
         open: {{ $formSubmitted || $formErrored ? 'true' : 'false' }},
-        service: '{{ old('service_id') }}',
+        serviceId: '{{ old('service_id') }}',
+        services: {{ json_encode($servicesData) }},
+        selectedVariation: '{{ old('service_variation') }}',
+        area: '{{ old('area') }}',
+        address: '{{ old('address') }}',
         submitted: {{ $formSubmitted ? 'true' : 'false' }},
-        loadedAt: Math.floor(Date.now() / 1000)
+        loadedAt: Math.floor(Date.now() / 1000),
+        get selectedService() {
+            return this.services.find(s => String(s.id) === String(this.serviceId)) || null;
+        },
+        get requiresUnit() {
+            return this.selectedService ? (this.selectedService.requires_unit !== false) : true;
+        },
+        get currentUnit() {
+            return this.selectedService ? (this.selectedService.unit || 'Kanal') : 'Kanal';
+        },
+        get currentVariations() {
+            return (this.selectedService && Array.isArray(this.selectedService.variations)) ? this.selectedService.variations : [];
+        },
+        onServiceChange() {
+            this.selectedVariation = '';
+            if (!this.requiresUnit) {
+                this.area = '';
+            }
+        }
      }"
      @open-book-modal.window="
         open = true;
         submitted = false;
         loadedAt = Math.floor(Date.now() / 1000);
-        if ($event.detail && $event.detail.service) service = $event.detail.service;
+        if ($event.detail && $event.detail.service) {
+            serviceId = String($event.detail.service);
+            onServiceChange();
+        }
      "
      @keydown.escape.window="open = false"
      x-cloak>
@@ -101,10 +133,23 @@
                         @error('phone')<p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>@enderror
                     </div>
 
+                    {{-- Address / Location --}}
+                    <div>
+                        <div class="relative">
+                            <input type="text" name="address" id="lead-address" x-model="address" placeholder=" "
+                                   class="peer w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3.5 pt-5 pb-1.5 text-base sm:text-sm text-gray-900 dark:text-gray-100 transition focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40">
+                            <label for="lead-address"
+                                   class="pointer-events-none absolute left-3.5 top-2 text-xs text-gray-400 dark:text-gray-500 transition-all duration-150 peer-focus:text-brand-600 dark:peer-focus:text-brand-400 peer-focus:top-2 peer-focus:translate-y-0 peer-focus:text-xs peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 dark:peer-placeholder-shown:text-gray-400">
+                                Address / Location (Village, District)
+                            </label>
+                        </div>
+                        @error('address')<p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>@enderror
+                    </div>
+
                     {{-- Mandatory: Service --}}
                     <div>
                         <div class="relative">
-                            <select name="service_id" id="lead-service" x-model="service" required
+                            <select name="service_id" id="lead-service" x-model="serviceId" @change="onServiceChange()" required
                                     class="peer w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3.5 pt-5 pb-1.5 text-base sm:text-sm text-gray-900 dark:text-gray-100 transition focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40">
                                 <option value="">Select a service</option>
                                 @foreach($services as $serviceOption)
@@ -117,6 +162,42 @@
                             </label>
                         </div>
                         @error('service_id')<p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>@enderror
+                    </div>
+
+                    {{-- Service Variation (conditionally visible if service has variations) --}}
+                    <div x-show="currentVariations.length > 0" x-transition>
+                        <div class="relative">
+                            <select name="service_variation" id="lead-variation" x-model="selectedVariation"
+                                    class="peer w-full rounded-lg border border-emerald-300 dark:border-emerald-700/60 bg-emerald-50/50 dark:bg-emerald-950/20 px-3.5 pt-5 pb-1.5 text-base sm:text-sm font-medium text-emerald-900 dark:text-emerald-100 transition focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                                <option value="">Choose package / density option (Optional)</option>
+                                <template x-for="v in currentVariations" :key="v.name">
+                                    <option :value="v.name" x-text="v.name + (v.rate ? ' — ₹' + Number(v.rate).toLocaleString() + '/' + (v.unit || currentUnit) : '')"></option>
+                                </template>
+                            </select>
+                            <label for="lead-variation"
+                                   class="pointer-events-none absolute left-3.5 top-2 text-xs text-emerald-700 dark:text-emerald-400 font-semibold">
+                                Package / Variation
+                            </label>
+                        </div>
+                        @error('service_variation')<p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>@enderror
+                    </div>
+
+                    {{-- Area / Requirement (Kanals, Meters, Samples, etc.) --}}
+                    <div x-show="serviceId && requiresUnit" x-transition>
+                        <div class="relative">
+                            <input type="number" step="0.01" min="0.1" name="area" id="lead-area" x-model="area" placeholder=" "
+                                   :disabled="!requiresUnit"
+                                   class="peer w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3.5 pt-5 pb-1.5 text-base sm:text-sm text-gray-900 dark:text-gray-100 transition focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40">
+                            <label for="lead-area"
+                                   class="pointer-events-none absolute left-3.5 top-2 text-xs text-gray-400 dark:text-gray-500 transition-all duration-150 peer-focus:text-brand-600 dark:peer-focus:text-brand-400 peer-focus:top-2 peer-focus:translate-y-0 peer-focus:text-xs peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 dark:peer-placeholder-shown:text-gray-400">
+                                <span x-text="currentUnit.toLowerCase() === 'kanal' ? 'Land Area (in Kanals)' : (currentUnit.toLowerCase() === 'meter' || currentUnit.toLowerCase() === 'mtr' ? 'Length / Quantity (in Meters)' : (currentUnit.toLowerCase() === 'sample' ? 'Number of Samples' : 'Required Area / Quantity (' + currentUnit + ')'))"></span>
+                            </label>
+                            <input type="hidden" name="unit" :value="currentUnit" :disabled="!requiresUnit">
+                        </div>
+                        <p class="mt-1 text-[11px] text-gray-400 dark:text-gray-500">
+                            <span x-text="currentUnit.toLowerCase() === 'kanal' ? 'e.g. 2, 4, 10 Kanals' : 'Specify required ' + currentUnit.toLowerCase()"></span>
+                        </p>
+                        @error('area')<p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>@enderror
                     </div>
 
                     {{-- Dynamic custom fields --}}

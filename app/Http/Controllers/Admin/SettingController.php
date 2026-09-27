@@ -17,15 +17,19 @@ class SettingController extends Controller
         $palettes = config('theme.palettes', []);
         $fonts = config('theme.fonts', []);
         $sidebarStyles = config('theme.sidebar_styles', []);
-
         $settings = [
-            'site_name' => config('shop.site_name', config('app.name', 'PTA Admin')),
-            'site_email' => config('shop.site_email', 'admin@pta.com'),
-            'site_phone' => config('shop.site_phone', '+91 98765 43210'),
-            'site_address' => config('shop.site_address', ''),
+            'site_name' => config('shop.site_name', config('app.name', 'Plant Tech Agro')),
+            'site_email' => config('shop.site_email', 'info@plantechagro.com'),
+            'site_phone' => config('shop.site_phone', '0194-796-1490'),
+            'site_address' => config('shop.site_address', '56 Murad House, Pine Lane-8, Kurso Rajbagh, Srinagar-190008, Jammu & Kashmir'),
             'support_hours' => config('shop.support_hours', 'Mon – Sat, 9 AM – 6 PM'),
-            'footer_tagline' => config('shop.footer_tagline', 'Admin panel for PTA.'),
+            'footer_tagline' => config('shop.footer_tagline', 'Transforming orchards across Kashmir through high-density farming, drip irrigation, and precision agriculture.'),
             'return_policy_text' => config('shop.return_policy_text', ''),
+            'bank_name' => config('shop.bank_name', config('quotation.bank_name', 'J&K Bank')),
+            'bank_account_name' => config('shop.bank_account_name', config('quotation.bank_account_name', 'Plant Tech Agro')),
+            'bank_account_no' => config('shop.bank_account_no', config('quotation.bank_account_no', '0942 0100 0000 0275')),
+            'bank_branch' => config('shop.bank_branch', config('quotation.bank_branch', 'Migrant Colony Hall Pulwama')),
+            'bank_ifsc' => config('shop.bank_ifsc', config('quotation.bank_ifsc', 'JAKA0MIGRNT')),
             'theme_palette' => config('shop.theme_palette', 'emerald'),
             'sidebar_style' => config('shop.sidebar_style', 'dark'),
             'font_family' => config('shop.font_family', 'Inter'),
@@ -76,6 +80,11 @@ class SettingController extends Controller
             'terms' => config('invoice.terms', ''),
         ];
 
+        $quotationSettings = [
+            'prefix' => config('quotation.prefix', 'QT'),
+            'terms' => config('quotation.terms', ''),
+        ];
+
         $storedEncryption = config('mail.smtp_encryption', 'tls');
 
         $mailSettings = [
@@ -122,7 +131,9 @@ class SettingController extends Controller
             'recaptcha_min_score' => config('apis.recaptcha_min_score', 0.5),
         ];
 
-        return view('admin.settings.index', compact('settings', 'seoSettings', 'invoiceSettings', 'mailSettings', 'palettes', 'fonts', 'sidebarStyles', 'weatherSettings', 'weatherDistricts', 'apisSettings'));
+        $mediaSettings = \App\Services\ImageOptimizerService::settings();
+
+        return view('admin.settings.index', compact('settings', 'seoSettings', 'invoiceSettings', 'quotationSettings', 'mailSettings', 'palettes', 'fonts', 'sidebarStyles', 'weatherSettings', 'weatherDistricts', 'apisSettings', 'mediaSettings'));
     }
 
     public function update(Request $request)
@@ -130,11 +141,16 @@ class SettingController extends Controller
         $validated = $request->validate([
             'site_name' => 'nullable|string|max:255',
             'site_email' => 'nullable|email|max:255',
-            'site_phone' => 'nullable|string|max:20',
-            'site_address' => 'nullable|string|max:500',
+            'site_phone' => 'nullable|string|max:50',
+            'site_address' => 'nullable|string|max:1000',
             'support_hours' => 'nullable|string|max:255',
             'footer_tagline' => 'nullable|string|max:500',
             'return_policy_text' => 'nullable|string|max:255',
+            'bank_name' => 'nullable|string|max:255',
+            'bank_account_name' => 'nullable|string|max:255',
+            'bank_account_no' => 'nullable|string|max:255',
+            'bank_branch' => 'nullable|string|max:255',
+            'bank_ifsc' => 'nullable|string|max:255',
             'theme_palette' => 'nullable|string|in:emerald,blue,indigo,purple,rose,orange,teal,amber',
             'sidebar_style' => 'nullable|string|in:dark,light,brand',
             'font_family' => 'nullable|string',
@@ -173,13 +189,15 @@ class SettingController extends Controller
             'seo_og_image_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:4096',
             'seo_twitter_image_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:4096',
             'seo_search_image_file' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:4096',
-            'invoice_company_name' => ['required', 'string', 'max:255'],
+            'invoice_company_name' => ['sometimes', 'required', 'string', 'max:255'],
             'invoice_address' => ['nullable', 'string', 'max:1000'],
             'invoice_gst_no' => ['nullable', 'string', 'max:64'],
             'invoice_phone' => ['nullable', 'string', 'max:20'],
             'invoice_email' => ['nullable', 'email', 'max:255'],
-            'invoice_prefix' => ['required', 'string', 'max:16', 'regex:/^[A-Za-z0-9\-]+$/'],
+            'invoice_prefix' => ['sometimes', 'required', 'string', 'max:16', 'regex:/^[A-Za-z0-9\-]+$/'],
             'invoice_terms' => ['nullable', 'string', 'max:2000'],
+            'quotation_prefix' => ['sometimes', 'nullable', 'string', 'max:16', 'regex:/^[A-Za-z0-9\-]+$/'],
+            'quotation_terms' => ['nullable', 'string', 'max:3000'],
             'weather_enabled' => ['nullable', 'in:0,1'],
             'weather_admin_preview' => ['nullable', 'in:0,1'],
             'weather_default_district' => ['nullable', Rule::in(array_keys(WeatherService::districts()))],
@@ -204,6 +222,11 @@ class SettingController extends Controller
             'apis_recaptcha_site_key' => ['nullable', 'string', 'max:255'],
             'apis_recaptcha_secret_key' => ['nullable', 'string', 'max:255'],
             'apis_recaptcha_min_score' => ['nullable', 'numeric', 'min:0', 'max:1'],
+            'media_compression_enabled' => ['nullable', 'in:0,1'],
+            'media_max_dimension' => ['nullable', 'integer', 'min:300', 'max:5000'],
+            'media_quality' => ['nullable', 'integer', 'min:20', 'max:100'],
+            'media_convert_to_webp' => ['nullable', 'in:0,1'],
+            'media_auto_orient' => ['nullable', 'in:0,1'],
         ]);
 
         // Per-district coordinate overrides: weather_district_{key}_lat/lon.
@@ -219,7 +242,7 @@ class SettingController extends Controller
         $shopSettings = config('shop', []);
 
         foreach ($validated as $key => $value) {
-            if (str_starts_with($key, 'seo_') || str_starts_with($key, 'weather_') || str_starts_with($key, 'apis_') || str_ends_with($key, '_file')) {
+            if (str_starts_with($key, 'seo_') || str_starts_with($key, 'weather_') || str_starts_with($key, 'apis_') || str_starts_with($key, 'media_') || str_ends_with($key, '_file')) {
                 continue;
             }
 
@@ -261,7 +284,40 @@ class SettingController extends Controller
             $invoiceSettings['logo'] = '';
         }
 
+        if (isset($validated['site_address']) && ! $request->has('invoice_address')) {
+            $invoiceSettings['address'] = $validated['site_address'];
+        }
+        if (isset($validated['site_phone']) && ! $request->has('invoice_phone')) {
+            $invoiceSettings['phone'] = $validated['site_phone'];
+        }
+        if (isset($validated['site_email']) && ! $request->has('invoice_email')) {
+            $invoiceSettings['email'] = $validated['site_email'];
+        }
+
         app(ShopSettingsService::class)->set($invoiceSettings, 'invoice');
+
+        $quotationSettings = config('quotation', []);
+        foreach (['bank_name', 'bank_account_name', 'bank_account_no', 'bank_branch', 'bank_ifsc'] as $bKey) {
+            if (isset($validated[$bKey])) {
+                $quotationSettings[$bKey] = $validated[$bKey];
+            }
+        }
+        if (isset($validated['site_address'])) {
+            $quotationSettings['address'] = $validated['site_address'];
+        }
+        if (isset($validated['site_phone'])) {
+            $quotationSettings['phone'] = $validated['site_phone'];
+        }
+        if (isset($validated['site_email'])) {
+            $quotationSettings['email'] = $validated['site_email'];
+        }
+        if (isset($validated['quotation_prefix'])) {
+            $quotationSettings['prefix'] = $validated['quotation_prefix'];
+        }
+        if (isset($validated['quotation_terms'])) {
+            $quotationSettings['terms'] = $validated['quotation_terms'];
+        }
+        app(ShopSettingsService::class)->set($quotationSettings, 'quotation');
 
         $seoSettings = config('seo', []);
 
@@ -335,10 +391,48 @@ class SettingController extends Controller
             app(ShopSettingsService::class)->set($apis, 'apis');
         }
 
+        if ($request->input('tab') === 'media' || $request->has('media_compression_enabled') || $request->has('media_quality')) {
+            $media = [
+                'compression_enabled' => (bool) $request->boolean('media_compression_enabled'),
+                'max_dimension' => (int) ($validated['media_max_dimension'] ?? 1920),
+                'quality' => (int) ($validated['media_quality'] ?? 82),
+                'convert_to_webp' => (bool) $request->boolean('media_convert_to_webp'),
+                'auto_orient' => (bool) $request->boolean('media_auto_orient'),
+            ];
+
+            \App\Models\Setting::updateOrCreate(
+                ['key' => 'media_compression'],
+                ['value' => $media]
+            );
+
+            app(ShopSettingsService::class)->set($media, 'media');
+        }
+
         $tab = $request->input('tab', 'general');
 
         return redirect()->route('admin.settings.index', ['tab' => $tab])
             ->with('success', 'Settings updated successfully.');
+    }
+
+    public function testMediaCompression(Request $request)
+    {
+        $request->validate([
+            'test_image' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:15360'],
+        ]);
+
+        try {
+            $result = \App\Services\ImageOptimizerService::testCompress($request->file('test_image'));
+
+            return response()->json([
+                'success' => true,
+                'data' => $result,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
     }
 
     public function smtpUpdate(Request $request)

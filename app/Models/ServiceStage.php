@@ -11,6 +11,7 @@ class ServiceStage extends Model
     protected $fillable = [
         'service_id', 'name', 'description', 'sort_order',
         'requires_photo', 'min_photos', 'requires_pdf',
+        'notify_customer', 'notification_title', 'notification_body',
     ];
 
     protected function casts(): array
@@ -18,6 +19,7 @@ class ServiceStage extends Model
         return [
             'requires_photo' => 'boolean',
             'requires_pdf' => 'boolean',
+            'notify_customer' => 'boolean',
         ];
     }
 

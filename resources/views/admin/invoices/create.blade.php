@@ -4,21 +4,92 @@
 
 @section('content')
     <div class="space-y-6" x-data="invoiceForm()" x-init="init()">
-        <div class="flex items-center justify-between">
-            <h2 class="text-2xl font-bold text-gray-900">New Invoice</h2>
+        <div class="flex items-center justify-between flex-wrap gap-3">
+            <div class="flex items-center gap-3">
+                <h2 class="text-2xl font-bold text-gray-900">New Invoice</h2>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border shadow-2xs transition-all"
+                      :style="{ backgroundColor: accentColor + '15', color: accentColor, borderColor: accentColor + '35' }">
+                    <span class="w-2.5 h-2.5 rounded-full shadow-2xs" :style="{ backgroundColor: accentColor }"></span>
+                    <span x-text="docTitle"></span>
+                </span>
+            </div>
             <x-admin.button href="{{ route('admin.invoices.index') }}" variant="secondary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>'>Back</x-admin.button>
         </div>
 
         <form action="{{ route('admin.invoices.store') }}" method="POST" class="space-y-6">
             @csrf
 
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-1">Invoice Details</h3>
-                <p class="text-sm text-gray-500 mb-5">Number is generated automatically from your prefix in Settings → Invoice.</p>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <x-admin.select name="customer_id" label="Customer" :options="$customers->mapWithKeys(fn ($c) => [$c->id => $c->name . ($c->phone ? ' — ' . $c->phone : '')])->all()" :value="old('customer_id', $preselectCustomer)" placeholder="Select a customer" required />
-                    <x-admin.input name="invoice_date" label="Invoice Date" type="date" :value="old('invoice_date', now()->toDateString())" required />
-                    <x-admin.input name="due_date" label="Due Date" type="date" :value="old('due_date')" />
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">Invoice Details</h3>
+                    <p class="text-sm text-gray-500">Document numbering prefix and layout adapt automatically from the selected Service Reference.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                    <div class="md:col-span-1">
+                        <x-admin.select name="customer_id" label="Customer" :options="$customers->mapWithKeys(fn ($c) => [$c->id => $c->name . ($c->phone ? ' — ' . $c->phone : '')])->all()" :value="old('customer_id', $preselectCustomer)" placeholder="Select a customer" required />
+                    </div>
+
+                    <div class="md:col-span-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Service Reference</label>
+                        <select name="service_id" x-model="selectedServiceId" @change="onServiceChange($event)"
+                                class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-semibold text-gray-900 transition focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                            <option value="">-- General Invoice (No Service) --</option>
+                            @foreach($services as $svc)
+                                <option value="{{ $svc->id }}" {{ (string)old('service_id') === (string)$svc->id ? 'selected' : '' }}>
+                                    {{ $svc->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="md:col-span-1">
+                        <x-admin.input name="invoice_date" label="Invoice Date" type="date" :value="old('invoice_date', now()->toDateString())" required />
+                    </div>
+
+                    <div class="md:col-span-1">
+                        <x-admin.input name="due_date" label="Due Date" type="date" :value="old('due_date')" />
+                    </div>
+                </div>
+
+                {{-- Package / Density Variations Selector --}}
+                <div x-show="variations && variations.length > 0" x-transition class="rounded-2xl border border-brand-200 bg-brand-50/50 p-4 space-y-3">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-brand-600 text-white flex items-center justify-center text-xs font-bold shadow-2xs">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2H5a2 2 0 00-2 2v2m14 0h.01M5 11h.01"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider">Service Package / Density Variations</h4>
+                                <p class="text-[11px] text-gray-500">Select a variation to automatically add or update the line item with standard density and rate.</p>
+                            </div>
+                        </div>
+
+                        <div class="w-full sm:w-auto">
+                            <select @change="applyVariation($event.target.value)"
+                                    class="w-full sm:w-72 text-xs font-bold rounded-xl border-brand-300 bg-white py-2 px-3 text-brand-900 shadow-2xs focus:border-brand-500 focus:ring-brand-500">
+                                <option value="">-- Choose Variation Preset --</option>
+                                <template x-for="(v, vIdx) in variations" :key="vIdx">
+                                    <option :value="vIdx" :selected="selectedVariationIndex === vIdx"
+                                            x-text="v.name + ' — ₹' + Number(v.rate || 0).toLocaleString('en-IN') + ' / ' + (v.unit || 'Kanal')"></option>
+                                </template>
+                            </select>
+                        </div>
+                    </div>
+
+                    {{-- Quick Click Pills --}}
+                    <div class="flex items-center gap-2 flex-wrap pt-1 border-t border-brand-100">
+                        <span class="text-[10px] uppercase font-bold text-brand-700 tracking-wider">Quick Presets:</span>
+                        <template x-for="(v, vIdx) in variations" :key="vIdx">
+                            <button type="button" @click="applyVariation(vIdx)"
+                                    class="px-2.5 py-1 text-xs font-semibold rounded-lg border transition-all inline-flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                                    :class="selectedVariationIndex === vIdx ? 'bg-brand-700 text-white border-brand-700 ring-2 ring-brand-300' : 'bg-white text-gray-800 border-gray-200 hover:border-brand-300 hover:bg-brand-50/50'">
+                                <span class="w-2 h-2 rounded-full" :class="selectedVariationIndex === vIdx ? 'bg-white' : 'bg-brand-500'"></span>
+                                <span x-text="v.name"></span>
+                                <span class="text-[10px] font-bold" :class="selectedVariationIndex === vIdx ? 'text-brand-100' : 'text-brand-700'" x-text="'₹' + Number(v.rate || 0).toLocaleString('en-IN')"></span>
+                            </button>
+                        </template>
+                    </div>
                 </div>
             </div>
 
@@ -177,7 +248,11 @@
 
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <x-admin.textarea name="terms" label="Terms & Conditions" :value="old('terms', $terms)" rows="3" />
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Terms & Conditions</label>
+                        <textarea name="terms" x-model="invoiceTerms" rows="3"
+                                  class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"></textarea>
+                    </div>
                     <x-admin.textarea name="notes" label="Internal Notes (optional)" :value="old('notes')" rows="3" />
                 </div>
             </div>
@@ -195,9 +270,85 @@
                 rows: [],
                 productSearch: '',
                 products: @js($products->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'sku' => $p->sku, 'unit' => $p->unit, 'rate' => (float) $p->rate, 'gst' => (float) $p->gst_rate, 'stock_qty' => (float) $p->stock_qty, 'low_stock' => (float) $p->low_stock_threshold])),
+                services: @js($servicesJson),
+                selectedServiceId: '{{ old('service_id', '') }}',
+                variations: [],
+                selectedVariationIndex: '',
+                invoiceTerms: @js(old('terms', $terms)),
+                accentColor: '#16a34a',
+                docTitle: 'TAX INVOICE',
 
                 init() {
+                    if (this.selectedServiceId) {
+                        const svc = this.services.find(s => String(s.id) === String(this.selectedServiceId));
+                        if (svc) {
+                            const defs = svc.defaults || {};
+                            const invDefs = svc.invoice_defaults || {};
+                            this.variations = (defs.variations && Array.isArray(defs.variations)) ? defs.variations : [];
+                            this.accentColor = invDefs.accent_color || '#16a34a';
+                            this.docTitle = invDefs.document_title || 'TAX INVOICE';
+                        }
+                    }
                     if (this.rows.length === 0) this.addEmpty();
+                },
+
+                onServiceChange(event) {
+                    const sId = event.target.value;
+                    this.selectedServiceId = sId;
+                    const svc = this.services.find(s => String(s.id) === String(sId));
+                    if (svc) {
+                        const defs = svc.defaults || {};
+                        const invDefs = svc.invoice_defaults || {};
+                        this.variations = (defs.variations && Array.isArray(defs.variations)) ? defs.variations : [];
+                        this.selectedVariationIndex = '';
+                        this.accentColor = invDefs.accent_color || '#16a34a';
+                        this.docTitle = invDefs.document_title || 'TAX INVOICE';
+
+                        if (invDefs.terms) {
+                            this.invoiceTerms = invDefs.terms;
+                        }
+
+                        if (this.rows.length === 1 && (!this.rows[0].name || this.rows[0].name === '')) {
+                            this.rows[0].name = svc.name;
+                            if (defs.base_price) {
+                                this.rows[0].rate = parseFloat(defs.base_price) || 0;
+                            }
+                            if (defs.unit) {
+                                this.rows[0].unit = defs.unit;
+                            }
+                        }
+                    } else {
+                        this.variations = [];
+                        this.selectedVariationIndex = '';
+                        this.accentColor = '#16a34a';
+                        this.docTitle = 'TAX INVOICE';
+                    }
+                },
+
+                applyVariation(vIdx) {
+                    this.selectedVariationIndex = vIdx;
+                    if (vIdx === '' || vIdx === null || vIdx === undefined) return;
+                    const v = this.variations[vIdx];
+                    if (!v) return;
+
+                    const svc = this.services.find(s => String(s.id) === String(this.selectedServiceId));
+                    const title = (svc ? svc.name : 'Service') + ' (' + v.name + ')';
+
+                    if (this.rows.length === 1 && (!this.rows[0].name || this.rows[0].name === '' || (svc && this.rows[0].name.startsWith(svc.name)))) {
+                        this.rows[0].name = title;
+                        this.rows[0].rate = parseFloat(v.rate) || 0;
+                        this.rows[0].unit = v.unit || 'Kanal';
+                    } else {
+                        this.rows.push({
+                            product_id: '',
+                            name: title,
+                            unit: v.unit || 'Kanal',
+                            qty: 1,
+                            rate: parseFloat(v.rate) || 0,
+                            discount: 0,
+                            gst_rate: 0
+                        });
+                    }
                 },
 
                 get filteredProducts() {

@@ -33,13 +33,16 @@ class WorkOrderInvoiceService
 
         $invoice = DB::transaction(function () use ($workOrder, $rows, $createdBy) {
             $invoice = Invoice::create([
-                'number' => InvoiceNumberer::next(),
+                'number' => InvoiceNumberer::next($workOrder->service),
                 'customer_id' => $workOrder->customer_id,
+                'service_id' => $workOrder->service_id,
                 'customer_name' => $workOrder->customer_name,
                 'work_order_id' => $workOrder->id,
                 'invoice_date' => now()->toDateString(),
                 'status' => 'unpaid',
-                'terms' => config('invoice.terms', ''),
+                'terms' => !empty($workOrder->service?->invoice_settings['terms'])
+                    ? $workOrder->service->invoice_settings['terms']
+                    : config('invoice.terms', ''),
                 'created_by' => $createdBy,
             ]);
 

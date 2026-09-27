@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Service;
 use App\Models\ServiceItem;
+use App\Support\Media;
 use Illuminate\Http\Request;
 
 class ServiceItemController extends Controller
@@ -31,7 +32,7 @@ class ServiceItemController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('service-items', 'public');
+            $data['image'] = Media::storeImage($request->file('image'), 'service-items');
         }
 
         $service->items()->create($data);
@@ -56,7 +57,7 @@ class ServiceItemController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('service-items', 'public');
+            $data['image'] = Media::storeImage($request->file('image'), 'service-items');
         } else {
             unset($data['image']);
         }

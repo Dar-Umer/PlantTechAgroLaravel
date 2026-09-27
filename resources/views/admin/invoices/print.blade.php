@@ -6,17 +6,24 @@
     <title>{{ $invoice->number }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    @php
+        $accentColor = $invoice->getAccentColor();
+        $docTitle = $invoice->getDocumentTitle();
+    @endphp
     <style>
+        :root {
+            --brand-accent: {{ $accentColor }};
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', system-ui, sans-serif; color: #111827; font-size: 13px; background: #f3f4f6; }
         .page { max-width: 800px; margin: 24px auto; background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
         @media print { body { background: #fff; } .page { box-shadow: none; margin: 0; border-radius: 0; padding: 20px; max-width: none; } .no-print { display: none !important; } }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding-bottom: 20px; border-bottom: 3px solid #16a34a; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding-bottom: 20px; border-bottom: 3px solid var(--brand-accent, #16a34a); }
         .logo { max-height: 64px; max-width: 180px; object-fit: contain; }
         .company h1 { font-size: 20px; font-weight: 800; color: #111827; }
         .company p { font-size: 11px; color: #6b7280; line-height: 1.5; margin-top: 4px; }
         .meta { text-align: right; flex-shrink: 0; }
-        .meta .inv-label { font-size: 22px; font-weight: 800; color: #16a34a; letter-spacing: .05em; }
+        .meta .inv-label { font-size: 22px; font-weight: 800; color: var(--brand-accent, #16a34a); letter-spacing: .05em; }
         .meta table { margin-top: 8px; font-size: 11.5px; }
         .meta td { padding: 1.5px 0; color: #374151; }
         .meta td:first-child { text-align: right; color: #6b7280; padding-right: 12px; }
@@ -26,7 +33,7 @@
         .billto .block p { font-size: 12.5px; line-height: 1.6; }
         .billto .block .name { font-weight: 700; font-size: 14px; }
         table.items { width: 100%; border-collapse: collapse; margin-top: 8px; }
-        table.items th { background: #16a34a; color: #fff; text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; padding: 8px 10px; }
+        table.items th { background: var(--brand-accent, #16a34a); color: #fff; text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; padding: 8px 10px; }
         table.items th.r, table.items td.r { text-align: right; }
         table.items td { padding: 8px 10px; border-bottom: 1px solid #e5e7eb; font-size: 12px; }
         table.items tr:nth-child(even) td { background: #f9fafb; }
@@ -35,8 +42,8 @@
         .totals td { padding: 5px 10px; }
         .totals td:first-child { color: #6b7280; }
         .totals td:last-child { text-align: right; font-weight: 600; }
-        .totals .grand td { border-top: 2px solid #16a34a; padding-top: 8px; font-size: 15px; }
-        .totals .grand td:last-child { color: #16a34a; font-weight: 800; }
+        .totals .grand td { border-top: 2px solid var(--brand-accent, #16a34a); padding-top: 8px; font-size: 15px; }
+        .totals .grand td:last-child { color: var(--brand-accent, #16a34a); font-weight: 800; }
         .status-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
         .status-unpaid { background: #fee2e2; color: #b91c1c; }
         .status-partial { background: #fef3c7; color: #b45309; }
@@ -48,7 +55,7 @@
         .signature div { text-align: center; }
         .signature .line { width: 200px; border-top: 1px solid #9ca3af; padding-top: 6px; font-size: 11px; color: #6b7280; }
         .print-btn { position: fixed; top: 16px; right: 16px; }
-        .print-btn button { background: #16a34a; color: #fff; border: 0; padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; }
+        .print-btn button { background: var(--brand-accent, #16a34a); color: #fff; border: 0; padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; }
         .cancelled-stamp { position: absolute; top: 180px; left: 50%; transform: translateX(-50%) rotate(-12deg); font-size: 60px; font-weight: 800; color: rgba(107,114,128,.25); border: 4px solid rgba(107,114,128,.25); padding: 4px 24px; border-radius: 12px; letter-spacing: .1em; }
         .relative { position: relative; }
         .note { margin-top: 16px; font-size: 11px; color: #374151; background: #f9fafb; padding: 10px 12px; border-radius: 8px; }
@@ -67,14 +74,17 @@
                 @if(config('invoice.logo') && \App\Support\Media::exists(config('invoice.logo')))
                     <img src="{{ public_path(ltrim(config('invoice.logo'), '/')) }}" alt="Logo" class="logo" style="margin-bottom: 10px;">
                 @endif
-                <h1>{{ config('invoice.company_name') }}</h1>
-                <p>{!! nl2br(e(config('invoice.address'))) !!}</p>
-                @if(config('invoice.phone'))<p>Phone: {{ config('invoice.phone') }}</p>@endif
-                @if(config('invoice.email'))<p>Email: {{ config('invoice.email') }}</p>@endif
+                <h1>{{ config('invoice.company_name') ?: config('shop.site_name', 'Plant Tech Agro') }}</h1>
+                <p>{!! nl2br(e(config('invoice.address') ?: config('shop.site_address'))) !!}</p>
+                @if(config('invoice.phone') ?: config('shop.site_phone'))<p>Phone: {{ config('invoice.phone') ?: config('shop.site_phone') }}</p>@endif
+                @if(config('invoice.email') ?: config('shop.site_email'))<p>Email: {{ config('invoice.email') ?: config('shop.site_email') }}</p>@endif
                 @if(config('invoice.gst_no'))<p>GSTIN: {{ config('invoice.gst_no') }}</p>@endif
             </div>
             <div class="meta">
-                <div class="inv-label">INVOICE</div>
+                <div class="inv-label">{{ $docTitle }}</div>
+                @if($docSubtitle = $invoice->getDocumentSubtitle())
+                    <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">{{ $docSubtitle }}</div>
+                @endif
                 <table>
                     <tr><td>Invoice No</td><td>{{ $invoice->number }}</td></tr>
                     <tr><td>Date</td><td>{{ $invoice->invoice_date->format('d M Y') }}</td></tr>
@@ -98,6 +108,14 @@
                     <h2>Work Order</h2>
                     <p>{{ $invoice->workOrder->number }}</p>
                     <p>{{ $invoice->workOrder->service_name }}</p>
+                </div>
+            @elseif($service = $invoice->getService())
+                <div class="block" style="text-align: right;">
+                    <h2>Service</h2>
+                    <p class="name">{{ $service->name }}</p>
+                    @if($service->invoice_settings['doc_subtitle'] ?? null)
+                        <p style="color: #6b7280; font-size: 11px;">{{ $service->invoice_settings['doc_subtitle'] }}</p>
+                    @endif
                 </div>
             @endif
         </div>
@@ -139,6 +157,21 @@
                 <tr><td><strong>Balance Due</strong></td><td><strong>₹{{ number_format($invoice->balanceDue(), 0) }}</strong></td></tr>
             </table>
         </div>
+
+        @if(config('shop.bank_account_no', config('quotation.bank_account_no')))
+            <div style="margin-top: 18px; padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 11px;">
+                <div style="color: #064e3b; text-transform: uppercase; font-size: 10px; font-weight: 800; letter-spacing: 0.05em; margin-bottom: 4px;">
+                    Bank Account Details (NEFT / RTGS / IMPS Settlement)
+                </div>
+                <div style="color: #334155; line-height: 1.6;">
+                    <span>Account Name: <strong>{{ config('shop.bank_account_name', config('quotation.bank_account_name', 'Plant Tech Agro')) }}</strong></span> &nbsp;|&nbsp;
+                    <span>Bank: <strong>{{ config('shop.bank_name', config('quotation.bank_name', 'J&K Bank')) }}</strong></span> &nbsp;|&nbsp;
+                    <span>Account No: <strong style="font-family: monospace; color: #047857; font-size: 12px;">{{ config('shop.bank_account_no', config('quotation.bank_account_no', '0942 0100 0000 0275')) }}</strong></span> &nbsp;|&nbsp;
+                    <span>IFSC Code: <strong style="font-family: monospace;">{{ config('shop.bank_ifsc', config('quotation.bank_ifsc', 'JAKA0MIGRNT')) }}</strong></span> &nbsp;|&nbsp;
+                    <span>Branch: {{ config('shop.bank_branch', config('quotation.bank_branch', 'Migrant Colony Hall Pulwama')) }}</span>
+                </div>
+            </div>
+        @endif
 
         @if($invoice->terms)
             <div class="terms">

@@ -18,6 +18,7 @@ class WorkOrderStage extends Model
     protected $fillable = [
         'work_order_id', 'service_stage_id', 'name', 'description', 'sort_order',
         'requires_photo', 'min_photos', 'requires_pdf', 'status', 'completed_at', 'notes',
+        'notify_customer', 'notification_title', 'notification_body',
     ];
 
     protected function casts(): array
@@ -25,6 +26,7 @@ class WorkOrderStage extends Model
         return [
             'requires_photo' => 'boolean',
             'requires_pdf' => 'boolean',
+            'notify_customer' => 'boolean',
             'completed_at' => 'datetime',
         ];
     }

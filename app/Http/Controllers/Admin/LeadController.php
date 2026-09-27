@@ -15,7 +15,7 @@ class LeadController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Lead::query()->with('service')->latest();
+        $query = Lead::query()->with(['service', 'quotations'])->latest();
 
         if ($status = $request->query('status')) {
             abort_unless(in_array($status, array_keys(Lead::STATUSES ?? ['new' => 1, 'contacted' => 1, 'no_answer' => 1, 'interested' => 1, 'converted' => 1, 'closed' => 1]), true), 422, 'Invalid status filter.');
@@ -91,7 +91,11 @@ class LeadController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:20', 'regex:/^[0-9+\-\s()]{7,20}$/'],
+            'address' => ['nullable', 'string', 'max:1000'],
             'service_id' => ['nullable', Rule::exists('services', 'id')],
+            'service_variation' => ['nullable', 'string', 'max:255'],
+            'area' => ['nullable', 'numeric', 'min:0'],
+            'unit' => ['nullable', 'string', 'max:50'],
             'notes' => ['nullable', 'string'],
         ]);
 
@@ -122,6 +126,11 @@ class LeadController extends Controller
                 ->with('error', 'This lead has already been converted to a customer.');
         }
 
+        if (! $lead->hasApprovedQuotation()) {
+            return redirect()->route('admin.leads.show', $lead)
+                ->with('error', 'Cannot create a work order before quotation approval. Please create and approve a quotation for this lead first.');
+        }
+
         $address = $lead->custom_fields['address'] ?? null;
         $area = $lead->custom_fields['area'] ?? null;
         $service = $lead->service;
@@ -136,6 +145,11 @@ class LeadController extends Controller
         if ($lead->isConverted()) {
             return redirect()->route('admin.leads.show', $lead)
                 ->with('error', 'This lead has already been converted to a customer.');
+        }
+
+        if (! $lead->hasApprovedQuotation()) {
+            return redirect()->route('admin.leads.show', $lead)
+                ->with('error', 'Cannot create a work order before quotation approval. Please create and approve a quotation for this lead first.');
         }
 
         $data = $request->validate([
@@ -187,6 +201,11 @@ class LeadController extends Controller
         if ($lead->isConverted()) {
             return redirect()->route('admin.leads.show', $lead)
                 ->with('error', 'This lead has already been converted.');
+        }
+
+        if (! $lead->hasApprovedQuotation()) {
+            return redirect()->route('admin.leads.show', $lead)
+                ->with('error', 'Cannot create a work order before quotation approval. Please create and approve a quotation for this lead first.');
         }
 
         $customer = Customer::findByPhoneDigits($lead->phone);

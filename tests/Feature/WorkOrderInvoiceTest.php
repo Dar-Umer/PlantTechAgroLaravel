@@ -218,4 +218,118 @@ class WorkOrderInvoiceTest extends TestCase
         $response->assertOk();
         $this->assertEquals('application/pdf', $response->headers->get('Content-Type'));
     }
+
+    public function test_invoice_creation_with_service_link_and_custom_prefix(): void
+    {
+        $admin = $this->actingAdmin();
+        $customer = Customer::create(['name' => 'Ghulam Nabi', 'phone' => '9900000006', 'password' => 'secret123']);
+
+        $service = Service::create([
+            'name' => 'Book an Orchard',
+            'slug' => 'book-an-orchard',
+            'default_price' => 185000,
+            'default_unit' => 'kanal',
+            'package_variations' => [
+                ['name' => '150 Plants / Kanal (Standard)', 'price' => 185000, 'unit' => 'kanal'],
+                ['name' => '170 Plants / Kanal (High Density)', 'price' => 210000, 'unit' => 'kanal'],
+            ],
+            'invoice_settings' => [
+                'invoice_prefix' => 'INV-ORC',
+                'doc_title' => 'Orchard Tax Invoice',
+                'doc_subtitle' => 'High Density Apple Project',
+                'accent_color' => '#059669',
+                'terms' => 'Standard payment terms for orchard installation.',
+            ],
+        ]);
+
+        $createResponse = $this->actingAs($admin, 'admin')->get('/admin/invoices/create');
+        $createResponse->assertOk();
+        $createResponse->assertSee('Book an Orchard');
+        $createResponse->assertSee('Package / Density Variations');
+
+        $response = $this->actingAs($admin, 'admin')->post('/admin/invoices', [
+            'customer_id' => $customer->id,
+            'service_id' => $service->id,
+            'invoice_date' => now()->toDateString(),
+            'notes' => 'Direct booking with 170 plants/kanal package',
+            'items' => [
+                [
+                    'product_id' => null,
+                    'name' => 'Book an Orchard - 170 Plants / Kanal (High Density)',
+                    'unit' => 'kanal',
+                    'qty' => 2,
+                    'rate' => 210000,
+                    'discount' => 10000,
+                    'gst_rate' => 18,
+                ],
+            ],
+        ]);
+
+        $response->assertRedirect();
+        $invoice = Invoice::where('service_id', $service->id)->firstOrFail();
+
+        $this->assertEquals($service->id, $invoice->service_id);
+        $this->assertStringStartsWith('INV-ORC/', $invoice->number);
+        // Subtotal = 2 * 210000 = 420000, discount = 10000, taxable = 410000 + 18% GST (73800) = 483800
+        $this->assertEquals(420000.0, (float) $invoice->subtotal);
+        $this->assertEquals(10000.0, (float) $invoice->discount_total);
+        $this->assertEquals(73800.0, (float) $invoice->gst_total);
+        $this->assertEquals(483800.0, (float) $invoice->grand_total);
+
+        // Show page renders service details
+        $showResponse = $this->actingAs($admin, 'admin')->get(route('admin.invoices.show', $invoice));
+        $showResponse->assertOk();
+        $showResponse->assertSee('Book an Orchard');
+        $showResponse->assertSee('Direct service-linked invoice');
+
+        // Print page renders custom doc title and subtitle
+        $printResponse = $this->actingAs($admin, 'admin')->get(route('admin.invoices.print', $invoice));
+        $printResponse->assertOk();
+        $printResponse->assertSee('Orchard Tax Invoice');
+        $printResponse->assertSee('High Density Apple Project');
+    }
+
+    public function test_work_order_invoice_generation_propagates_service_id(): void
+    {
+        $admin = $this->actingAdmin();
+        $service = Service::create([
+            'name' => 'Drip Setup Service',
+            'slug' => 'drip-setup-service',
+            'invoice_settings' => [
+                'invoice_prefix' => 'INV-DRP',
+                'doc_title' => 'Irrigation Invoice',
+            ],
+        ]);
+        $customer = Customer::create(['name' => 'Bilal Khan', 'phone' => '9900000007', 'password' => 'secret123']);
+
+        $workOrder = WorkOrder::create([
+            'number' => 'WO/2026/0099',
+            'customer_id' => $customer->id,
+            'customer_name' => $customer->name,
+            'service_id' => $service->id,
+            'service_name' => $service->name,
+            'status' => 'completed',
+        ]);
+
+        $product = Product::create(['name' => 'Drip Emitter', 'unit' => 'pcs', 'rate' => 15, 'gst_rate' => 18, 'stock_qty' => 100, 'is_active' => true]);
+        $stage = ServiceStage::create(['service_id' => $service->id, 'name' => 'Installation', 'sort_order' => 1]);
+        $woStage = \App\Models\WorkOrderStage::create(['work_order_id' => $workOrder->id, 'service_stage_id' => $stage->id, 'name' => 'Installation', 'status' => 'completed', 'sort_order' => 1]);
+        WorkOrderStageProduct::create([
+            'work_order_stage_id' => $woStage->id,
+            'product_id' => $product->id,
+            'name' => $product->name,
+            'unit' => $product->unit,
+            'rate' => $product->rate,
+            'planned_qty' => 10,
+            'used_qty' => 10,
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->post("/admin/work-orders/{$workOrder->id}/invoice")
+            ->assertRedirect();
+
+        $invoice = Invoice::where('work_order_id', $workOrder->id)->firstOrFail();
+        $this->assertEquals($service->id, $invoice->service_id);
+        $this->assertStringStartsWith('INV-DRP/', $invoice->number);
+    }
 }

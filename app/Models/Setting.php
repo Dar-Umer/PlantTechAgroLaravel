@@ -24,4 +24,11 @@ class Setting extends Model
             'value' => 'array',
         ];
     }
+
+    public static function get(string $key, mixed $default = null): mixed
+    {
+        $setting = static::find($key);
+
+        return $setting ? $setting->value : $default;
+    }
 }

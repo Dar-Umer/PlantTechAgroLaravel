@@ -29,6 +29,17 @@
             <a href="{{ route('admin.work-orders.show', $invoice->workOrder) }}" class="block bg-brand-50 border border-brand-100 rounded-2xl p-4 text-sm text-brand-800 hover:bg-brand-100 transition">
                 Generated from work order <span class="font-semibold">{{ $invoice->workOrder->number }}</span> — {{ $invoice->workOrder->service_name }} · View work order →
             </a>
+        @elseif($invoice->service)
+            <div class="flex items-center gap-3 bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-sm text-emerald-900">
+                <span class="w-3 h-3 rounded-full shrink-0" style="background-color: {{ $invoice->service->invoice_settings['accent_color'] ?? '#16a34a' }}"></span>
+                <div>
+                    <span class="font-semibold">{{ $invoice->service->name }}</span>
+                    @if($invoice->service->invoice_settings['doc_subtitle'] ?? null)
+                        <span class="text-emerald-700 text-xs ml-1">({{ $invoice->service->invoice_settings['doc_subtitle'] }})</span>
+                    @endif
+                    <span class="text-xs text-emerald-600 block sm:inline sm:ml-2">Direct service-linked invoice</span>
+                </div>
+            </div>
         @endif
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -132,6 +143,9 @@
                     <h3 class="text-lg font-semibold text-gray-900 mb-1">Details</h3>
                     <dl class="mt-4 space-y-3 text-sm">
                         <div class="flex justify-between"><dt class="text-gray-500">Customer</dt><dd class="font-medium text-gray-900">{{ $invoice->customer_name }}</dd></div>
+                        @if($service = $invoice->getService())
+                            <div class="flex justify-between"><dt class="text-gray-500">Service</dt><dd class="font-medium text-gray-900">{{ $service->name }}</dd></div>
+                        @endif
                         <div class="flex justify-between"><dt class="text-gray-500">Invoice Date</dt><dd class="text-gray-900">{{ $invoice->invoice_date->format('d M Y') }}</dd></div>
                         <div class="flex justify-between"><dt class="text-gray-500">Due Date</dt><dd class="text-gray-900">{{ $invoice->due_date?->format('d M Y') ?? '—' }}</dd></div>
                         <div class="flex justify-between"><dt class="text-gray-500">Created By</dt><dd class="text-gray-900">{{ $invoice->createdBy?->name ?? '—' }}</dd></div>

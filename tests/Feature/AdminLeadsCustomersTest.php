@@ -6,6 +6,7 @@ use App\Models\Admin;
 use App\Models\Customer;
 use App\Models\Lead;
 use App\Models\LeadFormField;
+use App\Models\Quotation;
 use App\Models\Service;
 use App\Models\ServiceItem;
 use App\Models\ServiceStage;
@@ -49,6 +50,18 @@ class AdminLeadsCustomersTest extends TestCase
             'phone' => '9999999999',
             'service_id' => $service->id,
             'custom_fields' => ['address' => 'Pulwama'],
+        ]);
+
+        Quotation::create([
+            'number' => 'QT-TEST-CONV-1',
+            'lead_id' => $lead->id,
+            'customer_name' => $lead->name,
+            'customer_phone' => $lead->phone,
+            'service_id' => $service->id,
+            'status' => 'approved',
+            'date' => now(),
+            'subtotal' => 10000,
+            'grand_total' => 10000,
         ]);
 
         $this->actingAs($admin, 'admin')
@@ -95,6 +108,18 @@ class AdminLeadsCustomersTest extends TestCase
             'notes' => 'Wants completion before harvest.',
         ]);
 
+        Quotation::create([
+            'number' => 'QT-TEST-CONV-2',
+            'lead_id' => $lead->id,
+            'customer_name' => $lead->name,
+            'customer_phone' => $lead->phone,
+            'service_id' => $service->id,
+            'status' => 'approved',
+            'date' => now(),
+            'subtotal' => 10000,
+            'grand_total' => 10000,
+        ]);
+
         $this->actingAs($admin, 'admin')->post("/admin/leads/{$lead->id}/convert", [
             'name' => 'Farooq Ahmad',
             'phone' => '9999999999',
@@ -120,6 +145,18 @@ class AdminLeadsCustomersTest extends TestCase
             'name' => 'Farooq',
             'phone' => '9777777777',
             'service_id' => $inactive->id,
+        ]);
+
+        Quotation::create([
+            'number' => 'QT-TEST-CONV-INACT',
+            'lead_id' => $lead->id,
+            'customer_name' => $lead->name,
+            'customer_phone' => $lead->phone,
+            'service_id' => $inactive->id,
+            'status' => 'approved',
+            'date' => now(),
+            'subtotal' => 10000,
+            'grand_total' => 10000,
         ]);
 
         $this->actingAs($admin, 'admin')->post("/admin/leads/{$lead->id}/convert", [
@@ -232,7 +269,19 @@ class AdminLeadsCustomersTest extends TestCase
             'service_id' => $service->id,
         ]);
 
-        // Show page offers Work Order instead of Convert.
+        Quotation::create([
+            'number' => 'QT-TEST-CONV-3',
+            'lead_id' => $lead->id,
+            'customer_name' => $lead->name,
+            'customer_phone' => $lead->phone,
+            'service_id' => $service->id,
+            'status' => 'approved',
+            'date' => now(),
+            'subtotal' => 10000,
+            'grand_total' => 10000,
+        ]);
+
+        // Show page offers Work Order instead of Convert when approved.
         $this->actingAs($admin, 'admin')->get("/admin/leads/{$lead->id}")
             ->assertOk()
             ->assertSee('New Work Order', false)
@@ -264,6 +313,102 @@ class AdminLeadsCustomersTest extends TestCase
             ->assertRedirect(route('admin.leads.show', $lead));
     }
 
+    public function test_lead_conversion_and_work_order_creation_blocked_without_approved_quotation(): void
+    {
+        $admin = $this->actingAdmin();
+        $service = Service::factory()->create();
+        $lead = Lead::create([
+            'name' => 'Pending Approval Farmer',
+            'phone' => '9111222333',
+            'service_id' => $service->id,
+        ]);
+
+        // 1. Visiting convert form is blocked and redirects to lead details
+        $this->actingAs($admin, 'admin')
+            ->get("/admin/leads/{$lead->id}/convert")
+            ->assertRedirect(route('admin.leads.show', $lead))
+            ->assertSessionHas('error');
+
+        // 2. Submitting convert form is blocked
+        $this->actingAs($admin, 'admin')
+            ->post("/admin/leads/{$lead->id}/convert", [
+                'name' => 'Pending Approval Farmer',
+                'phone' => '9111222333',
+                'password' => 'secret123',
+                'password_confirmation' => 'secret123',
+            ])
+            ->assertRedirect(route('admin.leads.show', $lead))
+            ->assertSessionHas('error');
+
+        $this->assertSame(0, Customer::where('phone', '9111222333')->count());
+        $this->assertSame(0, \App\Models\WorkOrder::count());
+
+        // 3. Directly attempting work-order route is blocked
+        $this->actingAs($admin, 'admin')
+            ->post("/admin/leads/{$lead->id}/work-order")
+            ->assertRedirect(route('admin.leads.show', $lead))
+            ->assertSessionHas('error');
+
+        // 4. Draft quotation still does not allow work order
+        $draftQuotation = Quotation::create([
+            'number' => 'QT-DRAFT-999',
+            'lead_id' => $lead->id,
+            'customer_name' => $lead->name,
+            'customer_phone' => $lead->phone,
+            'service_id' => $service->id,
+            'status' => 'draft',
+            'date' => now(),
+            'subtotal' => 20000,
+            'grand_total' => 20000,
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->post("/admin/leads/{$lead->id}/convert", [
+                'name' => 'Pending Approval Farmer',
+                'phone' => '9111222333',
+                'password' => 'secret123',
+                'password_confirmation' => 'secret123',
+            ])
+            ->assertRedirect(route('admin.leads.show', $lead))
+            ->assertSessionHas('error');
+
+        // 5. WorkOrderController::create and store with lead_id blocked if unapproved
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.work-orders.create', ['lead_id' => $lead->id]))
+            ->assertRedirect(route('admin.leads.show', $lead))
+            ->assertSessionHas('error');
+
+        // 6. Lead show page shows the quotation approval requirement notice
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.leads.show', $lead))
+            ->assertOk()
+            ->assertSee('Quotation Approval Required Before Work Order')
+            ->assertDontSee(route('admin.leads.convert', $lead))
+            ->assertDontSee(route('admin.leads.work-order', $lead));
+
+        // 7. Once quotation is approved, conversion and work order creation succeeds!
+        $draftQuotation->update(['status' => 'approved']);
+        $lead->refresh();
+        $this->assertTrue($lead->hasApprovedQuotation());
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.leads.show', $lead))
+            ->assertOk()
+            ->assertSee('Convert to Customer', false);
+
+        $this->actingAs($admin, 'admin')
+            ->post("/admin/leads/{$lead->id}/convert", [
+                'name' => 'Pending Approval Farmer',
+                'phone' => '9111222333',
+                'password' => 'secret123',
+                'password_confirmation' => 'secret123',
+            ])
+            ->assertRedirect();
+
+        $this->assertSame(1, Customer::where('phone', '9111222333')->count());
+        $this->assertSame(1, \App\Models\WorkOrder::where('service_id', $service->id)->count());
+    }
+
     public function test_handoff_blocked_without_matching_customer_or_service(): void
     {
         $admin = $this->actingAdmin();
@@ -279,7 +424,20 @@ class AdminLeadsCustomersTest extends TestCase
     public function test_conversion_requires_unique_phone_and_password_confirmation(): void
     {
         $admin = $this->actingAdmin();
-        $lead = Lead::create(['name' => 'Farooq', 'phone' => '9777777777']);
+        $service = Service::factory()->create();
+        $lead = Lead::create(['name' => 'Farooq', 'phone' => '9777777777', 'service_id' => $service->id]);
+
+        Quotation::create([
+            'number' => 'QT-VAL-001',
+            'lead_id' => $lead->id,
+            'customer_name' => $lead->name,
+            'customer_phone' => $lead->phone,
+            'service_id' => $service->id,
+            'status' => 'approved',
+            'date' => now(),
+            'subtotal' => 1000,
+            'grand_total' => 1000,
+        ]);
 
         Customer::create(['name' => 'Taken', 'phone' => '9888888888', 'password' => 'secret123']);
 

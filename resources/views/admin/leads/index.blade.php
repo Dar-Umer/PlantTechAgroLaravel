@@ -95,13 +95,27 @@
                                     @if(isset($lead->custom_fields['orchard_name']))
                                         <div class="text-[11px] text-gray-400">🌳 {{ $lead->custom_fields['orchard_name'] }}</div>
                                     @endif
+                                    @if($lead->getAddress())
+                                        <div class="text-[11px] text-gray-400 mt-0.5 flex items-center gap-1">
+                                            <svg class="w-3 h-3 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                            <span class="truncate max-w-[180px]">{{ $lead->getAddress() }}</span>
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 text-gray-600">
                                     <a href="tel:{{ $lead->phone }}" class="hover:text-brand-600 font-medium">{{ $lead->phone }}</a>
                                 </td>
                                 <td class="px-6 py-4 text-gray-600">
                                     @if($lead->service)
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-50 text-brand-700">{{ $lead->service->name }}</span>
+                                        <div>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-50 text-brand-700">{{ $lead->service->name }}</span>
+                                            @if($lead->getVariation())
+                                                <span class="block text-[11px] font-medium text-emerald-700 mt-0.5">{{ $lead->getVariation() }}</span>
+                                            @endif
+                                            @if($req = $lead->formattedRequirement())
+                                                <span class="block text-[11px] font-semibold text-gray-500 mt-0.5">Area/Qty: {{ $req }}</span>
+                                            @endif
+                                        </div>
                                     @else
                                         <span class="text-gray-400">—</span>
                                     @endif
@@ -115,13 +129,28 @@
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
                                         @if(! $lead->isConverted())
-                                            @if(isset($leadsWithCustomer[$lead->id]))
-                                                <form action="{{ route('admin.leads.work-order', $lead) }}" method="POST" class="inline">
-                                                    @csrf
-                                                    <x-admin.button type="submit" variant="primary" size="sm" title="This number belongs to an existing customer — open a work order directly.">Work Order</x-admin.button>
-                                                </form>
+                                            @if($lead->hasApprovedQuotation())
+                                                @if(isset($leadsWithCustomer[$lead->id]))
+                                                    <form action="{{ route('admin.leads.work-order', $lead) }}" method="POST" class="inline">
+                                                        @csrf
+                                                        <x-admin.button type="submit" variant="primary" size="sm" title="Quotation approved — open work order.">Work Order</x-admin.button>
+                                                    </form>
+                                                @else
+                                                    <x-admin.button href="{{ route('admin.leads.convert', $lead) }}" variant="primary" size="sm" title="Quotation approved — convert to customer & work order.">Convert</x-admin.button>
+                                                @endif
+                                            @elseif($lead->quotations->isNotEmpty())
+                                                <a href="{{ route('admin.leads.show', $lead) }}"
+                                                   class="inline-flex items-center px-2.5 py-1.5 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 text-xs font-semibold hover:bg-amber-100 transition shadow-2xs"
+                                                   title="Quotation created but awaiting approval before work order can start.">
+                                                    Quotation Pending
+                                                </a>
                                             @else
-                                                <x-admin.button href="{{ route('admin.leads.convert', $lead) }}" variant="primary" size="sm">Convert</x-admin.button>
+                                                <a href="{{ route('admin.quotations.create', ['lead_id' => $lead->id]) }}"
+                                                   class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-brand-200 bg-brand-50 text-brand-700 text-xs font-semibold hover:bg-brand-100 transition shadow-2xs"
+                                                   title="Create quotation first — work order requires quotation approval.">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                                    Quotation
+                                                </a>
                                             @endif
                                         @endif
                                         <x-admin.button href="{{ route('admin.leads.show', $lead) }}" variant="secondary" size="sm">View</x-admin.button>

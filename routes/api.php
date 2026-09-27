@@ -58,6 +58,10 @@ Route::middleware(['auth:sanctum', \App\Http\Middleware\EnsureCustomerIsActive::
     Route::post('notifications/read-all', [NotificationController::class, 'readAll']);
     Route::post('notifications/{notification}/read', [NotificationController::class, 'read']);
 
+    // Firebase Push Notification Device Tokens
+    Route::post('device-tokens', [\App\Http\Controllers\Api\Customer\DeviceTokenController::class, 'store']);
+    Route::delete('device-tokens', [\App\Http\Controllers\Api\Customer\DeviceTokenController::class, 'destroy']);
+
     // Farmer Support Tickets
     Route::get('tickets', [TicketController::class, 'index']);
     Route::get('tickets/categories', [TicketController::class, 'categories']);

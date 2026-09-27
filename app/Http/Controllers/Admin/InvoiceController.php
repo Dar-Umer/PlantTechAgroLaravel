@@ -55,10 +55,23 @@ class InvoiceController extends Controller
     {
         $customers = Customer::where('status', 'active')->orderBy('name')->get(['id', 'name', 'phone']);
         $products = Product::active()->orderBy('name')->get(['id', 'name', 'sku', 'unit', 'rate', 'gst_rate', 'stock_qty', 'low_stock_threshold']);
+        $services = \App\Models\Service::where('is_active', true)->orderBy('name')->get();
+        $servicesJson = $services->map(fn($s) => [
+            'id' => $s->id,
+            'name' => $s->name,
+            'slug' => $s->slug,
+            'category' => $s->category,
+            'description' => $s->description,
+            'quotation_type' => $s->getQuotationType(),
+            'defaults' => $s->getQuotationDefaults(),
+            'invoice_defaults' => $s->getInvoiceDefaults(),
+        ]);
 
         return view('admin.invoices.create', [
             'customers' => $customers,
             'products' => $products,
+            'services' => $services,
+            'servicesJson' => $servicesJson,
             'terms' => config('invoice.terms', ''),
             'preselectCustomer' => $request->query('customer_id'),
         ]);
@@ -68,6 +81,7 @@ class InvoiceController extends Controller
     {
         $data = $request->validate([
             'customer_id' => ['required', 'exists:customers,id'],
+            'service_id' => ['nullable', 'exists:services,id'],
             'invoice_date' => ['required', 'date'],
             'due_date' => ['nullable', 'date', 'after_or_equal:invoice_date'],
             'terms' => ['nullable', 'string'],
@@ -83,11 +97,13 @@ class InvoiceController extends Controller
         ]);
 
         $customer = Customer::findOrFail($data['customer_id']);
+        $service = !empty($data['service_id']) ? \App\Models\Service::find($data['service_id']) : null;
 
-        $invoice = DB::transaction(function () use ($data, $customer, $request) {
+        $invoice = DB::transaction(function () use ($data, $customer, $service, $request) {
             $invoice = Invoice::create([
-                'number' => InvoiceNumberer::next(),
+                'number' => InvoiceNumberer::next($service),
                 'customer_id' => $customer->id,
+                'service_id' => $service?->id,
                 'customer_name' => $customer->name,
                 'invoice_date' => $data['invoice_date'],
                 'due_date' => $data['due_date'] ?? null,
@@ -117,21 +133,21 @@ class InvoiceController extends Controller
 
     public function show(Invoice $invoice)
     {
-        $invoice->load(['items', 'payments', 'customer', 'workOrder']);
+        $invoice->load(['items', 'payments', 'customer', 'workOrder', 'service']);
 
         return view('admin.invoices.show', compact('invoice'));
     }
 
     public function print(Invoice $invoice)
     {
-        $invoice->load(['items', 'customer', 'workOrder']);
+        $invoice->load(['items', 'customer', 'workOrder', 'service']);
 
         return view('admin.invoices.print', compact('invoice'));
     }
 
     public function pdf(Invoice $invoice)
     {
-        $invoice->load(['items', 'customer', 'workOrder']);
+        $invoice->load(['items', 'customer', 'workOrder', 'service']);
 
         $pdf = Pdf::loadView('admin.invoices.print', ['invoice' => $invoice, 'forPdf' => true])
             ->setPaper('a4');

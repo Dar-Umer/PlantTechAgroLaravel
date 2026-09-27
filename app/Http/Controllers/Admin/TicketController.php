@@ -12,6 +12,7 @@ use App\Models\TicketMessage;
 use App\Notifications\TicketAssignedAlert;
 use App\Notifications\TicketStaffReplyNotification;
 use App\Notifications\TicketStatusChangedNotification;
+use App\Support\Media;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -134,7 +135,9 @@ class TicketController extends Controller
                 $file = $request->file('attachment');
                 $mime = $file->getMimeType() ?: '';
                 $type = str_contains($mime, 'image') ? 'image' : (str_contains($mime, 'audio') ? 'audio' : 'document');
-                $path = $file->store('tickets/' . $ticket->id, 'public');
+                $path = $type === 'image'
+                    ? Media::storeImage($file, 'tickets/' . $ticket->id)
+                    : $file->store('tickets/' . $ticket->id, 'public');
 
                 TicketAttachment::create([
                     'ticket_id' => $ticket->id,
@@ -346,7 +349,9 @@ class TicketController extends Controller
                 $file = $request->file('attachment');
                 $mime = $file->getMimeType() ?: '';
                 $type = str_contains($mime, 'image') ? 'image' : (str_contains($mime, 'audio') ? 'audio' : 'document');
-                $path = $file->store('tickets/' . $ticket->id, 'public');
+                $path = $type === 'image'
+                    ? Media::storeImage($file, 'tickets/' . $ticket->id)
+                    : $file->store('tickets/' . $ticket->id, 'public');
 
                 TicketAttachment::create([
                     'ticket_id' => $ticket->id,
@@ -405,7 +410,9 @@ class TicketController extends Controller
                 $file = $request->file('attachment');
                 $mime = $file->getMimeType() ?: '';
                 $type = str_contains($mime, 'image') ? 'image' : (str_contains($mime, 'audio') ? 'audio' : 'document');
-                $path = $file->store('tickets/' . $ticket->id, 'public');
+                $path = $type === 'image'
+                    ? Media::storeImage($file, 'tickets/' . $ticket->id)
+                    : $file->store('tickets/' . $ticket->id, 'public');
 
                 TicketAttachment::create([
                     'ticket_id' => $ticket->id,

@@ -125,6 +125,11 @@
                                         📄 Signoff PDF
                                     </span>
                                 @endif
+                                @if($stage->notify_customer ?? true)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-100" title="Farmer receives Firebase push alert on stage completion">
+                                        🔔 Push Alert
+                                    </span>
+                                @endif
                                 <a href="{{ route('admin.stage-products.index', $stage) }}" class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-100 transition">
                                     📦 {{ $stage->products()->count() }} Materials
                                 </a>
@@ -222,6 +227,9 @@
                         @endif
                         @if($stage->requires_pdf)
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700">📄 PDF</span>
+                        @endif
+                        @if($stage->notify_customer ?? true)
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700" title="Farmer receives Firebase push alert on stage completion">🔔 Push Alert</span>
                         @endif
                         <a href="{{ route('admin.stage-products.index', $stage) }}" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition">
                             Materials ({{ $stage->products()->count() }})
