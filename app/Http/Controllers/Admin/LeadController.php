@@ -39,15 +39,35 @@ class LeadController extends Controller
         $services = Service::orderBy('name')->get(['id', 'name']);
 
         // Leads whose phone already belongs to a customer: Convert is
-        // replaced by a direct Work Order handoff. One lookup per row.
+        // replaced by a direct Work Order handoff. Batched to prevent N+1 queries.
         $leadsWithCustomer = [];
-        foreach ($leads as $lead) {
-            if ($lead->isConverted()) {
-                continue;
+        $unconverted = $leads->reject(fn ($lead) => $lead->isConverted());
+
+        if ($unconverted->isNotEmpty()) {
+            $digitsToLeadId = [];
+            foreach ($unconverted as $lead) {
+                $digits = preg_replace('/[^\d]/', '', (string) $lead->phone);
+                if ($digits !== '') {
+                    $digitsToLeadId[$digits] = $lead->id;
+                }
             }
-            $match = Customer::findByPhoneDigits($lead->phone);
-            if ($match) {
-                $leadsWithCustomer[$lead->id] = $match->id;
+
+            if (! empty($digitsToLeadId)) {
+                $rawDigits = array_keys($digitsToLeadId);
+                $matchedCustomers = Customer::whereIn('phone', $unconverted->pluck('phone')->filter())
+                    ->orWhere(function ($query) use ($rawDigits) {
+                        foreach ($rawDigits as $digits) {
+                            $query->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(phone, '+', ''), '-', ''), ' ', ''), '(', ''), ')', '') = ?", [$digits]);
+                        }
+                    })
+                    ->get(['id', 'phone']);
+
+                foreach ($matchedCustomers as $customer) {
+                    $cDigits = preg_replace('/[^\d]/', '', (string) $customer->phone);
+                    if (isset($digitsToLeadId[$cDigits])) {
+                        $leadsWithCustomer[$digitsToLeadId[$cDigits]] = $customer->id;
+                    }
+                }
             }
         }
         $statusCounts = Lead::query()
