@@ -4,8 +4,11 @@
 
 @section('content')
     <div class="space-y-6" x-data="{ activeTab: '{{ request('tab', 'general') }}' }">
-        <div class="flex items-center justify-between">
-            <h2 class="text-2xl font-bold text-gray-900">Settings</h2>
+        <div class="flex items-center justify-between flex-wrap gap-4">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Settings</h2>
+                <p class="text-xs text-gray-500 mt-0.5">Manage store preferences, invoices, appearance, and integrations.</p>
+            </div>
         </div>
 
         {{-- Tab Navigation --}}
@@ -63,7 +66,7 @@
             </nav>
         </div>
 
-        <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <form id="main-settings-form" action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PUT')
             <input type="hidden" name="tab" x-model="activeTab">
@@ -191,6 +194,10 @@
                                 <x-admin.input name="social_x" label="X (Twitter) URL" :value="$settings['social_x'] ?? ''" placeholder="https://x.com/planttechagro" />
                             </div>
                         </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 pt-2">
+                        <x-admin.button type="submit">Save General Settings</x-admin.button>
                     </div>
 
                 </div>
@@ -350,6 +357,10 @@
                         </div>
                     </div>
 
+                    <div class="flex items-center justify-end gap-3 pt-2">
+                        <x-admin.button type="submit">Save Appearance Settings</x-admin.button>
+                    </div>
+
                 </div>
             </div>
 
@@ -375,7 +386,7 @@
                 {{-- Company Billing Information --}}
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-0.5">Company Billing Details</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-0.5">Company Details</h3>
                         <p class="text-sm text-gray-500">Official business identity displayed on generated invoices, estimates, and quotations.</p>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -392,7 +403,7 @@
                 {{-- Numbering Sequences & Document Prefixes --}}
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-0.5">Document Numbering &amp; Prefixes</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-0.5">Invoice Branding & Numbering</h3>
                         <p class="text-sm text-gray-500">Configure prefixes used for tax invoices and quotation estimates.</p>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -442,6 +453,10 @@
                             <x-admin.textarea name="quotation_terms" label="Default Quotation Terms & Conditions" :value="$quotationSettings['terms'] ?? ''" rows="4" placeholder="Default validity, advance payment terms, site access terms..." />
                         </div>
                     </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <x-admin.button type="submit">Save Invoice &amp; Quotation Settings</x-admin.button>
                 </div>
 
             </div>
@@ -551,6 +566,10 @@
                     </div>
                 </div>
 
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <x-admin.button type="submit">Save SEO Settings</x-admin.button>
+                </div>
+
             </div>
 
             {{-- Weather Tab --}}
@@ -644,6 +663,10 @@
                     </div>
                 </div>
 
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <x-admin.button type="submit">Save Weather Settings</x-admin.button>
+                </div>
+
             </div>
 
             {{-- APIs Tab --}}
@@ -682,6 +705,10 @@
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </a>
                     </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <x-admin.button type="submit">Save API Settings</x-admin.button>
                 </div>
 
             </div>
@@ -846,9 +873,10 @@
                     </div>
                 </div>
 
-            {{-- Save Button --}}
-            <div class="flex justify-end">
-                <x-admin.button type="submit">Save All Settings</x-admin.button>
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <x-admin.button type="submit">Save Photo Compression Settings</x-admin.button>
+                </div>
+
             </div>
         </form>
 
