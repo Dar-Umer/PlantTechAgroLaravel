@@ -15,7 +15,11 @@
             --brand-accent: {{ $accentColor }};
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', system-ui, sans-serif; color: #111827; font-size: 13px; background: #f3f4f6; }
+        body { font-family: @if(!empty($forPdf)) 'DejaVu Sans', sans-serif @else 'Inter', system-ui, sans-serif @endif; color: #111827; font-size: 13px; background: #f3f4f6; }
+        @if(!empty($forPdf))
+            body, table, td, th, p, span, div, strong, b, h1, h2, h3 { font-family: 'DejaVu Sans', sans-serif !important; }
+            th, strong, b, h1, h2, h3, .name, .inv-label, [style*="font-weight: 600"], [style*="font-weight: 700"], [style*="font-weight: 800"] { font-weight: bold !important; }
+        @endif
         .page { max-width: 800px; margin: 24px auto; background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
         @media print { body { background: #fff; } .page { box-shadow: none; margin: 0; border-radius: 0; padding: 20px; max-width: none; } .no-print { display: none !important; } }
         .header { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding-bottom: 20px; border-bottom: 3px solid var(--brand-accent, #16a34a); }

@@ -26,7 +26,7 @@
             box-sizing: border-box;
         }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: @if(!empty($forPdf)) 'DejaVu Sans', sans-serif @else 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif @endif;
             color: #0f172a;
             font-size: 11px;
             line-height: 1.4;
@@ -35,6 +35,19 @@
             -moz-osx-font-smoothing: grayscale;
             letter-spacing: -0.011em;
         }
+        @if(!empty($forPdf))
+            body, table, td, th, p, span, div, strong, b, h1, h2, h3, h4 {
+                font-family: 'DejaVu Sans', sans-serif !important;
+            }
+            /* DomPDF only matches 'normal' and 'bold' for DejaVu Sans; numeric 600/700/800/900 cause fallback to Times/Helvetica */
+            th, strong, b, .bold, .meta-val, .proforma-title, .brand-title, .brand-tagline,
+            .pct-badge, .badge-status, .scope-main-title, .card-header-title,
+            .grand-total-bar td, .grand-total-bar .amt, .comm-title, .comm-sub,
+            .notes-head, .variety-head, .inc-label, .inc-val, .totals-inner-tbl .val,
+            .step-amt, .val, .num, .tabular-nums, .deliverables-table th {
+                font-weight: bold !important;
+            }
+        @endif
         .proforma-container {
             max-width: 820px;
             margin: 20px auto;
@@ -705,16 +718,16 @@
 
                     <div class="company-contacts">
                         <span class="contact-item">
-                            <span class="contact-icon">&#9679;</span> {{ $quotation->getCompanyAddress() }}
+                            <span class="contact-icon"><svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -1px; display: inline-block; margin-right: 2px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></span>{{ $quotation->getCompanyAddress() }}
                         </span><br>
                         <span class="contact-item">
-                            <span class="contact-icon">&#9742;</span> {{ $quotation->getCompanyPhone() }}
+                            <span class="contact-icon"><svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -1px; display: inline-block; margin-right: 2px;"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></span>{{ $quotation->getCompanyPhone() }}
                         </span>
                         <span class="contact-item">
-                            <span class="contact-icon">&#9993;</span> {{ $quotation->getCompanyEmail() }}
+                            <span class="contact-icon"><svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -1px; display: inline-block; margin-right: 2px;"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></span>{{ $quotation->getCompanyEmail() }}
                         </span>
                         <span class="contact-item">
-                            <span class="contact-icon">&#127760;</span> {{ $quotation->getCompanyWebsite() }}
+                            <span class="contact-icon"><svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -1px; display: inline-block; margin-right: 2px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></span>{{ $quotation->getCompanyWebsite() }}
                         </span>
                     </div>
                 </td>
@@ -971,17 +984,23 @@
                         <table class="inclusions-tbl">
                             <tr>
                                 <td class="inc-card">
-                                    <div class="inc-icon-wrap">&#129699;</div>
+                                    <div class="inc-icon-wrap">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block; vertical-align:middle;"><line x1="4" y1="21" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="3"></line><line x1="1" y1="7" x2="23" y2="7"></line><line x1="1" y1="14" x2="23" y2="14"></line></svg>
+                                    </div>
                                     <div class="inc-label">Poles</div>
                                     <div class="inc-val tabular-nums">{{ $quotation->package_poles ?? 19 }}</div>
                                 </td>
                                 <td class="inc-card">
-                                    <div class="inc-icon-wrap">&#9875;</div>
+                                    <div class="inc-icon-wrap">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block; vertical-align:middle;"><circle cx="12" cy="5" r="3"></circle><line x1="12" y1="22" x2="12" y2="8"></line><path d="M5 12H2a10 10 0 0020 0h-3"></path></svg>
+                                    </div>
                                     <div class="inc-label">Anchors</div>
                                     <div class="inc-val tabular-nums">{{ $quotation->package_anchors ?? 6 }}</div>
                                 </td>
                                 <td class="inc-card">
-                                    <div class="inc-icon-wrap">&#127793;</div>
+                                    <div class="inc-icon-wrap">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block; vertical-align:middle;"><path d="M12 22v-9"></path><path d="M12 13c0-4.5 3.5-7 8-7 0 4.5-2.5 8-8 7z"></path><path d="M12 17c0-3.5-2.5-5.5-6-5.5 0 3.5 2 6 6 5.5z"></path></svg>
+                                    </div>
                                     <div class="inc-label">Plants</div>
                                     <div class="inc-val tabular-nums">{{ $quotation->package_plants ?? 150 }}</div>
                                 </td>
@@ -1113,23 +1132,33 @@
                     <table class="features-tbl">
                         <tr>
                             <td class="feature-cell">
-                                <div class="feat-icon">&#127795;</div>
+                                <div class="feat-icon">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" style="display:inline-block; vertical-align:middle;"><path d="M12 22v-6"></path><path d="M12 16a6 6 0 100-12 6 6 0 000 12z"></path></svg>
+                                </div>
                                 <div class="feat-text">High Density Orchards</div>
                             </td>
                             <td class="feature-cell">
-                                <div class="feat-icon">&#128167;</div>
+                                <div class="feat-icon">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" style="display:inline-block; vertical-align:middle;"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"></path></svg>
+                                </div>
                                 <div class="feat-text">Trellis &amp; Irrigation</div>
                             </td>
                             <td class="feature-cell">
-                                <div class="feat-icon">&#127807;</div>
+                                <div class="feat-icon">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" style="display:inline-block; vertical-align:middle;"><path d="M12 22v-9"></path><path d="M12 13c0-4.5 3.5-7 8-7 0 4.5-2.5 8-8 7z"></path><path d="M12 17c0-3.5-2.5-5.5-6-5.5 0 3.5 2 6 6 5.5z"></path></svg>
+                                </div>
                                 <div class="feat-text">Quality Planting Material</div>
                             </td>
                             <td class="feature-cell">
-                                <div class="feat-icon">&#128104;&#8205;&#127806;</div>
+                                <div class="feat-icon">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" style="display:inline-block; vertical-align:middle;"><circle cx="12" cy="7" r="4"></circle><path d="M5.5 21v-2a6.5 6.5 0 0113 0v2"></path></svg>
+                                </div>
                                 <div class="feat-text">Expert Agronomy</div>
                             </td>
                             <td class="feature-cell">
-                                <div class="feat-icon">&#128200;</div>
+                                <div class="feat-icon">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" style="display:inline-block; vertical-align:middle;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                                </div>
                                 <div class="feat-text">Better Harvests</div>
                             </td>
                         </tr>
