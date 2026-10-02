@@ -41,11 +41,39 @@ foreach ($posHosts as $host) {
     });
 }
 
-// Fallback direct access on local/main domain (e.g. http://localhost:8000/pos/login)
+// Fallback direct access on local/main domain (e.g. http://localhost:8000/pos/login or dedicated port http://localhost:8001/login)
 Route::prefix('pos')->group(function () {
     Route::get('login', [PosAuthController::class, 'showLoginForm'])->name('pos.login.local');
     Route::post('login', [PosAuthController::class, 'login'])->middleware('throttle:10,1')->name('pos.login.local.submit');
     Route::post('logout', [PosAuthController::class, 'logout'])->name('pos.logout.local');
+});
+
+Route::match(['GET', 'POST'], 'login', function (\Illuminate\Http\Request $request) {
+    $posPort = (int) env('POS_LOCAL_PORT', 8001);
+    if ((int) $request->getPort() === $posPort) {
+        $controller = app(PosAuthController::class);
+        return $request->isMethod('POST')
+            ? $controller->login($request)
+            : $controller->showLoginForm();
+    }
+
+    if ($request->isMethod('POST')) {
+        return app(\App\Http\Controllers\Admin\LoginController::class)->login($request);
+    }
+
+    return redirect()->route('admin.login');
+});
+
+Route::get('terminal', function () {
+    return redirect()->route('admin.pos.terminal');
+});
+
+Route::post('logout', function (\Illuminate\Http\Request $request) {
+    $posPort = (int) env('POS_LOCAL_PORT', 8001);
+    if ((int) $request->getPort() === $posPort) {
+        return app(PosAuthController::class)->logout($request);
+    }
+    return app(\App\Http\Controllers\Admin\LoginController::class)->logout($request);
 });
 
 /*

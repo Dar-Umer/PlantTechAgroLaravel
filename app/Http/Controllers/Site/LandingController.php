@@ -21,12 +21,14 @@ class LandingController extends Controller
         // If request reached here from a POS subdomain (e.g. pos.planttechagro.com), redirect to POS terminal
         $host = request()->getHost();
         $posHost = parse_url(config('pos.subdomain_url', 'https://pos.planttechagro.com'), PHP_URL_HOST);
-        if (str_starts_with($host, 'pos.') || ($posHost && $host === $posHost)) {
+        $posPort = (int) env('POS_LOCAL_PORT', 8001);
+
+        if (str_starts_with($host, 'pos.') || ($posHost && $host === $posHost) || (int) request()->getPort() === $posPort) {
             if (\Illuminate\Support\Facades\Auth::guard('admin')->check()) {
                 return redirect()->route('admin.pos.terminal');
             }
 
-            return redirect()->route('pos.login');
+            return redirect('/login');
         }
 
         $data = ContentCache::remember('landing', function () {
