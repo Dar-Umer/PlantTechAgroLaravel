@@ -1,226 +1,183 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="robots" content="noindex, nofollow">
-    <title>POS Terminal Sign-in - {{ $posSettings['store_name'] ?? config('pos.store_name', 'Plant Tech Agro') }}</title>
-
-    @if(config('shop.favicon_url'))
-        <link rel="icon" href="{{ \App\Support\Media::url(config('shop.favicon_url')) }}">
-    @endif
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family={{ $theme['fontGoogle'] ?? 'Inter:wght@400;500;600;700;800' }}&display=swap" rel="stylesheet">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-    <style>
-        [x-cloak] { display: none !important; }
-    </style>
-
-    {{-- Dynamic Brand Theme Colors Controlled via Admin Panel --}}
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['{{ $theme['font'] ?? 'Inter' }}', 'system-ui', 'sans-serif'] },
-                    colors: {
-                        brand: {
-                            50:  '{{ $theme['palette'][50] ?? '#f0fdf4' }}',
-                            100: '{{ $theme['palette'][100] ?? '#dcfce7' }}',
-                            200: '{{ $theme['palette'][200] ?? '#bbf7d0' }}',
-                            300: '{{ $theme['palette'][300] ?? '#86efac' }}',
-                            400: '{{ $theme['palette'][400] ?? '#4ade80' }}',
-                            500: '{{ $theme['palette'][500] ?? '#22c55e' }}',
-                            600: '{{ $theme['palette'][600] ?? '#16a34a' }}',
-                            700: '{{ $theme['palette'][700] ?? '#15803d' }}',
-                            800: '{{ $theme['palette'][800] ?? '#166534' }}',
-                            900: '{{ $theme['palette'][900] ?? '#14532d' }}',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    @include('admin.auth.partials.head', ['title' => 'POS Terminal Sign-in'])
 </head>
-<body class="h-full bg-slate-950 font-sans text-slate-100 antialiased selection:bg-brand-500 selection:text-white flex flex-col justify-between">
+<body class="bg-gray-100 font-sans antialiased min-h-screen">
+    <div class="min-h-screen flex">
 
-    {{-- Subtle Ambient Background Grid & Glows --}}
-    <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div class="absolute -top-40 -right-40 w-96 h-96 bg-brand-600/20 rounded-full blur-[100px]"></div>
-        <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-emerald-700/20 rounded-full blur-[100px]"></div>
-        <div class="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-30"></div>
-    </div>
+        {{-- Left Brand panel --}}
+        <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-brand-700 via-brand-600 to-brand-800">
+            <div class="absolute inset-0 opacity-[0.08]" aria-hidden="true">
+                <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <pattern id="grid" width="56" height="56" patternUnits="userSpaceOnUse">
+                            <path d="M 56 0 L 0 0 0 56" fill="none" stroke="white" stroke-width="1"/>
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)"/>
+                </svg>
+            </div>
+            <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl" aria-hidden="true"></div>
+            <div class="absolute -top-24 -left-24 w-80 h-80 bg-white/5 rounded-full blur-3xl" aria-hidden="true"></div>
 
-    {{-- Top POS Header Bar --}}
-    <header class="relative z-10 w-full border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md px-4 sm:px-8 py-3.5 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-            @php
-                $posLogo = !empty($posSettings['logo_url']) ? $posSettings['logo_url'] : ($theme['logo_url'] ?? null);
-            @endphp
-            @if($posLogo)
-                <img src="{{ $posLogo }}" alt="{{ $posSettings['store_name'] ?? 'POS' }}" class="h-9 w-auto max-w-[140px] object-contain rounded-lg bg-white p-1 shadow-2xs">
-            @else
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-500 flex items-center justify-center text-white shadow-md">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            <div class="relative flex flex-col justify-between w-full p-12 xl:p-16">
+                <div class="flex items-center gap-3">
+                    @php
+                        $posLogo = !empty($posSettings['logo_url']) ? $posSettings['logo_url'] : ($theme['logo_url'] ?? null);
+                    @endphp
+                    @if($posLogo)
+                        <img src="{{ $posLogo }}" alt="{{ $posSettings['store_name'] ?? $theme['site_name'] }}" class="h-14 w-14 object-contain rounded-xl bg-white p-1.5 shadow-sm">
+                    @else
+                        <div class="w-14 h-14 bg-white/15 backdrop-blur rounded-xl flex items-center justify-center">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                        </div>
+                    @endif
+                    <div>
+                        <span class="text-white text-lg font-bold tracking-tight block">{{ $posSettings['store_name'] ?? $theme['site_name'] }}</span>
+                        <span class="text-xs text-brand-200/80 font-mono">{{ $posSettings['store_code'] ?? 'PTA-SRX-01' }} &bull; Retail Kiosk</span>
+                    </div>
                 </div>
-            @endif
-            <div>
-                <div class="text-sm font-bold text-white tracking-tight flex items-center gap-2">
-                    <span>{{ $posSettings['store_name'] ?? 'Plant Tech Agro' }}</span>
-                    <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30">
-                        {{ $posSettings['store_code'] ?? 'PTA-SRX-01' }}
-                    </span>
+
+                <div class="space-y-6">
+                    <h1 class="text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+                        {{ $theme['brand_first'] }}@if($theme['brand_rest']) <span class="text-white/70">{{ $theme['brand_rest'] }}</span>@endif
+                        <span class="block text-2xl xl:text-3xl font-semibold text-brand-200 mt-2">Retail POS Terminal</span>
+                    </h1>
+                    <p class="text-brand-100 text-lg max-w-md leading-relaxed">
+                        Fast counter checkout, multi-batch stock picking, 80mm thermal receipts, customer khata ledger, and instant sales syncing.
+                    </p>
+                    <ul class="space-y-3 text-sm text-white/90">
+                        <li class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+                            </span>
+                            Instant barcode scanning, SKU lookup, and multi-batch stock picking
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                            </span>
+                            Cash, UPI, split tender, credit sales, and farmer khata ledger
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                            </span>
+                            Auto-formatted 80mm thermal receipts and zero-tax retail invoices
+                        </li>
+                    </ul>
                 </div>
-                <div class="text-[11px] text-slate-400">Retail Counter &amp; Warehouse Dispatch</div>
+
+                <p class="text-brand-200/70 text-sm">
+                    &copy; {{ date('Y') }} {{ $theme['site_name'] }}. All rights reserved.
+                </p>
             </div>
         </div>
 
-        <div class="flex items-center gap-3">
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>POS KIOSK ONLINE</span>
-            </span>
-        </div>
-    </header>
-
-    {{-- Main Container --}}
-    <main class="relative z-10 flex-1 flex items-center justify-center p-4 sm:p-6 my-auto">
-        <div class="w-full max-w-md">
-
-            {{-- Terminal Login Card --}}
-            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden">
-
-                {{-- Branded Accent Bar at Top --}}
-                <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brand-500 via-emerald-400 to-brand-600"></div>
-
-                {{-- Card Header --}}
-                <div class="text-center mb-6">
-                    <div class="w-12 h-12 mx-auto rounded-2xl bg-brand-500/15 text-brand-400 border border-brand-500/30 flex items-center justify-center mb-3 shadow-inner">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                    </div>
-                    <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Cashier Sign-in</h2>
-                    <p class="text-xs text-slate-400 mt-1">Enter your assigned cashier credentials to launch billing terminal</p>
-                </div>
-
-                {{-- Flash Notifications / Alerts --}}
-                @if(session('success'))
-                    <div class="mb-5 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
-                        <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        <span>{{ session('success') }}</span>
+        {{-- Right Form panel --}}
+        <div class="flex-1 flex items-center justify-center bg-gray-50 p-4 sm:p-8">
+            <div class="w-full max-w-md">
+                @if(session('status'))
+                    <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700">
+                        {{ session('status') }}
                     </div>
                 @endif
 
                 @if(session('error'))
-                    <div class="mb-5 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-                        <svg class="w-4 h-4 text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <span>{{ session('error') }}</span>
+                    <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+                        {{ session('error') }}
                     </div>
                 @endif
 
-                @if($errors->any())
-                    <div class="mb-5 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs space-y-1">
-                        <div class="font-bold flex items-center gap-2 text-rose-200">
-                            <svg class="w-4 h-4 text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            Authentication Error
-                        </div>
-                        <ul class="list-disc list-inside space-y-0.5 text-[11px] text-rose-300">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
-                {{-- Sign-in Form --}}
-                <form action="{{ url()->current() }}" method="POST" class="space-y-4" x-data="{ showPass: false }">
-                    @csrf
-
-                    <div>
-                        <label for="login" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
-                            Cashier ID / Email or Mobile
-                        </label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 sm:p-10">
+                    <div class="text-center mb-8">
+                        @if($posLogo)
+                            <img src="{{ $posLogo }}" alt="{{ $posSettings['store_name'] ?? $theme['site_name'] }}" class="h-20 w-auto max-w-[200px] mx-auto mb-5 object-contain">
+                        @else
+                            <div class="w-16 h-16 bg-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm text-white">
+                                <svg class="w-9 h-9" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                             </div>
-                            <input type="text"
-                                   name="login"
-                                   id="login"
-                                   value="{{ old('login') }}"
-                                   required
-                                   autofocus
-                                   placeholder="e.g. cashier@pta.com or 9876543210"
-                                   class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-700 bg-slate-800/80 text-white placeholder-slate-500 text-sm transition focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20">
-                        </div>
+                        @endif
+                        <h1 class="text-xl font-bold text-gray-900">POS Terminal Sign-in</h1>
+                        <p class="text-sm text-gray-500 mt-1">Sign in with your Cashier or Admin credentials</p>
                     </div>
 
-                    <div>
-                        <div class="flex items-center justify-between mb-1.5">
-                            <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
-                                Access Password
-                            </label>
-                            <span class="text-[11px] text-slate-500">Case-sensitive</span>
+                    @if($errors->any())
+                        <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+                            {{ $errors->first() }}
                         </div>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    @endif
+
+                    <form id="pos-login-form" method="POST" action="{{ url()->current() }}" class="space-y-5" autocomplete="on">
+                        @csrf
+
+                        <div>
+                            <label for="login" class="block text-sm font-medium text-gray-700 mb-1.5">Email or Mobile Number</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                </span>
+                                <input type="text" name="login" id="login" value="{{ old('login') }}" required autofocus
+                                       class="w-full rounded-xl border @error('login') border-red-300 @else border-gray-200 @enderror bg-gray-50 pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 transition focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                                       placeholder="cashier@planttechagro.com or 9876543210">
                             </div>
-                            <input :type="showPass ? 'text' : 'password'"
-                                   name="password"
-                                   id="password"
-                                   required
-                                   placeholder="••••••••"
-                                   class="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-700 bg-slate-800/80 text-white placeholder-slate-500 text-sm transition focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20">
-                            <button type="button"
-                                    @click="showPass = !showPass"
-                                    class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200 focus:outline-none">
-                                <svg x-show="!showPass" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                <svg x-show="showPass" x-cloak class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
-                            </button>
+                            @error('login')
+                                <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
-                    </div>
 
-                    <button type="submit"
-                            class="w-full mt-2 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-brand-600 hover:bg-brand-500 active:scale-[0.99] text-white font-bold text-sm shadow-lg shadow-brand-900/40 transition duration-150">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                        <span>Open Terminal &amp; Sign In</span>
-                    </button>
-                </form>
+                        <div x-data="{ show: false, caps: false }">
+                            <label for="password" class="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                                </span>
+                                <input :type="show ? 'text' : 'password'" name="password" id="password" required
+                                       @keydown="caps = event.getModifierState && event.getModifierState('CapsLock') ? true : false"
+                                       @keyup="caps = event.getModifierState && event.getModifierState('CapsLock') ? true : false"
+                                       class="w-full rounded-xl border @error('password') border-red-300 @else border-gray-200 @enderror bg-gray-50 pl-10 pr-12 py-2.5 text-sm text-gray-900 placeholder-gray-400 transition focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+                                       placeholder="••••••••">
+                                <button type="button" @click="show = !show"
+                                        class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition"
+                                        :aria-label="show ? 'Hide password' : 'Show password'">
+                                    <svg x-show="!show" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    <svg x-show="show" x-cloak class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                                </button>
+                            </div>
+                            <p x-show="caps" x-cloak class="mt-1.5 flex items-center gap-1.5 text-xs text-amber-600">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                Caps Lock is on
+                            </p>
+                            @error('password')
+                                <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                <div class="mt-6 pt-5 border-t border-slate-800 text-center space-y-2">
-                    <p class="text-[11px] text-slate-400">
-                        Cashier shifts and sales are recorded under your operator profile.
-                    </p>
-                    <div>
-                        <a href="{{ route('admin.login') }}" class="text-xs font-semibold text-brand-400 hover:text-brand-300 transition hover:underline">
-                            Switch to Main Admin Panel Sign-in &rarr;
-                        </a>
-                    </div>
+                        <button type="submit"
+                                class="w-full bg-brand-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-700 transition shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                                x-data="{ loading: false }"
+                                @click="setTimeout(() => loading = true, 50)">
+                            <span x-show="!loading" x-cloak class="inline-flex items-center gap-2">
+                                Open POS Terminal
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                            </span>
+                            <span x-show="loading" x-cloak class="inline-flex items-center gap-2">
+                                <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                Authenticating...
+                            </span>
+                        </button>
+                    </form>
                 </div>
 
+                <p class="text-center text-sm text-gray-500 mt-6">
+                    <a href="{{ route('admin.login') }}" class="inline-flex items-center gap-1.5 hover:text-gray-700 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                        Switch to Main Admin Panel
+                    </a>
+                </p>
             </div>
-
         </div>
-    </main>
-
-    {{-- Bottom Store Info Footer --}}
-    <footer class="relative z-10 border-t border-slate-800/80 bg-slate-900/40 px-4 sm:px-8 py-3 text-center sm:flex sm:items-center sm:justify-between text-[11px] text-slate-500">
-        <div>
-            <span>{{ $posSettings['store_address'] ?? '56 Murad House, Pine Lane-8, Kurso Rajbagh, Srinagar-190008' }}</span>
-            @if(!empty($posSettings['store_phone']))
-                <span class="mx-1.5">•</span>
-                <span>Tel: {{ $posSettings['store_phone'] }}</span>
-            @endif
-        </div>
-        <div class="mt-1 sm:mt-0 font-mono text-[10px] text-slate-400">
-            Powered by Plant Tech Agro Retail POS
-        </div>
-    </footer>
-
+    </div>
 </body>
 </html>

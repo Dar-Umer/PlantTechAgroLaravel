@@ -13,13 +13,20 @@ class LoginController extends Controller
 {
     public function showLoginForm()
     {
-        if (Auth::guard('admin')->check()) {
-            $host = request()->getHost();
-            $posHost = parse_url(config('pos.subdomain_url', 'https://pos.planttechagro.com'), PHP_URL_HOST);
-            $posPort = (int) env('POS_LOCAL_PORT', 8001);
-            $isPos = str_starts_with($host, 'pos.') || ($posHost && $host === $posHost) || (int) request()->getPort() === $posPort;
+        $host = request()->getHost();
+        $posHost = parse_url(config('pos.subdomain_url', 'https://pos.planttechagro.com'), PHP_URL_HOST);
+        $posPort = (int) env('POS_LOCAL_PORT', 8001);
+        $isPos = str_starts_with($host, 'pos.') || ($posHost && $host === $posHost) || (int) request()->getPort() === $posPort;
 
-            return redirect()->route($isPos ? 'admin.pos.terminal' : 'admin.dashboard');
+        if ($isPos) {
+            return Auth::guard('admin')->check()
+                ? redirect()->route('pos.terminal')
+                : redirect()->route('pos.login');
+        }
+
+        if (Auth::guard('admin')->check()) {
+            $admin = Auth::guard('admin')->user();
+            return redirect()->route($admin && $admin->isPosOnly() ? 'pos.terminal' : 'admin.dashboard');
         }
 
         return view('admin.auth.login');
@@ -59,7 +66,7 @@ class LoginController extends Controller
             $posHost = parse_url(config('pos.subdomain_url', 'https://pos.planttechagro.com'), PHP_URL_HOST);
             $posPort = (int) env('POS_LOCAL_PORT', 8001);
             $isPos = str_starts_with($host, 'pos.') || ($posHost && $host === $posHost) || (int) $request->getPort() === $posPort;
-            $defaultTarget = $isPos ? route('admin.pos.terminal') : route('admin.dashboard');
+            $defaultTarget = ($isPos || $admin->isPosOnly()) ? route('pos.terminal') : route('admin.dashboard');
 
             return redirect()->intended($defaultTarget);
         }

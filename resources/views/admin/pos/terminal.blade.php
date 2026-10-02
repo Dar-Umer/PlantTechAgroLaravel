@@ -60,7 +60,7 @@
             </button>
 
             {{-- Invoices History Link --}}
-            <a href="{{ route('admin.pos.sales') }}"
+            <a href="{{ route('pos.sales') }}"
                class="inline-flex items-center px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
                 <svg class="w-3.5 h-3.5 sm:mr-1.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                 <span class="hidden sm:inline">Sales History</span>
@@ -1105,7 +1105,7 @@
             async submitSettleBalance() {
                 if (!this.selectedCustomer || this.settleAmount <= 0) return;
                 try {
-                    const res = await fetch(`/admin/pos/customers/${this.selectedCustomer.id}/settle-balance`, {
+                    const res = await fetch(`/customers/${this.selectedCustomer.id}/settle-balance`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1133,7 +1133,7 @@
 
             async saveCustomer() {
                 try {
-                    const res = await fetch("{{ route('admin.pos.customers.store') }}", {
+                    const res = await fetch("{{ route('pos.customers.store') }}", {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1206,7 +1206,7 @@
                 };
 
                 try {
-                    const res = await fetch("{{ route('admin.pos.checkout') }}", {
+                    const res = await fetch("{{ route('pos.checkout') }}", {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1248,7 +1248,7 @@
                 this.completedSale = null;
                 this.selectedCustomerId = '';
                 this.mobileTab = 'catalog';
-                fetch("{{ route('admin.pos.products.search') }}")
+                fetch("{{ route('pos.products.search') }}")
                     .then(r => r.json())
                     .then(prods => {
                         this.allProducts = prods;

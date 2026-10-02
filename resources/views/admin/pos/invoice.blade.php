@@ -18,13 +18,13 @@
         {{-- Top Action Bar --}}
         <div class="no-print flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
             <div class="flex items-center gap-3">
-                <a href="{{ route('admin.pos.terminal') }}" class="inline-flex items-center text-xs font-semibold text-gray-600 hover:text-gray-900 bg-gray-100 px-3 py-2 rounded-xl transition">
+                <a href="{{ route('pos.terminal') }}" class="inline-flex items-center text-xs font-semibold text-gray-600 hover:text-gray-900 bg-gray-100 px-3 py-2 rounded-xl transition">
                     &larr; Back to Terminal
                 </a>
                 <span class="text-xs text-gray-500">Retail Sales Invoice</span>
             </div>
             <div class="flex items-center gap-2">
-                <a href="{{ route('admin.pos.receipt', $sale) }}" class="inline-flex items-center px-4 py-2 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition">
+                <a href="{{ route('pos.receipt', $sale) }}" class="inline-flex items-center px-4 py-2 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition">
                     80mm Thermal Receipt
                 </a>
                 <button onclick="window.print()" class="inline-flex items-center px-4 py-2 text-xs font-bold text-white bg-green-700 hover:bg-green-800 rounded-xl transition shadow">

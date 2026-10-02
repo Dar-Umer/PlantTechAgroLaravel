@@ -18,6 +18,19 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
+        $admin = $request->user('admin');
+        $posPort = (int) env('POS_LOCAL_PORT', 8001);
+        $posHost = parse_url(config('pos.subdomain_url', 'https://pos.planttechagro.com'), PHP_URL_HOST);
+        $posHosts = array_unique(array_filter([$posHost, 'pos.planttechagro.com', 'pos.localhost']));
+
+        $isPos = in_array($request->getHost(), $posHosts, true)
+            || (int) $request->getPort() === $posPort
+            || ($admin && $admin->isPosOnly());
+
+        if ($isPos) {
+            return redirect()->route('pos.terminal');
+        }
+
         $leadCount = Lead::count();
         $newLeads = Lead::where('status', 'new')->count();
 

@@ -85,7 +85,7 @@
     <div style="display: flex; flex-direction: column; align-items: center;">
         <div class="actions">
             <button class="btn" onclick="window.print()">Print Receipt</button>
-            <a href="{{ route('admin.pos.terminal') }}" class="btn btn-secondary">Back to POS</a>
+            <a href="{{ route('pos.terminal') }}" class="btn btn-secondary">Back to POS</a>
         </div>
 
         <div class="receipt">

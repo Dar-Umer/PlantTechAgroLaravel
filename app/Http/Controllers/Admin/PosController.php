@@ -406,8 +406,8 @@ class PosController extends Controller
                 'amount_paid' => $amountPaid,
                 'balance_due' => $balanceDue,
                 'payment_status' => $paymentStatus,
-                'receipt_url' => route('admin.pos.receipt', $sale),
-                'invoice_url' => route('admin.pos.invoice', $sale),
+                'receipt_url' => route('pos.receipt', $sale),
+                'invoice_url' => route('pos.invoice', $sale),
                 'message' => "Sale completed successfully! Invoice: {$invoiceNumber}",
             ]);
         });

@@ -11,7 +11,7 @@
             <p class="text-sm text-gray-500 mt-1">Manage all counter sales, receipts, and retail sales invoices.</p>
         </div>
         <div class="flex items-center gap-3">
-            <x-admin.button href="{{ route('admin.pos.terminal') }}" variant="primary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>'>Open Terminal</x-admin.button>
+            <x-admin.button href="{{ route('pos.terminal') }}" variant="primary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>'>Open Terminal</x-admin.button>
         </div>
     </div>
 
@@ -40,7 +40,7 @@
     </div>
 
     {{-- Filter Bar --}}
-    <form method="GET" action="{{ route('admin.pos.sales') }}" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-3">
+    <form method="GET" action="{{ route('pos.sales') }}" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-3">
         <div class="flex flex-wrap items-center gap-3">
             <div class="flex-1 min-w-[200px]">
                 <input type="text" name="q" value="{{ request('q') }}" placeholder="Search by Invoice #, customer name, phone..." class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
@@ -79,7 +79,7 @@
                 Filter
             </button>
             @if(request()->anyFilled(['q', 'payment_method', 'payment_status', 'status', 'from', 'to']))
-                <a href="{{ route('admin.pos.sales') }}" class="text-xs text-gray-500 hover:text-gray-700 underline">Clear</a>
+                <a href="{{ route('pos.sales') }}" class="text-xs text-gray-500 hover:text-gray-700 underline">Clear</a>
             @endif
         </div>
     </form>
@@ -140,14 +140,14 @@
                             </td>
                             <td class="py-3.5 px-4 text-right">
                                 <div class="inline-flex items-center gap-2">
-                                    <a href="{{ route('admin.pos.receipt', $sale) }}" target="_blank" title="80mm Thermal Receipt" class="p-1.5 text-gray-500 hover:text-brand-600 hover:bg-gray-100 rounded-lg transition">
+                                    <a href="{{ route('pos.receipt', $sale) }}" target="_blank" title="80mm Thermal Receipt" class="p-1.5 text-gray-500 hover:text-brand-600 hover:bg-gray-100 rounded-lg transition">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                                     </a>
-                                    <a href="{{ route('admin.pos.invoice', $sale) }}" target="_blank" title="Retail Sales Invoice" class="p-1.5 text-gray-500 hover:text-green-600 hover:bg-gray-100 rounded-lg transition">
+                                    <a href="{{ route('pos.invoice', $sale) }}" target="_blank" title="Retail Sales Invoice" class="p-1.5 text-gray-500 hover:text-green-600 hover:bg-gray-100 rounded-lg transition">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                     </a>
                                     @if($sale->isCompleted())
-                                        <form method="POST" action="{{ route('admin.pos.sales.cancel', $sale) }}" onsubmit="return confirm('Cancel this sale? Deducted inventory and customer balance will be reversed.');" class="inline">
+                                        <form method="POST" action="{{ route('pos.sales.cancel', $sale) }}" onsubmit="return confirm('Cancel this sale? Deducted inventory and customer balance will be reversed.');" class="inline">
                                             @csrf
                                             <button type="submit" title="Cancel Sale & Reverse Stock" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -162,7 +162,7 @@
                             <td colspan="8" class="py-12 text-center text-gray-400">
                                 <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                                 <p class="text-sm font-medium">No POS sales recorded yet</p>
-                                <a href="{{ route('admin.pos.terminal') }}" class="mt-2 inline-block text-xs font-bold text-brand-600 hover:underline">Open Terminal to start selling &rarr;</a>
+                                <a href="{{ route('pos.terminal') }}" class="mt-2 inline-block text-xs font-bold text-brand-600 hover:underline">Open Terminal to start selling &rarr;</a>
                             </td>
                         </tr>
                     @endforelse

@@ -90,6 +90,15 @@
             default => 'text-gray-500',
         };
         $topbarBg = $sidebarStyle === 'light' ? 'bg-gray-50' : 'bg-white';
+
+        $posPort = (int) env('POS_LOCAL_PORT', 8001);
+        $posHost = parse_url(config('pos.subdomain_url', 'https://pos.planttechagro.com'), PHP_URL_HOST);
+        $posHosts = array_unique(array_filter([$posHost, 'pos.planttechagro.com', 'pos.localhost']));
+        $currentAdmin = Auth::guard('admin')->user();
+        $isPosOnlyUser = (bool) $currentAdmin?->isPosOnly();
+        $isPosSubdomainOrPort = in_array(request()->getHost(), $posHosts, true) || (int) request()->getPort() === $posPort;
+        $isPosContext = $isPosSubdomainOrPort || request()->routeIs('pos.*') || request()->routeIs('admin.pos.*') || $isPosOnlyUser;
+        $brandHomeUrl = $isPosContext ? (Route::has('pos.terminal') ? route('pos.terminal') : route('admin.pos.terminal')) : route('admin.dashboard');
     @endphp
 </head>
 <body class="bg-gray-100 font-sans antialiased">
@@ -114,7 +123,7 @@
 
             <!-- Branding -->
             <div class="flex items-center justify-between h-20 px-6 {{ $sidebarBg }} border-b {{ $sidebarBorder }}">
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-3 py-1">
+                <a href="{{ $brandHomeUrl }}" class="flex items-center space-x-3 py-1">
                     @if(!empty($theme['logo_url']))
                         <img src="{{ $theme['logo_url'] }}" alt="{{ $theme['site_name'] }}" class="h-12 max-h-14 w-auto max-w-[180px] object-contain rounded-lg">
                     @else
@@ -161,9 +170,11 @@
                         $activeWorkOrdersCount = 0;
                     }
 
-                    $groups = [
-                        // Core Direct Overview
-                        [
+                    $groups = [];
+
+                    // Core Direct Overview (Hidden in POS Section & POS Subdomain)
+                    if (! $isPosContext) {
+                        $groups[] = [
                             'label' => null,
                             'items' => [
                                 [
@@ -172,8 +183,10 @@
                                     'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>',
                                 ],
                             ],
-                        ],
+                        ];
+                    }
 
+                    $adminModuleGroups = [
                         // 1. CRM & Pipeline (Inquiries, Proposals, Farmers & Landholdings)
                         [
                             'label' => 'CRM & Pipeline',
@@ -231,8 +244,8 @@
                             'label' => 'Point of Sale (POS)',
                             'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>',
                             'items' => [
-                                ['route' => 'admin.pos.terminal', 'label' => 'POS Terminal'],
-                                ['route' => 'admin.pos.sales', 'label' => 'POS Invoices & Sales'],
+                                ['route' => 'pos.terminal', 'label' => 'POS Terminal'],
+                                ['route' => 'pos.sales', 'label' => 'POS Invoices & Sales'],
                                 ['route' => 'admin.settings.pos', 'label' => 'POS & Store Settings'],
                             ],
                         ],
@@ -303,6 +316,15 @@
                             ],
                         ],
                     ];
+
+                    foreach ($adminModuleGroups as $modGroup) {
+                        $groups[] = $modGroup;
+                    }
+
+                    if ($isPosOnlyUser || $isPosSubdomainOrPort) {
+                        $allowedLabels = ['Point of Sale (POS)', 'Inventory & Stock'];
+                        $groups = array_values(array_filter($groups, fn($g) => in_array($g['label'] ?? '', $allowedLabels, true)));
+                    }
                 @endphp
 
                 @php
@@ -310,9 +332,12 @@
                     $superOnlyRoutes = ['admin.roles.index', 'admin.staff.index', 'admin.automation.index', 'admin.settings.index', 'admin.settings.pos', 'admin.mobile-apps.index', 'admin.notification-templates.index', 'admin.document-settings.index'];
                     $isPosOnlyUser = $currentAdmin?->isPosOnly();
                     $posAndStockAllowed = [
-                        'admin.dashboard',
+                        'pos.terminal',
+                        'pos.sales',
+                        'pos.settings',
                         'admin.pos.terminal',
                         'admin.pos.sales',
+                        'admin.settings.pos',
                         'admin.products.index',
                         'admin.product-batches.index',
                         'admin.stock-movements.index',
@@ -322,6 +347,9 @@
 
                     $routePermissionMap = [
                         'admin.dashboard' => null,
+                        'pos.terminal' => 'pos.terminal',
+                        'pos.sales' => 'pos.sales.view',
+                        'pos.settings' => 'settings.manage',
                         'admin.pos.terminal' => 'pos.terminal',
                         'admin.pos.sales' => 'pos.sales.view',
                         'admin.settings.pos' => 'settings.manage',
@@ -1001,7 +1029,11 @@
                 search: '',
                 selectedIndex: 0,
                 items: [
+                    @if(!$isPosContext)
                     { title: 'Dashboard', category: 'Navigation', url: '{{ route('admin.dashboard') }}', icon: 'M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25' },
+                    @endif
+                    { title: 'POS Terminal', category: 'Point of Sale', url: '{{ route('pos.terminal') }}', icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z' },
+                    { title: 'POS Invoices & Sales', category: 'Point of Sale', url: '{{ route('pos.sales') }}', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
                     
                     // Quick Actions
                     { title: 'New Quotation / Estimate', category: 'Quick Actions', url: '{{ route('admin.quotations.create') }}', icon: 'M12 4v16m8-8H4' },

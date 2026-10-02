@@ -24,7 +24,30 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
 
-        $middleware->redirectUsersTo(fn () => route('admin.dashboard'));
+        $middleware->redirectGuestsTo(function (\Illuminate\Http\Request $request) {
+            $posPort = (int) env('POS_LOCAL_PORT', 8001);
+            $posHost = parse_url(config('pos.subdomain_url', 'https://pos.planttechagro.com'), PHP_URL_HOST);
+            $posHosts = array_unique(array_filter([$posHost, 'pos.planttechagro.com', 'pos.localhost']));
+
+            if (in_array($request->getHost(), $posHosts, true) || (int) $request->getPort() === $posPort) {
+                return route('pos.login');
+            }
+
+            return route('admin.login');
+        });
+
+        $middleware->redirectUsersTo(function (\Illuminate\Http\Request $request) {
+            $posPort = (int) env('POS_LOCAL_PORT', 8001);
+            $posHost = parse_url(config('pos.subdomain_url', 'https://pos.planttechagro.com'), PHP_URL_HOST);
+            $posHosts = array_unique(array_filter([$posHost, 'pos.planttechagro.com', 'pos.localhost']));
+
+            $admin = $request->user('admin');
+            $isPos = in_array($request->getHost(), $posHosts, true)
+                || (int) $request->getPort() === $posPort
+                || ($admin && $admin->isPosOnly());
+
+            return $isPos ? route('pos.terminal') : route('admin.dashboard');
+        });
     })
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('invoices:process-overdue')->dailyAt('00:15');

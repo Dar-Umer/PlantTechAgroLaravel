@@ -19,11 +19,11 @@
         </div>
 
         <div class="flex items-center gap-2">
-            <x-admin.button href="{{ route('admin.pos.sales') }}" variant="secondary">Back to Sales</x-admin.button>
-            <a href="{{ route('admin.pos.receipt', $sale) }}" target="_blank" class="inline-flex items-center px-3.5 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 shadow-sm transition">
+            <x-admin.button href="{{ route('pos.sales') }}" variant="secondary">Back to Sales</x-admin.button>
+            <a href="{{ route('pos.receipt', $sale) }}" target="_blank" class="inline-flex items-center px-3.5 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 shadow-sm transition">
                 80mm Receipt
             </a>
-            <a href="{{ route('admin.pos.invoice', $sale) }}" target="_blank" class="inline-flex items-center px-3.5 py-2 text-xs font-bold text-white bg-green-700 hover:bg-green-800 rounded-xl shadow-sm transition">
+            <a href="{{ route('pos.invoice', $sale) }}" target="_blank" class="inline-flex items-center px-3.5 py-2 text-xs font-bold text-white bg-green-700 hover:bg-green-800 rounded-xl shadow-sm transition">
                 Retail Invoice
             </a>
         </div>
