@@ -17,7 +17,7 @@ class PosInvoiceNumberer
 
     public static function next(): string
     {
-        $prefix = 'POS';
+        $prefix = config('pos.invoice_prefix', 'POS');
         $fy = self::fiscalYear();
 
         $seq = PosSale::where('invoice_number', 'like', $prefix.'/'.$fy.'/%')->count() + 1;

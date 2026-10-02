@@ -20,10 +20,10 @@
         }
         .receipt {
             background: #fff;
-            width: 80mm;
+            width: {{ config('pos.paper_width', '80mm') === '58mm' ? '58mm' : '80mm' }};
             max-width: 100%;
             padding: 12px 10px;
-            font-size: 11px;
+            font-size: {{ config('pos.paper_width', '80mm') === '58mm' ? '9.5px' : '11px' }};
             line-height: 1.35;
             color: #000;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -90,10 +90,16 @@
 
         <div class="receipt">
             <div class="center">
-                <div class="bold" style="font-size: 15px;">{{ strtoupper(config('shop.site_name', 'PLANT TECH AGRO')) }}</div>
-                <div style="font-size: 9px; margin-top: 2px;">{{ config('shop.footer_tagline', 'Modern Orchard & Precision Agriculture') }}</div>
-                <div style="font-size: 9px;">{{ config('shop.site_address', '56 Murad House, Pine Lane-8, Kurso Rajbagh, Srinagar-190008, Jammu & Kashmir') }}</div>
-                <div style="font-size: 9px;">Phone: {{ config('shop.site_phone', '0194-796-1490') }}</div>
+                @if(config('pos.show_logo') && config('pos.logo_url'))
+                    <img src="{{ config('pos.logo_url') }}" alt="Store Logo" style="max-height: 40px; margin-bottom: 4px;">
+                @endif
+                <div class="bold" style="font-size: 15px;">{{ strtoupper(config('pos.store_name', config('shop.site_name', 'PLANT TECH AGRO'))) }}</div>
+                <div style="font-size: 9px; margin-top: 2px;">{{ config('pos.header_notes', config('shop.footer_tagline', 'Modern Orchard & Precision Agriculture')) }}</div>
+                <div style="font-size: 9px;">{{ config('pos.store_address', config('shop.site_address', '56 Murad House, Pine Lane-8, Kurso Rajbagh, Srinagar-190008, Jammu & Kashmir')) }}</div>
+                <div style="font-size: 9px;">Phone: {{ config('pos.store_phone', config('shop.site_phone', '0194-796-1490')) }}</div>
+                @if(config('pos.gstin'))
+                    <div style="font-size: 9px;">GSTIN: {{ config('pos.gstin') }}</div>
+                @endif
             </div>
 
             <div class="divider"></div>
@@ -105,7 +111,9 @@
             <div>
                 <div><strong>Invoice:</strong> {{ $sale->invoice_number }}</div>
                 <div><strong>Date:</strong> {{ $sale->sale_date->format('d/m/Y h:i A') }}</div>
-                <div><strong>Cashier:</strong> {{ $sale->cashier?->name ?? 'Admin Staff' }}</div>
+                @if(config('pos.show_cashier', true))
+                    <div><strong>Cashier:</strong> {{ $sale->cashier?->name ?? 'Admin Staff' }}</div>
+                @endif
                 @if($sale->customer_name && $sale->customer_name !== 'Walk-in Customer')
                     <div><strong>Customer:</strong> {{ $sale->customer_name }}</div>
                     @if($sale->customer_phone) <div><strong>Phone:</strong> {{ $sale->customer_phone }}</div> @endif
@@ -213,10 +221,22 @@
 
             <div class="divider"></div>
 
+            @if(config('pos.show_upi_qr') && config('pos.upi_vpa'))
+                <div class="center" style="margin: 8px 0; font-size: 8px;">
+                    <div style="font-weight: bold; margin-bottom: 2px;">SCAN TO PAY VIA UPI</div>
+                    @php
+                        $upiUrl = "upi://pay?pa=" . urlencode(config('pos.upi_vpa')) . "&pn=" . urlencode(config('pos.upi_payee_name', 'Plant Tech Agro')) . "&am=" . $sale->grand_total . "&cu=INR";
+                    @endphp
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data={{ urlencode($upiUrl) }}" alt="UPI QR" style="width: 75px; height: 75px; display: inline-block;">
+                    <div style="font-family: monospace; font-size: 8px; margin-top: 2px;">{{ config('pos.upi_vpa') }}</div>
+                </div>
+                <div class="divider"></div>
+            @endif
+
             <div class="center" style="font-size: 9px; margin-top: 8px;">
-                <div>Thank you for choosing Plant Tech Agro!</div>
-                <div>Keep receipt for warranty/returns within 7 days.</div>
-                <div style="margin-top: 4px; font-weight: bold;">www.planttechagro.com</div>
+                <div>{{ config('pos.footer_notes', 'Thank you for choosing Plant Tech Agro!') }}</div>
+                <div style="margin-top: 3px; font-size: 8px; color: #444;">{{ config('pos.return_policy', 'Keep receipt for warranty/returns within 7 days.') }}</div>
+                <div style="margin-top: 4px; font-weight: bold;">{{ parse_url(config('pos.subdomain_url', 'https://pos.planttechagro.com'), PHP_URL_HOST) ?? 'pos.planttechagro.com' }}</div>
             </div>
         </div>
     </div>

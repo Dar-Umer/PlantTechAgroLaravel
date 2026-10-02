@@ -11,7 +11,9 @@
     $initialDefaults = $selectedSvc ? $selectedSvc->getQuotationDefaults() : [];
 
     $initialShowVariety = $initialDefaults['show_variety'] ?? (!empty($leadData['variety_name']) || $initialServiceType === 'orchard');
-    $initialShowPackage = $initialDefaults['show_package'] ?? ($initialServiceType === 'orchard' || $initialServiceType === 'installation');
+    $initialShowPackage = old('show_package') !== null
+        ? (old('show_package') === '1' || old('show_package') === true)
+        : ($initialDefaults['show_package'] ?? ($initialServiceType === 'orchard' || $initialServiceType === 'installation'));
 
     $matchedVariationIndex = null;
     $serviceVariations = $initialDefaults['variations'] ?? [];
@@ -105,40 +107,40 @@
 
     {{-- Page Header & Active Service Design Status Banner --}}
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div class="flex items-center gap-3">
+        <div class="flex items-start sm:items-center gap-3">
             <x-admin.button href="{{ $lead ? route('admin.leads.show', $lead) : route('admin.quotations.index') }}" variant="secondary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>'>
                 Back
             </x-admin.button>
             <div>
-                <div class="flex items-center gap-2.5 flex-wrap">
-                    <h2 class="text-2xl font-bold text-gray-900">Create Quotation / Proforma</h2>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">Create Quotation / Proforma</h2>
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border shadow-2xs transition-all"
                           :style="{ backgroundColor: accentColor + '15', color: accentColor, borderColor: accentColor + '35' }">
                         <span class="w-2.5 h-2.5 rounded-full shadow-2xs" :style="{ backgroundColor: accentColor }"></span>
                         <span x-text="documentTitle + ' • ' + formatStyleName(serviceType)"></span>
                     </span>
                 </div>
-                <p class="text-xs text-gray-500 mt-0.5">Quotation styling, headers, and fields adapt automatically from the selected Service Reference.</p>
+                <p class="text-xs text-gray-500 mt-1">Quotation styling, headers, and fields adapt automatically from the selected Service Reference.</p>
             </div>
         </div>
 
         <div class="flex items-center gap-2 flex-wrap">
             <a :href="selectedServiceId ? ('{{ url('/admin/services') }}/' + selectedServiceId + '/edit?tab=quotation') : '{{ route('admin.services.index') }}'"
                target="_blank"
-               class="px-3.5 py-1.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-xs font-semibold text-gray-700 transition inline-flex items-center gap-1.5 shadow-2xs">
+               class="px-3 py-1.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-xs font-semibold text-gray-700 transition inline-flex items-center gap-1.5 shadow-2xs whitespace-nowrap">
                 <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                 <span>Edit Service in Designer ↗</span>
             </a>
 
             <button type="button" @click="showLivePreview = !showLivePreview"
-                    class="px-3.5 py-1.5 rounded-xl border text-xs font-semibold transition inline-flex items-center gap-1.5 shadow-2xs"
+                    class="px-3 py-1.5 rounded-xl border text-xs font-semibold transition inline-flex items-center gap-1.5 shadow-2xs whitespace-nowrap"
                     :class="showLivePreview ? 'bg-brand-50 border-brand-200 text-brand-700' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                 <span x-text="showLivePreview ? 'Live Preview Active' : 'Show Live Preview'"></span>
             </button>
 
             @if($lead)
-                <span class="inline-flex items-center px-3 py-1.5 rounded-xl bg-brand-50 text-brand-700 text-xs font-semibold border border-brand-100">
+                <span class="inline-flex items-center px-3 py-1.5 rounded-xl bg-brand-50 text-brand-700 text-xs font-semibold border border-brand-100 whitespace-nowrap">
                     Lead: {{ $lead->name }}
                 </span>
             @endif
@@ -159,6 +161,7 @@
     {{-- Form & Live Document Design Preview Layout --}}
     <form action="{{ route('admin.quotations.store') }}" method="POST">
         @csrf
+        <input type="hidden" name="show_package" :value="showPackageInclusions ? '1' : '0'">
         @if($lead)
             <input type="hidden" name="lead_id" value="{{ $lead->id }}">
         @endif
@@ -170,13 +173,13 @@
                  :class="{ 'lg:col-span-12': !showLivePreview, 'lg:col-span-7': showLivePreview }">
 
                 {{-- 1. Client & Document Information --}}
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 space-y-5">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-1">Quotation Prepared For</h3>
-                        <p class="text-sm text-gray-500">Client contact details and proforma validity timeline.</p>
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-1">Quotation Prepared For</h3>
+                        <p class="text-xs sm:text-sm text-gray-500">Client contact details and proforma validity timeline.</p>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5">
                         <x-admin.input name="customer_name" label="Client / Farmer Name"
                                        x-model="customerName"
                                        :value="old('customer_name', $leadData['customer_name'] ?? '')"
@@ -193,13 +196,13 @@
                                        placeholder="farmer@example.com" />
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
                         <x-admin.input name="customer_area" label="Area"
                                        x-model="customerArea"
                                        :value="old('customer_area', $leadData['customer_area'] ?? '')"
                                        placeholder="e.g. 5 Kanal" />
 
-                        <div class="md:col-span-2">
+                        <div class="sm:col-span-2">
                             <x-admin.input name="customer_address" label="Orchard Location"
                                            x-model="customerAddress"
                                            :value="old('customer_address', $leadData['customer_address'] ?? '')"
@@ -207,7 +210,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 pt-3 border-t border-gray-100">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 pt-3 border-t border-gray-100">
                         <x-admin.input name="date" label="Quotation Date" type="date"
                                        x-model="quotationDate"
                                        :value="old('date', date('Y-m-d'))" required />
@@ -228,15 +231,16 @@
                 </div>
 
                 {{-- 2. Project & Service Scope (Decides Style and Input Fields) --}}
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
-                    <div class="flex items-center justify-between flex-wrap gap-2">
+                {{-- 2. Project & Service Scope (Decides Style and Input Fields) --}}
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 space-y-5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-1">Project / Service Scope</h3>
-                            <p class="text-sm text-gray-500">Select the service to load the quotation styling, document titles, milestones, and relevant fields.</p>
+                            <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-1">Project / Service Scope</h3>
+                            <p class="text-xs sm:text-sm text-gray-500">Select the service to load the quotation styling, document titles, milestones, and relevant fields.</p>
                         </div>
 
                         {{-- Optional Field Toggles for Admin Customization --}}
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 flex-wrap">
                             <button type="button" @click="showVarietyDetails = !showVarietyDetails"
                                     class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition"
                                     :class="showVarietyDetails ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'">
@@ -250,7 +254,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">
                                 Service Reference <span class="text-brand-600 font-bold">*</span>
@@ -284,10 +288,10 @@
                     </div>
 
                     {{-- Package / Density Variations Selector --}}
-                    <div x-show="variations && variations.length > 0" x-transition class="rounded-2xl border border-brand-200 bg-brand-50/50 p-4 space-y-3">
-                        <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div x-show="variations && variations.length > 0" x-transition class="rounded-2xl border border-brand-200 bg-brand-50/50 p-3.5 sm:p-4 space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div class="flex items-center gap-2.5">
-                                <div class="w-8 h-8 rounded-xl bg-brand-600 text-white flex items-center justify-center text-xs font-bold shadow-2xs">
+                                <div class="w-8 h-8 rounded-xl bg-brand-600 text-white flex items-center justify-center text-xs font-bold shadow-2xs flex-shrink-0">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2H5a2 2 0 00-2 2v2m14 0h.01M5 11h.01"/></svg>
                                 </div>
                                 <div>
@@ -324,7 +328,7 @@
                     </div>
 
                     {{-- Inner Variety Specification Card (Dynamically Shown for Orchard / Plants) --}}
-                    <div x-show="showVarietyDetails" x-transition class="rounded-xl border border-emerald-100 bg-emerald-50/40 p-5 space-y-3">
+                    <div x-show="showVarietyDetails" x-transition class="rounded-xl border border-emerald-100 bg-emerald-50/40 p-3.5 sm:p-5 space-y-3">
                         <div class="flex items-center justify-between">
                             <h4 class="text-sm font-bold text-emerald-900 flex items-center gap-2">
                                 <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
@@ -333,7 +337,7 @@
                             <span class="text-xs text-emerald-700 font-medium">Included on Printed Proforma</span>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Booked Variety</label>
                                 <input type="text" name="variety_name" x-model="selectedVariety"
@@ -379,11 +383,11 @@
                 </div>
 
                 {{-- 3. Deliverables Table --}}
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 space-y-4">
                     <div class="flex items-center justify-between flex-wrap gap-2">
                         <div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-1">Deliverables &amp; Cost Breakdown</h3>
-                            <p class="text-sm text-gray-500">Itemized deliverables, units, quantities and rates.</p>
+                            <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-1">Deliverables &amp; Cost Breakdown</h3>
+                            <p class="text-xs sm:text-sm text-gray-500">Itemized deliverables, units, quantities and rates.</p>
                         </div>
 
                         <button type="button" @click="addItem()"
@@ -393,16 +397,16 @@
                     </div>
 
                     <div class="overflow-x-auto rounded-xl border border-gray-200">
-                        <table class="w-full text-left text-sm text-gray-600">
+                        <table class="w-full text-left text-sm text-gray-600 min-w-[680px]">
                             <thead class="bg-gray-50 border-b border-gray-200 text-gray-500 text-xs font-semibold uppercase tracking-wider">
                                 <tr>
-                                    <th class="py-3 px-3.5 w-1/3">Deliverable / Service Description</th>
-                                    <th class="py-3 px-3 text-center w-24">Unit</th>
-                                    <th class="py-3 px-3 text-center w-20">Qty</th>
-                                    <th class="py-3 px-3 text-right w-28">Rate (₹)</th>
-                                    <th class="py-3 px-3 text-right w-24">Discount (₹)</th>
-                                    <th class="py-3 px-3 text-center w-20">GST %</th>
-                                    <th class="py-3 px-3 text-right w-28">Total (₹)</th>
+                                    <th class="py-3 px-3.5 w-1/3 min-w-[190px]">Deliverable / Service Description</th>
+                                    <th class="py-3 px-2 text-center w-24 min-w-[75px]">Unit</th>
+                                    <th class="py-3 px-2 text-center w-20 min-w-[70px]">Qty</th>
+                                    <th class="py-3 px-2 text-right w-28 min-w-[95px]">Rate (₹)</th>
+                                    <th class="py-3 px-2 text-right w-24 min-w-[85px]">Discount (₹)</th>
+                                    <th class="py-3 px-2 text-center w-20 min-w-[70px]">GST %</th>
+                                    <th class="py-3 px-3 text-right w-28 min-w-[95px]">Total (₹)</th>
                                     <th class="py-3 px-2 text-center w-10"></th>
                                 </tr>
                             </thead>
@@ -416,33 +420,33 @@
                                                    required
                                                    class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-900 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                                         </td>
-                                        <td class="py-2.5 px-3">
+                                        <td class="py-2.5 px-2">
                                             <input type="text" :name="'items[' + index + '][unit]'"
                                                    x-model="item.unit"
-                                                   placeholder="Kanal, Pcs, Job"
+                                                   placeholder="Kanal, Pcs"
                                                    class="w-full text-center rounded-xl border border-gray-200 bg-gray-50 px-2 py-2 text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                                         </td>
-                                        <td class="py-2.5 px-3">
+                                        <td class="py-2.5 px-2">
                                             <input type="number" step="0.001" :name="'items[' + index + '][qty]'"
                                                    x-model.number="item.qty"
                                                    min="0.001"
                                                    required
                                                    class="w-full text-center rounded-xl border border-gray-200 bg-gray-50 px-2 py-2 text-sm font-medium focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                                         </td>
-                                        <td class="py-2.5 px-3">
+                                        <td class="py-2.5 px-2">
                                             <input type="number" step="0.01" :name="'items[' + index + '][rate]'"
                                                    x-model.number="item.rate"
                                                    min="0"
                                                    required
                                                    class="w-full text-right rounded-xl border border-gray-200 bg-gray-50 px-2.5 py-2 text-sm font-medium focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                                         </td>
-                                        <td class="py-2.5 px-3">
+                                        <td class="py-2.5 px-2">
                                             <input type="number" step="0.01" :name="'items[' + index + '][discount]'"
                                                    x-model.number="item.discount"
                                                    min="0"
                                                    class="w-full text-right rounded-xl border border-gray-200 bg-gray-50 px-2 py-2 text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                                         </td>
-                                        <td class="py-2.5 px-3">
+                                        <td class="py-2.5 px-2">
                                             <input type="number" step="0.01" :name="'items[' + index + '][gst_rate]'"
                                                    x-model.number="item.gst_rate"
                                                    min="0" max="100"
@@ -466,7 +470,7 @@
 
                     {{-- Totals Summary --}}
                     <div class="flex justify-end pt-2">
-                        <div class="w-80 space-y-2.5 text-sm bg-gray-50 rounded-2xl p-5 border border-gray-200">
+                        <div class="w-full sm:w-80 space-y-2.5 text-sm bg-gray-50 rounded-2xl p-4 sm:p-5 border border-gray-200">
                             <div class="flex justify-between text-gray-600">
                                 <span>Taxable Subtotal:</span>
                                 <span class="font-semibold text-gray-900 tabular-nums">₹<span x-text="formatMoney(subtotal)"></span></span>
@@ -491,12 +495,12 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                     {{-- Payment Schedule Milestones --}}
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4"
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 space-y-4"
                          :class="showPackageInclusions ? '' : 'md:col-span-2'">
                         <div class="flex items-center justify-between border-b border-gray-100 pb-3">
                             <div>
-                                <h3 class="text-lg font-semibold text-gray-900">Payment Schedule</h3>
-                                <p class="text-sm text-gray-500">Milestone percentages &amp; calculated amounts based on Grand Total.</p>
+                                <h3 class="text-base sm:text-lg font-semibold text-gray-900">Payment Schedule</h3>
+                                <p class="text-xs sm:text-sm text-gray-500">Milestone percentages &amp; calculated amounts based on Grand Total.</p>
                             </div>
 
                             <button type="button" @click="addMilestone()"
@@ -507,40 +511,44 @@
 
                         <div class="space-y-3">
                             <template x-for="(m, mIdx) in milestones" :key="mIdx">
-                                <div class="flex items-center gap-2.5 p-3 bg-gray-50 rounded-xl border border-gray-200">
-                                    <div class="w-16 flex-shrink-0">
-                                        <div class="flex items-center bg-white rounded-lg border border-gray-200 px-2 py-1">
-                                            <input type="number" :name="'payment_schedule[' + mIdx + '][percent]'"
-                                                   x-model.number="m.percent"
-                                                   class="w-full text-xs font-bold text-brand-700 text-center focus:outline-none"
-                                                   min="0" max="100">
-                                            <span class="text-xs text-gray-400 font-bold">%</span>
+                                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-2.5 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                                    <div class="flex items-center gap-2 flex-1 min-w-0">
+                                        <div class="w-16 flex-shrink-0">
+                                            <div class="flex items-center bg-white rounded-lg border border-gray-200 px-2 py-1">
+                                                <input type="number" :name="'payment_schedule[' + mIdx + '][percent]'"
+                                                       x-model.number="m.percent"
+                                                       class="w-full text-xs font-bold text-brand-700 text-center focus:outline-none"
+                                                       min="0" max="100">
+                                                <span class="text-xs text-gray-400 font-bold">%</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <input type="text" :name="'payment_schedule[' + mIdx + '][stage]'"
+                                                   x-model="m.stage"
+                                                   placeholder="e.g. Advance at the time of booking"
+                                                   required
+                                                   class="w-full text-xs font-medium bg-white rounded-lg border border-gray-200 py-1.5 px-3 focus:outline-none focus:border-brand-500">
                                         </div>
                                     </div>
-                                    <div class="flex-1">
-                                        <input type="text" :name="'payment_schedule[' + mIdx + '][stage]'"
-                                               x-model="m.stage"
-                                               placeholder="e.g. Advance at the time of booking"
-                                               required
-                                               class="w-full text-xs font-medium bg-white rounded-lg border border-gray-200 py-1.5 px-3 focus:outline-none focus:border-brand-500">
+                                    <div class="flex items-center justify-between sm:justify-end gap-3 pt-1.5 sm:pt-0 border-t sm:border-t-0 border-gray-200/60">
+                                        <div class="text-right font-bold text-xs text-gray-900 tabular-nums">
+                                            ₹<span x-text="milestoneAmount(m.percent)"></span>
+                                        </div>
+                                        <button type="button" @click="removeMilestone(mIdx)"
+                                                class="text-gray-400 hover:text-red-600 transition p-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        </button>
                                     </div>
-                                    <div class="w-28 text-right flex-shrink-0 font-bold text-xs text-gray-900 tabular-nums">
-                                        ₹<span x-text="milestoneAmount(m.percent)"></span>
-                                    </div>
-                                    <button type="button" @click="removeMilestone(mIdx)"
-                                            class="text-gray-400 hover:text-red-600 transition p-1">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                    </button>
                                 </div>
                             </template>
                         </div>
                     </div>
 
                     {{-- Project Package Inclusions (Dynamically Shown for Orchard / Installation) --}}
-                    <div x-show="showPackageInclusions" x-transition class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+                    <div x-show="showPackageInclusions" x-transition class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 space-y-4">
                         <div class="border-b border-gray-100 pb-3">
-                            <h3 class="text-lg font-semibold text-gray-900">Project Package / Inclusions</h3>
-                            <p class="text-sm text-gray-500">Physical equipment &amp; plant inventory specifications.</p>
+                            <h3 class="text-base sm:text-lg font-semibold text-gray-900">Project Package / Inclusions</h3>
+                            <p class="text-xs sm:text-sm text-gray-500">Physical equipment &amp; plant inventory specifications.</p>
                         </div>
 
                         <div>
@@ -551,39 +559,39 @@
                                    class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 disabled:opacity-50">
                         </div>
 
-                        <div class="grid grid-cols-3 gap-3 pt-1">
-                            <div class="bg-gray-50 rounded-xl p-3.5 border border-gray-200 text-center">
-                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Poles</div>
+                        <div class="grid grid-cols-3 gap-2 sm:gap-3 pt-1">
+                            <div class="bg-gray-50 rounded-xl p-2.5 sm:p-3.5 border border-gray-200 text-center">
+                                <div class="text-[11px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Poles</div>
                                 <input type="number" name="package_poles" x-model.number="packagePoles"
                                        :disabled="!showPackageInclusions"
-                                       class="w-full text-center text-xl font-bold text-gray-900 bg-white rounded-lg border border-gray-200 mt-2 py-1.5 focus:outline-none focus:border-brand-500 disabled:opacity-50">
+                                       class="w-full text-center text-lg sm:text-xl font-bold text-gray-900 bg-white rounded-lg border border-gray-200 mt-1.5 sm:mt-2 py-1 sm:py-1.5 focus:outline-none focus:border-brand-500 disabled:opacity-50">
                             </div>
 
-                            <div class="bg-gray-50 rounded-xl p-3.5 border border-gray-200 text-center">
-                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Anchors</div>
+                            <div class="bg-gray-50 rounded-xl p-2.5 sm:p-3.5 border border-gray-200 text-center">
+                                <div class="text-[11px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Anchors</div>
                                 <input type="number" name="package_anchors" x-model.number="packageAnchors"
                                        :disabled="!showPackageInclusions"
-                                       class="w-full text-center text-xl font-bold text-gray-900 bg-white rounded-lg border border-gray-200 mt-2 py-1.5 focus:outline-none focus:border-brand-500 disabled:opacity-50">
+                                       class="w-full text-center text-lg sm:text-xl font-bold text-gray-900 bg-white rounded-lg border border-gray-200 mt-1.5 sm:mt-2 py-1 sm:py-1.5 focus:outline-none focus:border-brand-500 disabled:opacity-50">
                             </div>
 
-                            <div class="bg-gray-50 rounded-xl p-3.5 border border-gray-200 text-center">
-                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Plants</div>
+                            <div class="bg-gray-50 rounded-xl p-2.5 sm:p-3.5 border border-gray-200 text-center">
+                                <div class="text-[11px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Plants</div>
                                 <input type="number" name="package_plants" x-model.number="packagePlants"
                                        :disabled="!showPackageInclusions"
-                                       class="w-full text-center text-xl font-bold text-gray-900 bg-white rounded-lg border border-gray-200 mt-2 py-1.5 focus:outline-none focus:border-brand-500 disabled:opacity-50">
+                                       class="w-full text-center text-lg sm:text-xl font-bold text-gray-900 bg-white rounded-lg border border-gray-200 mt-1.5 sm:mt-2 py-1 sm:py-1.5 focus:outline-none focus:border-brand-500 disabled:opacity-50">
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {{-- 5. Additional Notes & Internal Notes --}}
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 space-y-4">
                     <div class="border-b border-gray-100 pb-3">
-                        <h3 class="text-lg font-semibold text-gray-900">Additional Notes &amp; Scope Remarks</h3>
-                        <p class="text-sm text-gray-500">Service-specific bullet points printed on proforma vs internal remarks.</p>
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900">Additional Notes &amp; Scope Remarks</h3>
+                        <p class="text-xs sm:text-sm text-gray-500">Service-specific bullet points printed on proforma vs internal remarks.</p>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Proforma Additional Notes (Bullet Points)</label>
                             <textarea name="additional_notes" x-model="additionalNotes" rows="4"
@@ -605,14 +613,14 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                     {{-- Bank Account Details --}}
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 space-y-4">
                         <div class="border-b border-gray-100 pb-3">
-                            <h3 class="text-lg font-semibold text-gray-900">Bank Account Details</h3>
-                            <p class="text-sm text-gray-500">Account information printed on proforma for farmer payment.</p>
+                            <h3 class="text-base sm:text-lg font-semibold text-gray-900">Bank Account Details</h3>
+                            <p class="text-xs sm:text-sm text-gray-500">Account information printed on proforma for farmer payment.</p>
                         </div>
 
                         <div class="space-y-4">
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                 <x-admin.input name="bank_account_name" label="Account Name"
                                                :value="old('bank_account_name', $company['bank_account_name'] ?? 'Plant Tech Agro')" />
 
@@ -624,7 +632,7 @@
                                            :value="old('bank_account_no', $company['bank_account_no'] ?? '0942 0100 0000 0275')"
                                            class="font-mono font-bold" />
 
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                 <x-admin.input name="bank_branch" label="Branch"
                                                :value="old('bank_branch', $company['bank_branch'] ?? 'Migrant Colony Hall Pulwama')" />
 
@@ -636,10 +644,10 @@
                     </div>
 
                     {{-- Terms & Conditions --}}
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 space-y-4">
                         <div class="border-b border-gray-100 pb-3">
-                            <h3 class="text-lg font-semibold text-gray-900">Terms &amp; Conditions</h3>
-                            <p class="text-sm text-gray-500">Numbered terms printed on proforma.</p>
+                            <h3 class="text-base sm:text-lg font-semibold text-gray-900">Terms &amp; Conditions</h3>
+                            <p class="text-xs sm:text-sm text-gray-500">Numbered terms printed on proforma.</p>
                         </div>
 
                         <div>
@@ -652,18 +660,27 @@
                 </div>
 
                 {{-- Form Actions Bar --}}
-                <div class="flex items-center justify-end gap-3 pt-3">
-                    <x-admin.button href="{{ $lead ? route('admin.leads.show', $lead) : route('admin.quotations.index') }}" variant="secondary">
-                        Cancel
-                    </x-admin.button>
-                    <x-admin.button type="submit" variant="primary">
-                        Save &amp; Generate Quotation
-                    </x-admin.button>
+                <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-3 border-t border-gray-100">
+                    <button type="button" @click="showLivePreview = !showLivePreview"
+                            class="lg:hidden inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border text-xs font-semibold transition shadow-2xs"
+                            :class="showLivePreview ? 'bg-brand-50 border-brand-200 text-brand-700' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        <span x-text="showLivePreview ? 'Hide Document Preview' : '👁️ View Live Document Preview'"></span>
+                    </button>
+
+                    <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                        <x-admin.button href="{{ $lead ? route('admin.leads.show', $lead) : route('admin.quotations.index') }}" variant="secondary" class="w-full sm:w-auto text-center justify-center">
+                            Cancel
+                        </x-admin.button>
+                        <x-admin.button type="submit" variant="primary" class="w-full sm:w-auto text-center justify-center">
+                            Save &amp; Generate Quotation
+                        </x-admin.button>
+                    </div>
                 </div>
             </div>
 
             {{-- Right Column: Live Interactive Quotation Design Preview (from Designer) --}}
-            <div x-show="showLivePreview" x-cloak class="lg:col-span-5 sticky top-6 space-y-4">
+            <div x-show="showLivePreview" x-cloak class="lg:col-span-5 lg:sticky lg:top-6 space-y-4">
                 <div class="flex items-center justify-between px-1">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full animate-pulse shadow-xs" :style="{ backgroundColor: accentColor }"></span>
@@ -675,7 +692,7 @@
                 </div>
 
                 {{-- Miniature Document Simulation Card --}}
-                <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-5 space-y-4 text-gray-800 text-[11px] leading-snug">
+                <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-4 sm:p-5 space-y-4 text-gray-800 text-[11px] leading-snug">
 
                     {{-- 1. Document Header & Branding --}}
                     <div class="flex items-start justify-between gap-3 pb-3 border-b border-gray-100">
@@ -698,7 +715,7 @@
                     </div>
 
                     {{-- 2. Client & Service Scope Box --}}
-                    <div class="grid grid-cols-2 gap-2 text-[10px]">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px]">
                         {{-- Client box --}}
                         <div class="rounded-xl border border-gray-200 bg-gray-50/60 p-2.5 space-y-1">
                             <div class="text-[9px] font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1">
@@ -735,8 +752,8 @@
                     </div>
 
                     {{-- 3. Itemized Deliverables Table Simulation --}}
-                    <div class="rounded-lg overflow-hidden border border-gray-200 text-[10px]">
-                        <table class="w-full text-left">
+                    <div class="rounded-lg overflow-x-auto border border-gray-200 text-[10px]">
+                        <table class="w-full text-left min-w-[280px]">
                             <thead class="text-white font-bold" :style="{ backgroundColor: accentColor }">
                                 <tr>
                                     <th class="p-1.5">Deliverable Description</th>
@@ -880,7 +897,7 @@ function quotationForm() {
         documentSubtitle: @json($initialDefaults['document_subtitle'] ?? ($selectedSvc?->description ?? 'PRICE ESTIMATE & QUOTATION')),
         showVarietyDetails: {{ $initialShowVariety ? 'true' : 'false' }},
         showPackageInclusions: {{ $initialShowPackage ? 'true' : 'false' }},
-        showLivePreview: true,
+        showLivePreview: typeof window !== 'undefined' ? window.innerWidth >= 1024 : true,
 
         // Client info (bound for live document simulation)
         customerName: @json(old('customer_name', $leadData['customer_name'] ?? '')),
@@ -894,10 +911,10 @@ function quotationForm() {
         // Scope, Variety and Package specs
         selectedVariety: @json(old('variety_name', $leadData['variety_name'] ?? ($initialDefaults['variety_name'] ?? ''))),
         varietySpecification: @json(old('variety_specification', $leadData['variety_specification'] ?? ($leadData['variety_name'] ?? ($initialDefaults['variety_name'] ?? '')))),
-        rootstock: @json(old('rootstock', $leadData['rootstock'] ?: ($initialDefaults['rootstock'] ?? ''))),
-        plantsPerKanal: @json(old('plants_per_kanal', $leadData['plants_per_kanal'] ?: ($initialDefaults['plants_per_kanal'] ?? ''))),
-        scopeTitle: @json(old('scope_title', $leadData['scope_title'] ?: ($initialDefaults['label'] ?? ($selectedSvc?->name ?? '')))),
-        scopeSubtitle: @json(old('scope_subtitle', $leadData['scope_subtitle'] ?: ($initialDefaults['document_subtitle'] ?? ($selectedSvc?->description ?? '')))),
+        rootstock: @json(old('rootstock', $leadData['rootstock'] ?? ($initialDefaults['rootstock'] ?? ''))),
+        plantsPerKanal: @json(old('plants_per_kanal', $leadData['plants_per_kanal'] ?? ($initialDefaults['plants_per_kanal'] ?? ''))),
+        scopeTitle: @json(old('scope_title', $leadData['scope_title'] ?? ($initialDefaults['label'] ?? ($selectedSvc?->name ?? '')))),
+        scopeSubtitle: @json(old('scope_subtitle', $leadData['scope_subtitle'] ?? ($initialDefaults['document_subtitle'] ?? ($selectedSvc?->description ?? '')))),
         packageTitle: @json(old('package_title', $initialDefaults['package_title'] ?? ($defaults['package_title'] ?? 'Per Kanal Standard Package'))),
         packagePoles: {{ (int) old('package_poles', $initialDefaults['package_poles'] ?? ($defaults['package_poles'] ?? 19)) }},
         packageAnchors: {{ (int) old('package_anchors', $initialDefaults['package_anchors'] ?? ($defaults['package_anchors'] ?? 6)) }},

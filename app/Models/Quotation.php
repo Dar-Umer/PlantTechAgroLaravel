@@ -219,8 +219,7 @@ class Quotation extends Model
             if (! empty($defs['show_package'])) {
                 return (! empty($this->package_poles) && (int) $this->package_poles > 0)
                     || (! empty($this->package_anchors) && (int) $this->package_anchors > 0)
-                    || (! empty($this->package_plants) && (int) $this->package_plants > 0)
-                    || (! empty($this->package_title) && $this->package_title !== '');
+                    || (! empty($this->package_plants) && (int) $this->package_plants > 0);
             }
         }
 

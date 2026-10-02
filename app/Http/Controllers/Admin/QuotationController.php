@@ -221,6 +221,7 @@ class QuotationController extends Controller
             'lead_id' => ['nullable', Rule::exists('leads', 'id')],
             'customer_id' => ['nullable', Rule::exists('customers', 'id')],
             'service_id' => ['nullable', Rule::exists('services', 'id')],
+            'show_package' => ['nullable', 'in:0,1'],
             'customer_name' => ['required', 'string', 'max:255'],
             'customer_phone' => ['required', 'string', 'max:25', 'regex:/^[0-9+\-\s()]{7,25}$/'],
             'customer_email' => ['nullable', 'email', 'max:255'],
@@ -339,7 +340,17 @@ class QuotationController extends Controller
 
             $service = ! empty($data['service_id']) ? Service::find($data['service_id']) : null;
             $sDefaults = $service ? $service->getQuotationDefaults() : [];
-            $serviceShowPackage = $service ? (! empty($sDefaults['show_package'])) : (! empty($data['package_poles']) || ! empty($data['package_anchors']) || ! empty($data['package_plants']));
+
+            $userDeactivatedPackage = isset($data['show_package']) && (string) $data['show_package'] === '0';
+            $userExplicitlyEnabled = isset($data['show_package']) && (string) $data['show_package'] === '1';
+
+            if ($userDeactivatedPackage) {
+                $serviceShowPackage = false;
+            } elseif ($userExplicitlyEnabled) {
+                $serviceShowPackage = true;
+            } else {
+                $serviceShowPackage = $service ? (! empty($sDefaults['show_package'])) : (! empty($data['package_poles']) || ! empty($data['package_anchors']) || ! empty($data['package_plants']));
+            }
 
             $quotation = Quotation::create([
                 'number' => QuotationNumberer::next(),
@@ -437,6 +448,7 @@ class QuotationController extends Controller
         }
 
         $data = $request->validate([
+            'show_package' => ['nullable', 'in:0,1'],
             'customer_name' => ['required', 'string', 'max:255'],
             'customer_phone' => ['required', 'string', 'max:25', 'regex:/^[0-9+\-\s()]{7,25}$/'],
             'customer_email' => ['nullable', 'email', 'max:255'],
@@ -551,7 +563,17 @@ class QuotationController extends Controller
             $svcId = $data['service_id'] ?? $quotation->service_id;
             $service = $svcId ? Service::find($svcId) : null;
             $sDefaults = $service ? $service->getQuotationDefaults() : [];
-            $serviceShowPackage = $service ? (! empty($sDefaults['show_package'])) : (! empty($data['package_poles']) || ! empty($data['package_anchors']) || ! empty($data['package_plants']));
+
+            $userDeactivatedPackage = isset($data['show_package']) && (string) $data['show_package'] === '0';
+            $userExplicitlyEnabled = isset($data['show_package']) && (string) $data['show_package'] === '1';
+
+            if ($userDeactivatedPackage) {
+                $serviceShowPackage = false;
+            } elseif ($userExplicitlyEnabled) {
+                $serviceShowPackage = true;
+            } else {
+                $serviceShowPackage = $service ? (! empty($sDefaults['show_package'])) : (! empty($data['package_poles']) || ! empty($data['package_anchors']) || ! empty($data['package_plants']));
+            }
 
             $quotation->update([
                 'customer_id' => $customerId,
@@ -567,10 +589,10 @@ class QuotationController extends Controller
                 'variety_specification' => $data['variety_specification'] ?? $quotation->variety_specification,
                 'rootstock' => $data['rootstock'] ?? $quotation->rootstock,
                 'plants_per_kanal' => $data['plants_per_kanal'] ?? $quotation->plants_per_kanal,
-                'package_title' => $serviceShowPackage ? ($data['package_title'] ?? $quotation->package_title) : null,
-                'package_poles' => $serviceShowPackage ? (isset($data['package_poles']) && $data['package_poles'] !== '' ? (int) $data['package_poles'] : $quotation->package_poles) : null,
-                'package_anchors' => $serviceShowPackage ? (isset($data['package_anchors']) && $data['package_anchors'] !== '' ? (int) $data['package_anchors'] : $quotation->package_anchors) : null,
-                'package_plants' => $serviceShowPackage ? (isset($data['package_plants']) && $data['package_plants'] !== '' ? (int) $data['package_plants'] : $quotation->package_plants) : null,
+                'package_title' => $serviceShowPackage ? ($data['package_title'] ?? ($quotation->package_title ?? ($sDefaults['package_title'] ?? 'Per Kanal Standard Package'))) : null,
+                'package_poles' => $serviceShowPackage ? (isset($data['package_poles']) && $data['package_poles'] !== '' ? (int) $data['package_poles'] : ($quotation->package_poles ?? ($sDefaults['package_poles'] ?? 19))) : null,
+                'package_anchors' => $serviceShowPackage ? (isset($data['package_anchors']) && $data['package_anchors'] !== '' ? (int) $data['package_anchors'] : ($quotation->package_anchors ?? ($sDefaults['package_anchors'] ?? 6))) : null,
+                'package_plants' => $serviceShowPackage ? (isset($data['package_plants']) && $data['package_plants'] !== '' ? (int) $data['package_plants'] : ($quotation->package_plants ?? ($sDefaults['package_plants'] ?? 150))) : null,
                 'payment_schedule' => $paymentSchedule ?: $quotation->payment_schedule,
                 'date' => $data['date'],
                 'valid_until' => $data['valid_until'] ?? null,

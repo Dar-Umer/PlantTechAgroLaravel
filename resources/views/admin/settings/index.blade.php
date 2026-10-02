@@ -63,6 +63,13 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                     Email / SMTP
                 </button>
+
+                <a href="{{ route('admin.settings.pos') }}"
+                   class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl border border-dashed border-emerald-300 text-emerald-700 bg-emerald-50/60 hover:bg-emerald-100 hover:text-emerald-900 transition-all whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                    POS &amp; Subdomain Settings
+                    <span class="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-200 text-emerald-900 font-mono">pos.planttechagro.com</span>
+                </a>
             </nav>
         </div>
 

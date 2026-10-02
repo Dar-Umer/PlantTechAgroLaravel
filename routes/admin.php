@@ -240,6 +240,9 @@ Route::middleware('admin')->group(function () {
     Route::delete('stages/{stage}/products/{stageProduct}', [ServiceStageProductController::class, 'destroy'])->name('admin.stage-products.destroy');
 
     // Point of Sale (POS)
+    Route::get('pos/settings', [\App\Http\Controllers\Admin\PosSettingController::class, 'index'])->name('admin.settings.pos');
+    Route::post('pos/settings', [\App\Http\Controllers\Admin\PosSettingController::class, 'update'])->name('admin.settings.pos.update');
+    Route::get('settings/pos', [\App\Http\Controllers\Admin\PosSettingController::class, 'index'])->name('admin.pos.settings');
     Route::get('pos', [PosController::class, 'terminal'])->name('admin.pos.terminal');
     Route::get('pos/sales', [PosController::class, 'sales'])->name('admin.pos.sales');
     Route::get('pos/products/search', [PosController::class, 'searchProducts'])->name('admin.pos.products.search');
