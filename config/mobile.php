@@ -26,7 +26,7 @@ return [
 
     // Version control of the customer app.
     'version' => '2.0.0',          // display version shown in the app
-    'build_number' => '1',
+    'build_number' => '2',
     'minimum_supported' => '2.0.0', // oldest app version allowed to keep running
     'force_update' => false,        // block usage until the customer updates
     'android_update_url' => '',     // Play Store listing
