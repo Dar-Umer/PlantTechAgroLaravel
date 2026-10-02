@@ -6,12 +6,21 @@
 <div class="space-y-6">
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-900">POS Sales & Invoices</h2>
-            <p class="text-sm text-gray-500 mt-1">Manage all counter sales, receipts, and retail sales invoices.</p>
+        <div class="flex items-center gap-3">
+            <button @click="sidebarOpen = true" class="lg:hidden p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition" title="Open Menu">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">POS Sales & Invoices</h2>
+                <p class="text-sm text-gray-500 mt-0.5">Manage all counter sales, receipts, and retail sales invoices.</p>
+            </div>
         </div>
         <div class="flex items-center gap-3">
             <x-admin.button href="{{ route('pos.terminal') }}" variant="primary" icon='<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>'>Open Terminal</x-admin.button>
+            <form method="POST" action="{{ route('pos.logout') }}" class="inline">
+                @csrf
+                <button type="submit" title="Logout" class="px-3.5 py-2 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl border border-red-200 transition">Logout</button>
+            </form>
         </div>
     </div>
 

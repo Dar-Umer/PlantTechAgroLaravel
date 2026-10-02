@@ -4,12 +4,15 @@
 
 @section('content')
 <div x-data="posTerminal()" x-init="init()" @keydown.window="handleShortcuts($event)"
-     class="-m-4 lg:-m-6 flex flex-col h-[calc(100dvh-5rem)] bg-slate-100 overflow-hidden select-none font-sans text-slate-800">
+     class="-m-4 lg:-m-6 flex flex-col h-[100dvh] bg-slate-100 overflow-hidden select-none font-sans text-slate-800">
 
     {{-- POS Header Bar --}}
     <header class="bg-white border-b border-slate-200 px-3 sm:px-6 py-2.5 flex items-center justify-between flex-shrink-0 shadow-xs z-20">
         {{-- Left: Brand & Status --}}
         <div class="flex items-center gap-2.5 sm:gap-3">
+            <button @click="sidebarOpen = true" class="lg:hidden p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition" title="Menu">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
             <div class="flex items-center gap-2">
                 <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center font-bold shadow-sm">
                     <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
@@ -66,10 +69,18 @@
                 <span class="hidden sm:inline">Sales History</span>
             </a>
 
-            {{-- Cashier Time --}}
-            <div class="text-right hidden sm:block pl-2 border-l border-slate-200">
-                <p class="text-xs font-semibold text-slate-900 leading-tight">{{ auth('admin')->user()->name }}</p>
-                <p class="text-[11px] text-slate-400" x-text="clockTime"></p>
+            {{-- Cashier Time & Quick Logout --}}
+            <div class="flex items-center gap-2 pl-2 border-l border-slate-200">
+                <div class="text-right hidden sm:block">
+                    <p class="text-xs font-semibold text-slate-900 leading-tight">{{ auth('admin')->user()->name }}</p>
+                    <p class="text-[11px] text-slate-400" x-text="clockTime"></p>
+                </div>
+                <form method="POST" action="{{ route('pos.logout') }}" class="inline">
+                    @csrf
+                    <button type="submit" title="Logout from POS Terminal" class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    </button>
+                </form>
             </div>
         </div>
     </header>

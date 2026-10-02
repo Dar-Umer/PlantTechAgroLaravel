@@ -31,12 +31,48 @@ class AdminMiddleware
                 ->with('error', 'Your account has been deactivated.');
         }
 
+        // Strict lockdown for POS Operator: prevent accessing non-POS components like work orders, CRM, settings
+        if ($admin && $admin->isPosOnly()) {
+            $allowedPatterns = [
+                'pos*',
+                'sales*',
+                'terminal*',
+                'checkout*',
+                'products*',
+                'customers*',
+                'stock-movements*',
+                'product-batches*',
+                'admin/pos*',
+                'admin/products*',
+                'admin/stock-movements*',
+                'admin/product-batches*',
+                'logout',
+                'admin/logout',
+            ];
+
+            $isAllowed = false;
+            foreach ($allowedPatterns as $pattern) {
+                if ($request->is($pattern)) {
+                    $isAllowed = true;
+                    break;
+                }
+            }
+
+            if (! $isAllowed) {
+                return redirect()->route('pos.terminal')
+                    ->with('error', 'Access restricted: Your account only has access to the POS terminal and inventory modules.');
+            }
+        }
+
         // On POS domain or port, redirect legacy /admin/* URLs to clean POS URLs
         if ($isPos) {
             if ($request->is('admin/pos/sales*')) {
                 return redirect()->route('pos.sales');
             }
             if ($request->is('admin/pos*') || $request->is('admin/dashboard*') || $request->is('admin')) {
+                return redirect()->route('pos.terminal');
+            }
+            if ($request->is('admin/*') && ! $request->is('admin/logout') && ! $request->is('admin/products*') && ! $request->is('admin/stock-movements*') && ! $request->is('admin/product-batches*')) {
                 return redirect()->route('pos.terminal');
             }
         }

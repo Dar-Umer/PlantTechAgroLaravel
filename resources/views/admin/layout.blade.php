@@ -498,12 +498,32 @@
                     @endif
                 @endforeach
             </nav>
+
+            <!-- Sidebar Footer: Cashier / User Profile & Logout -->
+            <div class="p-3 border-t {{ $sidebarBorder }} flex items-center justify-between mt-auto">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-xs flex-shrink-0">
+                        {{ strtoupper(substr($currentAdmin?->name ?? 'A', 0, 2)) }}
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs font-semibold {{ $sidebarStyle === 'light' ? 'text-gray-900' : 'text-white' }} truncate">{{ $currentAdmin?->name ?? 'Staff' }}</p>
+                        <p class="text-[10px] {{ $sidebarChildText }} truncate">{{ $currentAdmin?->roles->first()?->name ?? ($isPosOnlyUser ? 'POS Operator' : 'Admin') }}</p>
+                    </div>
+                </div>
+                <form method="POST" action="{{ $isPosContext ? (Route::has('pos.logout') ? route('pos.logout') : url('/logout')) : route('admin.logout') }}" class="flex-shrink-0">
+                    @csrf
+                    <button type="submit" title="Sign out" class="p-1.5 {{ $sidebarChildText }} hover:text-red-400 hover:bg-white/5 rounded-lg transition cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    </button>
+                </form>
+            </div>
         </aside>
 
         <!-- Main Content Area -->
         <div class="flex-1 flex flex-col overflow-hidden">
 
-            <!-- Top Navbar -->
+            <!-- Top Navbar (Hidden for POS Operators & POS Section) -->
+            @if(! $isPosContext)
             <header class="{{ $topbarBg }} shadow-sm border-b border-gray-200 h-20 flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
                 <div class="flex items-center gap-4">
                     <button @click="sidebarOpen = true" class="lg:hidden text-gray-500 hover:text-gray-700">
@@ -809,6 +829,7 @@
                     </div>
                 </div>
             </header>
+            @endif
 
             <!-- Page Content -->
             <main class="flex-1 overflow-y-auto p-4 lg:p-6 relative">
@@ -1032,9 +1053,14 @@
                     @if(!$isPosContext)
                     { title: 'Dashboard', category: 'Navigation', url: '{{ route('admin.dashboard') }}', icon: 'M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25' },
                     @endif
-                    { title: 'POS Terminal', category: 'Point of Sale', url: '{{ route('pos.terminal') }}', icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z' },
-                    { title: 'POS Invoices & Sales', category: 'Point of Sale', url: '{{ route('pos.sales') }}', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
+                    { title: 'POS Terminal (Billing Counter)', category: 'Point of Sale', url: '{{ route('pos.terminal') }}', icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z' },
+                    { title: 'POS Sales & Invoices', category: 'Point of Sale', url: '{{ route('pos.sales') }}', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
+                    { title: 'Products Catalogue', category: 'Inventory & Stock', url: '{{ route('admin.products.index') }}', icon: 'M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9' },
+                    { title: 'Batches & Expiry Tracking', category: 'Inventory & Stock', url: '{{ route('admin.product-batches.index') }}', icon: 'M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z' },
+                    { title: 'Stock Movements (In/Out)', category: 'Inventory & Stock', url: '{{ route('admin.stock-movements.create') }}', icon: 'M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5' },
+                    { title: 'Farmers Directory', category: 'CRM & Pipeline', url: '{{ route('admin.customers.index') }}', icon: 'M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z' },
                     
+                    @if(!$isPosContext)
                     // Quick Actions
                     { title: 'New Quotation / Estimate', category: 'Quick Actions', url: '{{ route('admin.quotations.create') }}', icon: 'M12 4v16m8-8H4' },
                     { title: 'New Work Order', category: 'Quick Actions', url: '{{ route('admin.work-orders.create') }}', icon: 'M12 4v16m8-8H4' },
@@ -1044,7 +1070,6 @@
                     // CRM & Pipeline
                     { title: 'Leads & Enquiries', category: 'CRM & Pipeline', url: '{{ route('admin.leads.index') }}', icon: 'M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75' },
                     { title: 'Quotations & Estimates', category: 'CRM & Pipeline', url: '{{ route('admin.quotations.index') }}', icon: 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z' },
-                    { title: 'Farmers Directory', category: 'CRM & Pipeline', url: '{{ route('admin.customers.index') }}', icon: 'M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z' },
                     { title: 'Farmer Orchards', category: 'CRM & Pipeline', url: '{{ route('admin.orchards.index') }}', icon: 'M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z' },
 
                     // Field Operations
@@ -1052,15 +1077,6 @@
                     { title: 'Services & Work Stages', category: 'Field Operations', url: '{{ route('admin.services.index') }}', icon: 'M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z' },
                     { title: 'Invoices & Billing', category: 'Field Operations', url: '{{ route('admin.invoices.index') }}', icon: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75z' },
                     { title: 'GST & Tax Reports (GSTR-1)', category: 'Field Operations', url: '{{ route('admin.reports.gst') }}', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-
-                    // Point of Sale (POS)
-                    { title: 'POS Terminal (Billing Counter)', category: 'Point of Sale', url: '{{ route('admin.pos.terminal') }}', icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z' },
-                    { title: 'POS Sales & Invoices', category: 'Point of Sale', url: '{{ route('admin.pos.sales') }}', icon: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75z' },
-
-                    // Inventory & Stock
-                    { title: 'Products Catalogue', category: 'Inventory & Stock', url: '{{ route('admin.products.index') }}', icon: 'M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9' },
-                    { title: 'Batches & Expiry Tracking', category: 'Inventory & Stock', url: '{{ route('admin.product-batches.index') }}', icon: 'M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z' },
-                    { title: 'Stock Movements (In/Out)', category: 'Inventory & Stock', url: '{{ route('admin.stock-movements.create') }}', icon: 'M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5' },
 
                     // Suppliers & Purchases
                     { title: 'Suppliers Management', category: 'Suppliers & Purchases', url: '{{ route('admin.suppliers.index') }}', icon: 'M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.948c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h2.25' },
@@ -1081,6 +1097,7 @@
                     { title: 'Mobile Apps Manager', category: 'Settings & System', url: '{{ route('admin.mobile-apps.index') }}', icon: 'M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3' },
                     { title: 'Notification Templates', category: 'Settings & System', url: '{{ route('admin.notification-templates.index') }}', icon: 'M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0' },
                     { title: 'System Health & Performance Diagnostics', category: 'Settings & System', url: '{{ route('admin.system.diagnostics') }}', icon: 'M13 10V3L4 14h7v7l9-11h-7z' }
+                    @endif
                 ],
                 init() {
                     this.$watch('search', () => {
