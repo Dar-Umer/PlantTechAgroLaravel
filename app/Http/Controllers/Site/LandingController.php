@@ -18,6 +18,17 @@ class LandingController extends Controller
 {
     public function index()
     {
+        // If request reached here from a POS subdomain (e.g. pos.planttechagro.com), redirect to POS terminal
+        $host = request()->getHost();
+        $posHost = parse_url(config('pos.subdomain_url', 'https://pos.planttechagro.com'), PHP_URL_HOST);
+        if (str_starts_with($host, 'pos.') || ($posHost && $host === $posHost)) {
+            if (\Illuminate\Support\Facades\Auth::guard('admin')->check()) {
+                return redirect()->route('admin.pos.terminal');
+            }
+
+            return redirect()->route('admin.login');
+        }
+
         $data = ContentCache::remember('landing', function () {
             return [
                 'sections' => HomeSection::query()->get()->keyBy('section_key'),

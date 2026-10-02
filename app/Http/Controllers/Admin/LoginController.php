@@ -14,7 +14,11 @@ class LoginController extends Controller
     public function showLoginForm()
     {
         if (Auth::guard('admin')->check()) {
-            return redirect()->route('admin.dashboard');
+            $host = request()->getHost();
+            $posHost = parse_url(config('pos.subdomain_url', 'https://pos.planttechagro.com'), PHP_URL_HOST);
+            $isPos = str_starts_with($host, 'pos.') || ($posHost && $host === $posHost);
+
+            return redirect()->route($isPos ? 'admin.pos.terminal' : 'admin.dashboard');
         }
 
         return view('admin.auth.login');
@@ -50,7 +54,12 @@ class LoginController extends Controller
             $admin->last_login_ip = $request->ip();
             $admin->save();
 
-            return redirect()->intended(route('admin.dashboard'));
+            $host = $request->getHost();
+            $posHost = parse_url(config('pos.subdomain_url', 'https://pos.planttechagro.com'), PHP_URL_HOST);
+            $isPos = str_starts_with($host, 'pos.') || ($posHost && $host === $posHost);
+            $defaultTarget = $isPos ? route('admin.pos.terminal') : route('admin.dashboard');
+
+            return redirect()->intended($defaultTarget);
         }
 
         return back()->withErrors(['email' => 'The provided credentials do not match our records.'])->onlyInput('email');
