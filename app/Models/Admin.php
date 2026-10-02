@@ -39,12 +39,19 @@ class Admin extends Authenticatable
 
     public function isPosOnly(): bool
     {
-        if (in_array($this->role, ['pos_manager', 'pos_operator', 'pos_staff'], true)) {
+        if (in_array($this->role, ['pos_manager', 'pos_operator', 'pos_staff', 'POS & Stock Operator'], true)) {
             return true;
         }
 
         try {
-            return $this->hasAnyRole(['POS Manager', 'POS Operator', 'pos_manager']);
+            if ($this->hasAnyRole(['POS Manager', 'POS Operator', 'POS & Stock Operator', 'pos_manager', 'pos_operator'])) {
+                return true;
+            }
+
+            return $this->roles->contains(function ($r) {
+                $name = strtolower($r->name);
+                return str_contains($name, 'pos') || str_contains($name, 'cashier');
+            });
         } catch (\Throwable $e) {
             return false;
         }

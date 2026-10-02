@@ -26,7 +26,7 @@ class LandingController extends Controller
                 return redirect()->route('admin.pos.terminal');
             }
 
-            return redirect()->route('admin.login');
+            return redirect()->route('pos.login');
         }
 
         $data = ContentCache::remember('landing', function () {
