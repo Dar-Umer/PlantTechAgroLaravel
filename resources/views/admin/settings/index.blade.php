@@ -203,6 +203,44 @@
                         </div>
                     </div>
 
+                    {{-- 4. System Maintenance Mode --}}
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <div class="flex items-center justify-between flex-wrap gap-4 mb-2">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl {{ !empty($settings['maintenance_mode']) ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-700' }} flex items-center justify-center shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900">System Maintenance Mode</h3>
+                                    <p class="text-sm text-gray-500">Lock the public website, POS, and customer mobile apps during planned upgrades or infrastructure maintenance. Administrators retain full access.</p>
+                                </div>
+                            </div>
+
+                            @if(!empty($settings['maintenance_mode']))
+                                <div class="flex items-center gap-2">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                        <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                                        Maintenance Mode ACTIVE
+                                    </span>
+                                </div>
+                            @else
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    Live / Public
+                                </span>
+                            @endif
+                        </div>
+
+                        <div class="mt-6 space-y-5">
+                            <x-admin.checkbox name="maintenance_mode" label="Enable Maintenance Mode (Site-wide & Mobile Apps)" :checked="!empty($settings['maintenance_mode'])" help="When enabled, all visitors and mobile app customers are shown a friendly maintenance screen. Only logged-in administrators can access the system." />
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+                                <x-admin.input name="maintenance_title" label="Maintenance Screen Title" :value="$settings['maintenance_title'] ?? ''" placeholder="We're Undergoing Scheduled Maintenance" helptext="Heading displayed on the public maintenance page." />
+                                <x-admin.input name="maintenance_message" label="Maintenance Notice / Message" :value="$settings['maintenance_message'] ?? ''" placeholder="We are currently performing scheduled upgrades and essential optimizations. Please check back shortly." helptext="Detailed announcement explaining the scheduled maintenance." />
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="flex items-center justify-end gap-3 pt-2">
                         <x-admin.button type="submit">Save General Settings</x-admin.button>
                     </div>

@@ -122,6 +122,24 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="font-sans antialiased overflow-x-hidden text-gray-800 dark:text-gray-300 bg-white dark:bg-gray-950">
+    @if(\App\Http\Middleware\CheckMaintenanceMode::isMaintenanceMode() && Auth::guard('admin')->check())
+        <div class="bg-amber-500 text-amber-950 px-4 py-2 text-xs font-semibold flex items-center justify-between shadow-md sticky top-0 z-[99999] border-b border-amber-600">
+            <div class="flex items-center gap-2">
+                <span class="inline-block w-2 h-2 rounded-full bg-red-700 animate-ping"></span>
+                <span><strong>Maintenance Mode Active (Admin Preview):</strong> Regular visitors and mobile apps are blocked. Only logged-in administrators can see this.</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('admin.dashboard') }}" class="underline hover:text-black font-bold">Admin Dashboard</a>
+                <form action="{{ route('admin.settings.maintenance.toggle') }}" method="POST" class="inline">
+                    @csrf
+                    <input type="hidden" name="maintenance_mode" value="0">
+                    <button type="submit" class="bg-amber-950 text-white hover:bg-black px-2.5 py-1 rounded-md text-xs font-bold transition cursor-pointer">
+                        Turn Off Maintenance
+                    </button>
+                </form>
+            </div>
+        </div>
+    @endif
     @include('landing.partials.preloader')
     @include('landing.partials.header')
 

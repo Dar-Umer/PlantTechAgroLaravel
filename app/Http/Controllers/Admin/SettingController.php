@@ -40,6 +40,9 @@ class SettingController extends Controller
             'social_youtube' => config('shop.social_youtube', ''),
             'social_whatsapp' => config('shop.social_whatsapp', ''),
             'social_x' => config('shop.social_x', ''),
+            'maintenance_mode' => (bool) config('mobile.maintenance_mode', config('shop.maintenance_mode', false)),
+            'maintenance_title' => config('shop.maintenance_title', "We're Undergoing Scheduled Maintenance"),
+            'maintenance_message' => config('shop.maintenance_message', 'We are currently performing scheduled upgrades and essential optimizations to improve your experience. Our services and catalog will be back online shortly.'),
         ];
 
         $seoSettings = [
@@ -160,6 +163,9 @@ class SettingController extends Controller
             'social_youtube' => 'nullable|url|max:255',
             'social_whatsapp' => 'nullable|string|max:255',
             'social_x' => 'nullable|url|max:255',
+            'maintenance_mode' => 'nullable|in:0,1',
+            'maintenance_title' => 'nullable|string|max:255',
+            'maintenance_message' => 'nullable|string|max:1000',
             'seo_meta_title' => 'nullable|string|max:120',
             'seo_meta_description' => 'nullable|string|max:500',
             'seo_meta_keywords' => 'nullable|string|max:500',
@@ -265,6 +271,17 @@ class SettingController extends Controller
             $shopSettings['favicon_url'] = '/storage/'.$path;
         } elseif ($request->input('remove_favicon') === '1') {
             $shopSettings['favicon_url'] = '';
+        }
+
+        if ($request->input('tab') === 'general' || $request->has('maintenance_form_submitted')) {
+            $maintenanceMode = ($request->input('maintenance_mode', '0') === '1');
+            $shopSettings['maintenance_mode'] = $maintenanceMode;
+            $shopSettings['maintenance_title'] = $validated['maintenance_title'] ?? config('shop.maintenance_title', "We're Undergoing Scheduled Maintenance");
+            $shopSettings['maintenance_message'] = $validated['maintenance_message'] ?? config('shop.maintenance_message', 'We are currently performing scheduled upgrades and essential optimizations to improve your experience. Our services and catalog will be back online shortly.');
+
+            app(ShopSettingsService::class)->set([
+                'maintenance_mode' => $maintenanceMode,
+            ], 'mobile');
         }
 
         app(ShopSettingsService::class)->set($shopSettings, 'shop');
@@ -517,5 +534,29 @@ class SettingController extends Controller
 
             return back()->with('error', 'Test email failed. Check the host, port and credentials, then try again.');
         }
+    }
+
+    /**
+     * Quickly toggle system-wide maintenance mode on or off.
+     */
+    public function toggleMaintenance(Request $request)
+    {
+        $newStatus = $request->has('maintenance_mode')
+            ? ($request->input('maintenance_mode') == '1')
+            : ! \App\Http\Middleware\CheckMaintenanceMode::isMaintenanceMode();
+
+        app(ShopSettingsService::class)->set([
+            'maintenance_mode' => $newStatus,
+        ], 'shop');
+
+        app(ShopSettingsService::class)->set([
+            'maintenance_mode' => $newStatus,
+        ], 'mobile');
+
+        $msg = $newStatus
+            ? 'Maintenance mode is now ENABLED. Public website, mobile apps, and customer portals are locked.'
+            : 'Maintenance mode is now DISABLED. The website and mobile apps are live for everyone.';
+
+        return back()->with('success', $msg);
     }
 }

@@ -126,6 +126,11 @@ class MobileAppController extends Controller
 
         app(ShopSettingsService::class)->set($settings, 'mobile');
 
+        // Synchronize maintenance_mode with site-wide shop settings
+        app(ShopSettingsService::class)->set([
+            'maintenance_mode' => $settings['maintenance_mode'],
+        ], 'shop');
+
         // Handle Firebase settings if provided or submitted from the push tab
         if ($request->has('firebase_form_submitted') || $currentTab === 'push') {
             $firebaseEnabled = ($request->input('firebase_enabled', '0') === '1');

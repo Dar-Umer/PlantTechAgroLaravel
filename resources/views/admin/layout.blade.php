@@ -522,6 +522,35 @@
         <!-- Main Content Area -->
         <div class="flex-1 flex flex-col overflow-hidden">
 
+            {{-- Maintenance Mode Global Admin Banner --}}
+            @if(\App\Http\Middleware\CheckMaintenanceMode::isMaintenanceMode())
+                <div class="bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 text-amber-950 px-4 py-2.5 text-xs font-semibold flex items-center justify-between border-b border-amber-600/80 shadow-sm flex-shrink-0 z-20">
+                    <div class="flex items-center gap-2.5">
+                        <span class="relative flex h-2.5 w-2.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-900 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-950"></span>
+                        </span>
+                        <span>
+                            <strong class="font-bold">Maintenance Mode is ACTIVE:</strong>
+                            Public website, POS, and customer mobile apps are locked. Visitors are shown the maintenance screen.
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <a href="{{ route('admin.settings.index') }}" class="text-amber-950 hover:underline font-bold text-xs hidden sm:inline">
+                            Configure Settings
+                        </a>
+                        <form method="POST" action="{{ route('admin.settings.maintenance.toggle') }}" class="inline">
+                            @csrf
+                            <input type="hidden" name="maintenance_mode" value="0">
+                            <button type="submit" class="bg-amber-950 text-white hover:bg-black px-3 py-1 rounded-lg text-xs font-bold transition shadow-sm cursor-pointer flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+                                <span>Turn Off Maintenance</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @endif
+
             <!-- Top Navbar (Hidden for POS Operators & POS Section) -->
             @if(! $isPosContext)
             <header class="{{ $topbarBg }} shadow-sm border-b border-gray-200 h-20 flex items-center justify-between px-4 lg:px-6 flex-shrink-0">

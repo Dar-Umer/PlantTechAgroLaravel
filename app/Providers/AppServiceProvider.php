@@ -114,7 +114,7 @@ class AppServiceProvider extends ServiceProvider
             });
         });
 
-        View::composer(['landing.layout', 'admin.layout', 'admin.auth.*', 'admin.pos.*'], function ($view) {
+        View::composer(['landing.layout', 'admin.layout', 'admin.auth.*', 'admin.pos.*', 'errors.*'], function ($view) {
             $paletteName = config('shop.theme_palette', 'emerald');
             $palettes = config('theme.palettes', []);
             $palette = $palettes[$paletteName]['colors'] ?? $palettes['emerald']['colors'];

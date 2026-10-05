@@ -17,6 +17,14 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(SecurityHeaders::class);
 
+        $middleware->web(append: [
+            \App\Http\Middleware\CheckMaintenanceMode::class,
+        ]);
+
+        $middleware->api(prepend: [
+            \App\Http\Middleware\CheckMaintenanceMode::class,
+        ]);
+
         $middleware->alias([
             'admin' => AdminMiddleware::class,
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,

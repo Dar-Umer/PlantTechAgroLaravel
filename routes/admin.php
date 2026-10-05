@@ -64,6 +64,7 @@ Route::middleware('admin')->group(function () {
         Route::get('settings', [SettingController::class, 'index'])->name('admin.settings.index');
 
         Route::put('settings', [SettingController::class, 'update'])->name('admin.settings.update');
+        Route::post('settings/maintenance/toggle', [SettingController::class, 'toggleMaintenance'])->name('admin.settings.maintenance.toggle');
 
         // Invoices & Quotations Designer
         Route::get('document-settings', [DocumentDesignController::class, 'index'])->name('admin.document-settings.index');

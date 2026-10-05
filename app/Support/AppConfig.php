@@ -43,7 +43,7 @@ class AppConfig
                 'build_number' => config('mobile.build_number', '1'),
                 'minimum_supported' => config('mobile.minimum_supported', '1.0.0'),
                 'force_update' => (bool) config('mobile.force_update', false),
-                'maintenance_mode' => (bool) config('mobile.maintenance_mode', false),
+                'maintenance_mode' => \App\Http\Middleware\CheckMaintenanceMode::isMaintenanceMode(),
                 'android_update_url' => config('mobile.android_update_url', ''),
                 'ios_update_url' => config('mobile.ios_update_url', ''),
                 'release_notes' => config('mobile.release_notes', ''),

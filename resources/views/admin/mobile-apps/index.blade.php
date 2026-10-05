@@ -201,10 +201,25 @@
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-1">App Availability</h3>
-                    <p class="text-sm text-gray-500 mb-3">App-wide controls.</p>
-                    <div class="space-y-3">
-                        <x-admin.checkbox name="maintenance_mode" label="Maintenance mode" :checked="$settings['maintenance_mode']" help="Shows a maintenance screen instead of the app while enabled." />
+                    <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-1">System & App Availability</h3>
+                            <p class="text-sm text-gray-500">Controls maintenance mode across the entire project (public website, mobile apps, customer portal, and API).</p>
+                        </div>
+                        @if($settings['maintenance_mode'])
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                                Maintenance Active
+                            </span>
+                        @else
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                Normal / Live
+                            </span>
+                        @endif
+                    </div>
+                    <div class="space-y-3 mt-4">
+                        <x-admin.checkbox name="maintenance_mode" label="Maintenance mode (Site-wide & Mobile Apps)" :checked="$settings['maintenance_mode']" help="Locks down the entire website, mobile apps, and customer API with a branded maintenance screen. Only administrators can access the system." />
                         <x-admin.checkbox name="echo_otp" label="Echo OTP in API responses" :checked="$settings['echo_otp']" help="Development helper — returns the generated OTP in the forgot-password API response. Disable in production." />
                     </div>
                 </div>
