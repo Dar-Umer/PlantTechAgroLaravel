@@ -4,6 +4,7 @@
     $siteName = config('shop.site_name', 'Plant Tech Agro');
     $rawTitle = $cta->title ?? 'Ready to Transform Your Orchard?';
     $subtitle = $cta->subtitle ?? 'From high-density orchard planning to drip irrigation, let our experts guide every step.';
+    $appDownloadUrl = config('mobile.android_update_url') ?: 'https://play.google.com/store/apps/details?id=com.plant.tech';
 
     // Split title into two lines: Line 1 (white) and Line 2 (emerald green)
     if (stripos($rawTitle, 'Your Orchard') !== false) {
@@ -109,10 +110,10 @@
                 </div>
 
                 {{-- Right Actions Column (Side-by-side on mobile and PC) --}}
-                <div class="flex flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto lg:shrink-0 pt-2 sm:pt-0">
+                <div class="flex flex-wrap items-center gap-3 sm:gap-4 w-full sm:w-auto lg:shrink-0 pt-2 sm:pt-0">
                     {{-- Primary Sprout Action Button --}}
                     <button type="button" onclick="openBookModal()"
-                            class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-8 py-3.5 sm:py-4 rounded-full bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs sm:text-base transition-all duration-300 shadow-lg shadow-brand-900/40 hover:shadow-brand-600/30 hover:scale-[1.02] focus:outline-none whitespace-nowrap">
+                            class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-7 py-3.5 sm:py-4 rounded-full bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs sm:text-base transition-all duration-300 shadow-lg shadow-brand-900/40 hover:shadow-brand-600/30 hover:scale-[1.02] focus:outline-none whitespace-nowrap">
                         {{-- Sprout Plant SVG Icon --}}
                         <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M7 20h10"/>
@@ -123,9 +124,22 @@
                         <span>Book Orchard</span>
                     </button>
 
+                    {{-- Get App Button --}}
+                    <a href="{{ $appDownloadUrl }}" target="_blank" rel="noopener noreferrer"
+                       class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-3.5 sm:py-4 rounded-full bg-white hover:bg-gray-100 text-gray-900 font-bold text-xs sm:text-base transition-all duration-300 hover:scale-[1.02] focus:outline-none shadow-md whitespace-nowrap"
+                       title="Download Plant Tech Agro on Google Play">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 shrink-0" viewBox="0 0 24 24" fill="none">
+                            <path d="M3.609 1.814C3.228 2.183 3 2.709 3 3.279v17.442c0 .57.228 1.096.61 1.465l10.183-10.186L3.609 1.814z" fill="#00C1A6"/>
+                            <path d="M17.27 8.531L5.26 1.705 13.793 12l3.477-3.469z" fill="#0083D6"/>
+                            <path d="M3.609 22.186l13.661-7.755L13.793 12 3.61 22.186z" fill="#EB2A44"/>
+                            <path d="M20.682 10.469l-3.412-1.938-3.477 3.469 3.477 3.469 3.412-1.938c.762-.433.762-1.137 0-1.562z" fill="#FFC900"/>
+                        </svg>
+                        <span>Get App</span>
+                    </a>
+
                     {{-- Secondary Dark Glass Contact Button --}}
                     <a href="#contact"
-                       class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-8 py-3.5 sm:py-4 rounded-full bg-gray-900/80 hover:bg-gray-800 border border-gray-700/80 hover:border-gray-600 text-gray-200 hover:text-white font-semibold text-xs sm:text-base backdrop-blur-md transition-all duration-300 hover:scale-[1.02] focus:outline-none shadow-sm whitespace-nowrap">
+                       class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-3.5 sm:py-4 rounded-full bg-gray-900/80 hover:bg-gray-800 border border-gray-700/80 hover:border-gray-600 text-gray-200 hover:text-white font-semibold text-xs sm:text-base backdrop-blur-md transition-all duration-300 hover:scale-[1.02] focus:outline-none shadow-sm whitespace-nowrap">
                         {{-- Phone Receiver SVG Icon --}}
                         <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>

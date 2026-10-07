@@ -232,14 +232,26 @@ class FirebaseService
                 'notification' => [
                     'sound' => 'default',
                     'channel_id' => 'pta_notifications',
+                    'default_sound' => true,
                     'default_vibrate_timings' => true,
+                    'notification_priority' => 'PRIORITY_MAX',
+                    'visibility' => 'PUBLIC',
                 ],
             ],
             'apns' => [
+                'headers' => [
+                    'apns-priority' => '10',
+                    'apns-push-type' => 'alert',
+                ],
                 'payload' => [
                     'aps' => [
+                        'alert' => [
+                            'title' => $title,
+                            'body' => $body,
+                        ],
                         'sound' => 'default',
                         'badge' => 1,
+                        'content-available' => 1,
                     ],
                 ],
             ],

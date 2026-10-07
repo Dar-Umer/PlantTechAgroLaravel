@@ -149,5 +149,6 @@
 
     @include('landing.partials.footer')
     @include('landing.partials.book-modal')
+    @include('landing.partials.mobile-app-banner')
 </body>
 </html>

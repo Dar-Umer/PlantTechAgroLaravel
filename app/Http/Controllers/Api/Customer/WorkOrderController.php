@@ -23,7 +23,7 @@ class WorkOrderController extends Controller
     public function index(Request $request)
     {
         $query = WorkOrder::where('customer_id', $request->user()->id)
-            ->with(['agent:id,name', 'orchard:id,orchard_id,name,is_company_established', 'invoice:id,number,status,grand_total,amount_paid', 'stages:work_order_id,status']);
+            ->with(['agent:id,name,phone,email,role,avatar', 'orchard:id,orchard_id,name,is_company_established', 'invoice:id,number,status,grand_total,amount_paid', 'stages:work_order_id,status']);
 
         if ($status = $request->query('status')) {
             abort_unless(in_array($status, array_keys(WorkOrder::STATUSES), true), 422, 'Invalid status filter.');
@@ -48,7 +48,7 @@ class WorkOrderController extends Controller
     public function show(Request $request, int $id)
     {
         $workOrder = WorkOrder::where('customer_id', $request->user()->id)
-            ->with(['agent:id,name', 'orchard:id,orchard_id,name,is_company_established,area_kanals,tree_count', 'invoice', 'stages.products', 'stages.attachments', 'service'])
+            ->with(['agent:id,name,phone,email,role,avatar', 'orchard:id,orchard_id,name,is_company_established,area_kanals,tree_count', 'invoice', 'stages.products', 'stages.attachments', 'service'])
             ->findOrFail($id);
 
         $data = static::summary($workOrder);
@@ -231,6 +231,14 @@ class WorkOrderController extends Controller
             'status_label' => WorkOrder::STATUSES[$workOrder->status] ?? $workOrder->status,
             'status_color' => WorkOrder::STATUS_COLORS[$workOrder->status] ?? 'gray',
             'assigned_to' => $workOrder->agent?->name,
+            'assigned_person' => $workOrder->agent ? [
+                'id' => $workOrder->agent->id,
+                'name' => $workOrder->agent->name,
+                'phone' => $workOrder->agent->phone,
+                'email' => $workOrder->agent->email,
+                'role' => $workOrder->agent->role ?? 'Field Officer',
+                'avatar' => $workOrder->agent->avatar ? Media::url($workOrder->agent->avatar) : null,
+            ] : null,
             'stages_total' => $total,
             'stages_completed' => $done,
             'progress_percent' => $total > 0 ? (int) round($done / $total * 100) : 0,

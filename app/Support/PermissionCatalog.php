@@ -129,17 +129,21 @@ class PermissionCatalog
                 'invoices.view', 'invoices.manage',
                 'pos.terminal', 'pos.sales.view', 'pos.customers.manage',
                 'inventory.view', 'inventory.manage', 'inventory.stock-in', 'inventory.stock-out', 'inventory.batches', 'suppliers.manage',
+                'purchase-bills.manage',
                 'services.view', 'services.manage', 'services.stages.manage',
                 'reports.gst', 'customers.ledger',
                 'tickets.view', 'tickets.manage', 'tickets.assign',
+                'content.manage',
             ],
             'POS & Stock Operator' => [
                 'pos.terminal', 'pos.sales.view', 'pos.sales.cancel', 'pos.customers.manage',
                 'inventory.view', 'inventory.stock-in', 'inventory.stock-out', 'inventory.batches', 'suppliers.manage',
+                'purchase-bills.manage',
             ],
             'Field Agent' => [
                 'work-orders.view', 'work-orders.manage',
-                'leads.view', 'customers.view', 'orchards.view',
+                'leads.view', 'leads.manage',
+                'customers.view', 'orchards.view', 'orchards.manage',
                 'tickets.view', 'tickets.manage',
             ],
             'Accountant' => [
@@ -147,6 +151,7 @@ class PermissionCatalog
                 'quotations.view',
                 'pos.sales.view',
                 'reports.gst', 'customers.ledger', 'customers.view',
+                'purchase-bills.manage',
             ],
             'Content Editor' => [
                 'content.manage', 'frontend.editor',
@@ -157,7 +162,7 @@ class PermissionCatalog
     /**
      * Synchronize permissions and default roles in the database.
      */
-    public static function syncToDatabase(): void
+    public static function syncToDatabase(bool $force = false): void
     {
         app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
 
@@ -183,8 +188,8 @@ class PermissionCatalog
                 'guard_name' => 'admin',
             ]);
 
-            // For existing roles, sync permissions if it's Super Admin or newly created
-            if ($role->wasRecentlyCreated || $roleName === 'Super Admin') {
+            // Sync if newly created, Super Admin, force mode, or currently has 0 permissions
+            if ($force || $role->wasRecentlyCreated || $roleName === 'Super Admin' || $role->permissions()->count() === 0) {
                 $role->syncPermissions($perms);
             }
         }

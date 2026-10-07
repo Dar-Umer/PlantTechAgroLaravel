@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Services\WeatherService;
 use App\Support\AppConfig;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
@@ -14,9 +16,13 @@ class ProfileController extends Controller
 {
     public function show(Request $request)
     {
+        $customer = $request->user();
         return response()->json([
-            'user' => $this->userPayload($request->user()),
+            'user' => $this->userPayload($customer),
             'app_config' => AppConfig::toArray(),
+            'weather' => ((bool) config('weather.enabled', true) && (bool) config('weather.show_api_dashboard', true))
+                ? WeatherService::forArea($customer->area)
+                : null,
         ]);
     }
 
@@ -159,11 +165,19 @@ class ProfileController extends Controller
 
     private function userPayload(Customer $customer): array
     {
+        $orchards = $customer->orchards()->get();
+        $outstanding = (float) $customer->invoices()
+            ->whereNotIn('status', ['paid', 'cancelled'])
+            ->sum(DB::raw('grand_total - amount_paid'));
+
         return array_merge(
             $customer->only(['id', 'orchardist_id', 'name', 'phone', 'email', 'address', 'area', 'status']),
             [
-                'orchards_count' => $customer->orchards()->count(),
-                'company_orchards_count' => $customer->companyOrchards()->count(),
+                'orchards_count' => $orchards->count(),
+                'company_orchards_count' => $orchards->where('is_company_established', true)->count(),
+                'total_kanals' => round((float) $orchards->sum('area_kanals'), 2),
+                'total_plants' => (int) $orchards->sum('tree_count'),
+                'outstanding_balance' => round($outstanding, 2),
             ]
         );
     }

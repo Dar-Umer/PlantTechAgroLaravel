@@ -25,11 +25,11 @@ return [
     'app_logo_url' => '',  // dedicated app icon/logo (absolute /storage path or URL)
 
     // Version control of the customer app.
-    'version' => '2.0.0',          // display version shown in the app
-    'build_number' => '2',
+    'version' => '2.0.1',          // display version shown in the app
+    'build_number' => '3',
     'minimum_supported' => '2.0.0', // oldest app version allowed to keep running
     'force_update' => false,        // block usage until the customer updates
-    'android_update_url' => '',     // Play Store listing
+    'android_update_url' => 'https://play.google.com/store/apps/details?id=com.plant.tech',     // Play Store listing
     'ios_update_url' => '',         // App Store listing
     'release_notes' => '',          // what's new in this release
 

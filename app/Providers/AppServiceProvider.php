@@ -20,6 +20,7 @@ use App\Support\ContentCache;
 use App\Support\Phone;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -76,6 +77,13 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Unrestricted master authorization for Super Admin across all gates and permissions
+        Gate::before(function ($user, $ability) {
+            if ($user instanceof \App\Models\Admin && $user->isSuperAdmin()) {
+                return true;
+            }
+        });
+
         $this->loadShopSettings();
         $this->applyMailSettings();
         $this->registerFrontendCacheInvalidation();

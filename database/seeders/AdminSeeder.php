@@ -32,5 +32,14 @@ class AdminSeeder extends Seeder
             $this->command?->warn('Seeded Super Admin admin@pta.com with random password: ' . $plainPassword);
             $this->command?->warn('Log in immediately and change it via Staff management.');
         }
+
+        try {
+            \App\Support\PermissionCatalog::syncToDatabase();
+            if (! $admin->hasRole('Super Admin')) {
+                $admin->assignRole('Super Admin');
+            }
+        } catch (\Throwable $e) {
+            // Ignore in environments where permission tables might not be migrated yet
+        }
     }
 }

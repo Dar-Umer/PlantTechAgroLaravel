@@ -9,8 +9,10 @@ class AppConfigController extends Controller
 {
     public function show()
     {
-        return response()->json([
-            'app_config' => AppConfig::toArray(),
-        ]);
+        $config = AppConfig::toArray();
+
+        return response()->json(array_merge([
+            'app_config' => $config,
+        ], $config));
     }
 }
