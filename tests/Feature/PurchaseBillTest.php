@@ -184,4 +184,108 @@ class PurchaseBillTest extends TestCase
         $this->assertEquals(0, (float) $bill->paid_amount);
         $this->assertEquals(1500, (float) $bill->balance_due);
     }
+
+    public function test_can_delete_supplier_payment_from_purchase_bill(): void
+    {
+        $admin = $this->actingAdmin();
+
+        $supplier = Supplier::create([
+            'name' => 'Kashmir Nursery Corp',
+            'phone' => '9876543211',
+            'is_active' => true,
+        ]);
+
+        $bill = PurchaseBill::create([
+            'bill_number' => 'PB-2026-0001',
+            'supplier_id' => $supplier->id,
+            'bill_date' => now()->format('Y-m-d'),
+            'subtotal' => 2000,
+            'tax_amount' => 0,
+            'discount' => 0,
+            'shipping_cost' => 0,
+            'total_amount' => 2000,
+            'paid_amount' => 1000,
+            'balance_due' => 1000,
+            'payment_status' => 'partial',
+            'status' => 'received',
+            'created_by' => $admin->id,
+        ]);
+
+        $payment = $bill->payments()->create([
+            'payment_number' => 'SPAY-2026-0001',
+            'supplier_id' => $supplier->id,
+            'amount' => 1000,
+            'payment_date' => now()->format('Y-m-d'),
+            'payment_method' => 'bank_transfer',
+            'reference_no' => 'UTR998877',
+            'created_by' => $admin->id,
+        ]);
+
+        $this->assertDatabaseHas('supplier_payments', ['id' => $payment->id]);
+
+        $response = $this->actingAs($admin, 'admin')
+            ->delete("/admin/purchase-bills/{$bill->id}/payments/{$payment->id}");
+
+        $response->assertSessionHas('success');
+        $this->assertDatabaseMissing('supplier_payments', ['id' => $payment->id]);
+
+        $bill->refresh();
+        $this->assertEquals(0, (float) $bill->paid_amount);
+        $this->assertEquals(2000, (float) $bill->balance_due);
+        $this->assertEquals('unpaid', $bill->payment_status);
+    }
+
+    public function test_can_delete_supplier_payment_from_supplier_profile(): void
+    {
+        $admin = $this->actingAdmin();
+
+        $supplier = Supplier::create([
+            'name' => 'Agro Inputs Direct',
+            'phone' => '9876543200',
+            'is_active' => true,
+        ]);
+
+        $bill = PurchaseBill::create([
+            'bill_number' => 'PB-2026-0002',
+            'supplier_id' => $supplier->id,
+            'bill_date' => now()->format('Y-m-d'),
+            'subtotal' => 5000,
+            'tax_amount' => 0,
+            'discount' => 0,
+            'shipping_cost' => 0,
+            'total_amount' => 5000,
+            'paid_amount' => 5000,
+            'balance_due' => 0,
+            'payment_status' => 'paid',
+            'status' => 'received',
+            'created_by' => $admin->id,
+        ]);
+
+        $payment = SupplierPayment::create([
+            'payment_number' => 'SPAY-2026-0002',
+            'supplier_id' => $supplier->id,
+            'purchase_bill_id' => $bill->id,
+            'amount' => 5000,
+            'payment_date' => now()->format('Y-m-d'),
+            'payment_method' => 'upi',
+            'created_by' => $admin->id,
+        ]);
+
+        $this->assertEquals(5000, $supplier->total_paid);
+
+        $response = $this->actingAs($admin, 'admin')
+            ->delete("/admin/suppliers/{$supplier->id}/payments/{$payment->id}");
+
+        $response->assertSessionHas('success');
+        $this->assertDatabaseMissing('supplier_payments', ['id' => $payment->id]);
+
+        $bill->refresh();
+        $this->assertEquals(0, (float) $bill->paid_amount);
+        $this->assertEquals(5000, (float) $bill->balance_due);
+        $this->assertEquals('unpaid', $bill->payment_status);
+
+        $supplier->refresh();
+        $this->assertEquals(0, $supplier->total_paid);
+        $this->assertEquals(5000, $supplier->balance_due);
+    }
 }

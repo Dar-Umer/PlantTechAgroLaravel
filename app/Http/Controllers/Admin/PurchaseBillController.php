@@ -324,6 +324,23 @@ class PurchaseBillController extends Controller
         return back()->with('success', 'Payment of ₹' . number_format($validated['amount'], 2) . ' recorded successfully.');
     }
 
+    public function destroyPayment(PurchaseBill $purchaseBill, SupplierPayment $payment)
+    {
+        if ($payment->purchase_bill_id !== $purchaseBill->id) {
+            abort(404);
+        }
+
+        $paymentNumber = $payment->payment_number;
+        $amount = (float) $payment->amount;
+
+        DB::transaction(function () use ($payment, $purchaseBill) {
+            $payment->delete();
+            $purchaseBill->refreshPaymentStatus();
+        });
+
+        return back()->with('success', "Payment {$paymentNumber} of ₹" . number_format($amount, 2) . ' deleted successfully.');
+    }
+
     public function destroy(PurchaseBill $purchaseBill)
     {
         if ($purchaseBill->payments()->exists()) {

@@ -319,6 +319,7 @@ Route::middleware('admin')->group(function () {
     Route::middleware('permission:suppliers.manage,admin')->group(function () {
         Route::resource('suppliers', SupplierController::class)->names('admin.suppliers');
         Route::post('suppliers/{supplier}/payments', [SupplierController::class, 'recordPayment'])->name('admin.suppliers.payments.store');
+        Route::delete('suppliers/{supplier}/payments/{payment}', [SupplierController::class, 'destroyPayment'])->name('admin.suppliers.payments.destroy');
     });
 
     // ==========================================
@@ -328,6 +329,7 @@ Route::middleware('admin')->group(function () {
         Route::resource('purchase-bills', PurchaseBillController::class)->parameters(['purchase-bills' => 'purchaseBill'])->except(['edit', 'update'])->names('admin.purchase-bills');
         Route::get('purchase-bills/{purchaseBill}/print', [PurchaseBillController::class, 'print'])->name('admin.purchase-bills.print');
         Route::post('purchase-bills/{purchaseBill}/payments', [PurchaseBillController::class, 'recordPayment'])->name('admin.purchase-bills.payments.store');
+        Route::delete('purchase-bills/{purchaseBill}/payments/{payment}', [PurchaseBillController::class, 'destroyPayment'])->name('admin.purchase-bills.payments.destroy');
     });
 
     // ==========================================

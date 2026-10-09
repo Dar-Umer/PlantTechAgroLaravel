@@ -177,6 +177,27 @@ class SupplierController extends Controller
         return back()->with('success', 'Payment of ₹' . number_format($validated['amount'], 2) . ' recorded successfully.');
     }
 
+    public function destroyPayment(Supplier $supplier, SupplierPayment $payment)
+    {
+        if ($payment->supplier_id !== $supplier->id) {
+            abort(404);
+        }
+
+        $paymentNumber = $payment->payment_number;
+        $amount = (float) $payment->amount;
+
+        DB::transaction(function () use ($payment) {
+            $bill = $payment->purchaseBill;
+            $payment->delete();
+
+            if ($bill) {
+                $bill->refreshPaymentStatus();
+            }
+        });
+
+        return back()->with('success', "Payment {$paymentNumber} of ₹" . number_format($amount, 2) . ' deleted successfully.');
+    }
+
     public function destroy(Supplier $supplier)
     {
         if ($supplier->purchaseBills()->exists()) {
