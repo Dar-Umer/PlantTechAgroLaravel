@@ -128,9 +128,9 @@
                         </div>
                         <div x-show="type === 'in'" x-cloak>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Unit Cost (₹, optional)</label>
-                            <input type="number" name="unit_cost" step="1" min="0" x-model="unit_cost"
+                            <input type="number" name="unit_cost" step="0.01" min="0" x-model="unit_cost"
                                    class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 transition focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
-                                   placeholder="0">
+                                   placeholder="0.00">
                             <p class="mt-1.5 text-xs text-gray-400" x-show="previewCost !== null">Total: <span class="font-semibold" x-text="'₹' + fmt(previewCost)"></span></p>
                             @error('unit_cost')
                                 <p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>

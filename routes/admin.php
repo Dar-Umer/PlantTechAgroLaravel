@@ -290,11 +290,15 @@ Route::middleware('admin')->group(function () {
     // ==========================================
     // Inventory & Products Catalogue
     // ==========================================
+    Route::middleware('permission:inventory.stock-in|inventory.stock-out,admin')->group(function () {
+        Route::get('stock-movements/create', [StockMovementController::class, 'create'])->name('admin.stock-movements.create');
+        Route::post('stock-movements', [StockMovementController::class, 'store'])->name('admin.stock-movements.store');
+    });
     Route::middleware('permission:inventory.view,admin')->group(function () {
         Route::get('products', [ProductController::class, 'index'])->name('admin.products.index');
         Route::get('stock-movements', [StockMovementController::class, 'index'])->name('admin.stock-movements.index');
         Route::get('stock-movements/export', [StockMovementController::class, 'export'])->name('admin.stock-movements.export');
-        Route::get('stock-movements/{movement}', [StockMovementController::class, 'show'])->name('admin.stock-movements.show');
+        Route::get('stock-movements/{movement}', [StockMovementController::class, 'show'])->name('admin.stock-movements.show')->whereNumber('movement');
     });
     Route::middleware('permission:inventory.manage,admin')->group(function () {
         Route::get('products/create', [ProductController::class, 'create'])->name('admin.products.create');
@@ -303,10 +307,6 @@ Route::middleware('admin')->group(function () {
         Route::put('products/{product}', [ProductController::class, 'update'])->name('admin.products.update');
         Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
         Route::post('products/{product}/notify-supplier', [ProductController::class, 'notifySupplier'])->name('admin.products.notify-supplier');
-    });
-    Route::middleware('permission:inventory.stock-in|inventory.stock-out,admin')->group(function () {
-        Route::get('stock-movements/create', [StockMovementController::class, 'create'])->name('admin.stock-movements.create');
-        Route::post('stock-movements', [StockMovementController::class, 'store'])->name('admin.stock-movements.store');
     });
     Route::middleware('permission:inventory.batches,admin')->group(function () {
         Route::get('product-batches', [ProductBatchController::class, 'index'])->name('admin.product-batches.index');

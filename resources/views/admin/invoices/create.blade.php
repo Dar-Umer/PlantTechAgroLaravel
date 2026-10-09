@@ -120,7 +120,7 @@
                                     <p class="text-sm font-medium text-gray-900 truncate" x-text="p.name"></p>
                                     <div class="flex items-center gap-2 mt-0.5">
                                         <span class="text-xs text-gray-500" x-text="p.sku || p.unit"></span>
-                                        <span class="text-xs font-semibold text-gray-700" x-text="'₹' + Number(p.rate).toFixed(0)"></span>
+                                        <span class="text-xs font-semibold text-gray-700" x-text="'₹' + Number(p.rate).toFixed(2)"></span>
                                     </div>
                                 </div>
                                 <div class="text-right flex-shrink-0">
@@ -198,14 +198,14 @@
                                 {{-- Rate --}}
                                 <div class="md:col-span-2">
                                     <label class="block text-xs font-medium text-gray-500 mb-1 md:sr-only">Rate ₹</label>
-                                    <input type="number" step="1" min="0" x-model.number="row.rate" :name="'items[' + i + '][rate]'" required
+                                    <input type="number" step="0.01" min="0" x-model.number="row.rate" :name="'items[' + i + '][rate]'" required
                                            class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-center focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                                 </div>
 
                                 {{-- Discount --}}
                                 <div class="md:col-span-1">
                                     <label class="block text-xs font-medium text-gray-500 mb-1 md:sr-only">Disc ₹</label>
-                                    <input type="number" step="1" min="0" x-model.number="row.discount" :name="'items[' + i + '][discount]'"
+                                    <input type="number" step="0.01" min="0" x-model.number="row.discount" :name="'items[' + i + '][discount]'"
                                            class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-center focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                                 </div>
 

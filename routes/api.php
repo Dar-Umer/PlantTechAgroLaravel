@@ -71,3 +71,14 @@ Route::middleware(['auth:sanctum', \App\Http\Middleware\EnsureCustomerIsActive::
     Route::post('tickets/{id}/close', [TicketController::class, 'close']);
     Route::post('tickets/{id}/reopen', [TicketController::class, 'reopen']);
 });
+
+// Windows POS Desktop Software API
+Route::prefix('pos')->group(function () {
+    Route::get('ping', [\App\Http\Controllers\Api\Pos\PosApiController::class, 'ping']);
+    Route::post('login', [\App\Http\Controllers\Api\Pos\PosApiController::class, 'login']);
+    Route::get('products', [\App\Http\Controllers\Api\Pos\PosApiController::class, 'products']);
+    Route::get('customers', [\App\Http\Controllers\Api\Pos\PosApiController::class, 'customers']);
+    Route::post('customers', [\App\Http\Controllers\Api\Pos\PosApiController::class, 'storeCustomer']);
+    Route::post('checkout', [\App\Http\Controllers\Api\Pos\PosApiController::class, 'checkout']);
+    Route::get('sales', [\App\Http\Controllers\Api\Pos\PosApiController::class, 'sales']);
+});

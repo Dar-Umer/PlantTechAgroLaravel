@@ -62,10 +62,10 @@
                                     <tr>
                                         <td class="px-6 py-3 font-medium text-gray-900">{{ $item->name }}</td>
                                         <td class="px-6 py-3 text-gray-600">{{ \App\Support\Format::qty($item->qty) }} {{ $item->unit }}</td>
-                                        <td class="px-6 py-3 text-gray-600">₹{{ number_format((float) $item->rate, 0) }}</td>
-                                        <td class="px-6 py-3 text-gray-600">{{ (float) $item->discount > 0 ? '₹' . number_format((float) $item->discount, 0) : '—' }}</td>
+                                        <td class="px-6 py-3 text-gray-600">₹{{ number_format((float) $item->rate, 2) }}</td>
+                                        <td class="px-6 py-3 text-gray-600">{{ (float) $item->discount > 0 ? '₹' . number_format((float) $item->discount, 2) : '—' }}</td>
                                         <td class="px-6 py-3 text-gray-600">{{ $item->gst_rate }}%</td>
-                                        <td class="px-6 py-3 font-semibold text-gray-900 text-right">₹{{ number_format((float) $item->total, 0) }}</td>
+                                        <td class="px-6 py-3 font-semibold text-gray-900 text-right">₹{{ number_format((float) $item->total, 2) }}</td>
                                     </tr>
                                 @empty
                                     <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">No items.</td></tr>

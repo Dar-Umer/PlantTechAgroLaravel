@@ -47,7 +47,7 @@
                         <p class="text-lg font-semibold text-gray-900">{{ $movement->product->name }}</p>
                         <p class="text-sm text-gray-500 mt-0.5">
                             @if($movement->product->sku)SKU: {{ $movement->product->sku }} · @endif
-                            Unit: {{ $movement->product->unit }} · Rate: ₹{{ number_format((float) $movement->product->rate, 0) }}
+                            Unit: {{ $movement->product->unit }} · Rate: ₹{{ number_format((float) $movement->product->rate, 2) }}
                         </p>
                     </div>
                     <div class="text-right flex-shrink-0">

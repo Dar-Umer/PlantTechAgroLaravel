@@ -142,10 +142,10 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $item->name }}@if($item->unit) <span style="color:#9ca3af;">({{ $item->unit }})</span>@endif</td>
                         <td class="r">{{ \App\Support\Format::qty($item->qty) }}</td>
-                        <td class="r">₹{{ number_format((float) $item->rate, 0) }}</td>
-                        <td class="r">{{ (float) $item->discount > 0 ? '₹' . number_format((float) $item->discount, 0) : '—' }}</td>
+                        <td class="r">₹{{ number_format((float) $item->rate, 2) }}</td>
+                        <td class="r">{{ (float) $item->discount > 0 ? '₹' . number_format((float) $item->discount, 2) : '—' }}</td>
                         <td class="r">{{ $item->gst_rate }}%</td>
-                        <td class="r">₹{{ number_format((float) $item->total, 0) }}</td>
+                        <td class="r">₹{{ number_format((float) $item->total, 2) }}</td>
                     </tr>
                 @endforeach
             </tbody>

@@ -193,8 +193,8 @@
                                                     <div class="flex-1 min-w-0">
                                                         <p class="text-sm font-medium text-gray-900 truncate">{{ $row->name }}</p>
                                                         <div x-show="!editing" class="text-xs text-gray-500">
-                                                            {{ \App\Support\Format::qty($row->quantity) }} {{ $row->unit }} × ₹{{ number_format((float) $row->rate, 0) }}
-                                                            <span class="font-semibold text-gray-900">= ₹{{ number_format($row->lineTotal(), 0) }}</span>
+                                                            {{ \App\Support\Format::qty($row->quantity) }} {{ $row->unit }} × ₹{{ number_format((float) $row->rate, 2) }}
+                                                            <span class="font-semibold text-gray-900">= ₹{{ number_format($row->lineTotal(), 2) }}</span>
                                                         </div>
                                                     </div>
 
@@ -209,7 +209,7 @@
                                                             </div>
                                                             <div>
                                                                 <label class="text-[11px] text-gray-500 mb-1 block">Rate (₹)</label>
-                                                                <input type="number" name="rate" step="1" min="0" x-model="rate" class="w-24 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm" required>
+                                                                <input type="number" name="rate" step="0.01" min="0" x-model="rate" class="w-24 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm" required>
                                                             </div>
                                                             <x-admin.button type="submit" size="sm">Save</x-admin.button>
                                                         </form>
@@ -254,7 +254,7 @@
                                             </div>
                                             <div>
                                                 <label class="text-[11px] text-gray-500 mb-1 block">Rate ₹</label>
-                                                <input type="number" name="rate" step="1" min="0" placeholder="Rate"
+                                                <input type="number" name="rate" step="0.01" min="0" placeholder="Rate"
                                                        class="w-24 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
                                             </div>
                                             <x-admin.button type="submit" size="sm">Add & Deduct</x-admin.button>

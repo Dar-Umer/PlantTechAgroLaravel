@@ -88,7 +88,7 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-gray-600 font-medium">{{ $product->supplier?->name ?? '—' }}</td>
-                                <td class="px-6 py-4 text-gray-900 font-semibold">₹{{ number_format((float) $product->rate, 0) }}</td>
+                                <td class="px-6 py-4 text-gray-900 font-semibold">₹{{ number_format((float) $product->rate, 2) }}</td>
                                 <td class="px-6 py-4 text-gray-600">{{ $product->gst_rate }}%</td>
                                 <td class="px-6 py-4">
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $product->isLowStock() ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700' }}">

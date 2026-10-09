@@ -14,4 +14,9 @@ class Format
 
         return rtrim(rtrim(number_format($value, 3, '.', ''), '0'), '.');
     }
+
+    public static function rate(mixed $value, int $decimals = 2): string
+    {
+        return number_format((float) $value, $decimals);
+    }
 }

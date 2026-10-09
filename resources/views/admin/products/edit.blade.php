@@ -22,9 +22,9 @@
                         <x-admin.input name="hsn_code" label="HSN / SAC Code" :value="old('hsn_code', $product->hsn_code)" placeholder="e.g. 3101, 3808" helptext="Used for GST reporting and invoice compliance." />
                         <x-admin.select name="unit" label="Unit" :options="$units" :value="old('unit', $product->unit)" required />
                         <x-admin.select name="type" label="Product Type" :options="\App\Models\Product::TYPES" :value="old('type', $product->type)" required helptext="Service materials are consumed in work orders; sellables appear in the customer catalog." />
-                        <x-admin.input name="rate" label="Rate (₹ per unit)" type="number" step="1" min="0" :value="old('rate', $product->rate)" required />
-                        <x-admin.input name="mrp" label="MRP (₹)" type="number" step="1" min="0" :value="old('mrp', $product->mrp)" helptext="For sellables — shown struck through in the catalog." />
-                        <x-admin.input name="selling_price" label="Selling Price (₹)" type="number" step="1" min="0" :value="old('selling_price', $product->selling_price)" helptext="For sellables — blank falls back to rate." />
+                        <x-admin.input name="rate" label="Rate (₹ per unit)" type="number" step="0.01" min="0" :value="old('rate', $product->rate)" required />
+                        <x-admin.input name="mrp" label="MRP (₹)" type="number" step="0.01" min="0" :value="old('mrp', $product->mrp)" helptext="For sellables — shown struck through in the catalog." />
+                        <x-admin.input name="selling_price" label="Selling Price (₹)" type="number" step="0.01" min="0" :value="old('selling_price', $product->selling_price)" helptext="For sellables — blank falls back to rate." />
                         <x-admin.input name="gst_rate" label="GST Rate (%)" type="number" step="0.01" min="0" max="100" :value="old('gst_rate', $product->gst_rate)" />
                         <x-admin.select name="supplier_id" label="Primary Supplier" :options="$suppliers->pluck('name', 'id')->all()" :value="(string) old('supplier_id', $product->supplier_id)" placeholder="None" />
                     </div>
