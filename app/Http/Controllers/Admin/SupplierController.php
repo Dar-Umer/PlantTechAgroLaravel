@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
+use App\Models\ProductBatch;
 use App\Models\PurchaseBill;
 use App\Models\StockMovement;
 use App\Models\Supplier;
@@ -200,17 +202,59 @@ class SupplierController extends Controller
 
     public function destroy(Supplier $supplier)
     {
-        if ($supplier->purchaseBills()->exists()) {
-            return back()->with('error', 'Cannot delete this supplier because purchase bills are attached to it.');
-        }
+        $supplierName = $supplier->name;
 
-        if ($supplier->products()->exists()) {
-            return back()->with('error', 'This supplier has products assigned. Reassign them first.');
-        }
+        DB::transaction(function () use ($supplier) {
+            // 1. Fetch all purchase bills with items, products, and batches
+            $bills = $supplier->purchaseBills()->with(['items.product', 'items.batch'])->get();
+            $billNumbers = $bills->pluck('bill_number')->filter()->all();
 
-        $supplier->delete();
+            foreach ($bills as $bill) {
+                foreach ($bill->items as $item) {
+                    // Reverse inventory added from this bill on the product
+                    if ($item->product) {
+                        $newStock = max(0, round((float) $item->product->stock_qty - (float) $item->quantity, 3));
+                        $item->product->update(['stock_qty' => $newStock]);
+                    }
 
-        return redirect()->route('admin.suppliers.index')->with('success', 'Supplier deleted.');
+                    // Reverse batch quantity if applicable
+                    if ($item->batch) {
+                        $newBatchQty = max(0, round((float) $item->batch->current_qty - (float) $item->quantity, 3));
+                        $item->batch->update(['current_qty' => $newBatchQty]);
+                        $item->batch->refreshStatus();
+                    }
+                }
+            }
+
+            // 2. Delete stock movements associated with this supplier or bills
+            StockMovement::where(function ($q) use ($supplier, $billNumbers) {
+                $q->where('supplier_id', $supplier->id);
+                foreach ($billNumbers as $num) {
+                    $q->orWhere('reference', 'like', "%{$num}%");
+                }
+            })->delete();
+
+            // 3. Delete batches directly associated with this supplier
+            ProductBatch::where('supplier_id', $supplier->id)->delete();
+
+            // 4. Delete all supplier payments
+            $supplier->payments()->delete();
+
+            // 5. Delete purchase bills and bill items
+            foreach ($bills as $bill) {
+                $bill->items()->delete();
+                $bill->delete();
+            }
+
+            // 6. Disassociate supplier from any products in catalog
+            Product::where('supplier_id', $supplier->id)->update(['supplier_id' => null]);
+
+            // 7. Delete the supplier record
+            $supplier->delete();
+        });
+
+        return redirect()->route('admin.suppliers.index')
+            ->with('success', "Supplier '{$supplierName}' and all associated purchase bills, inward stock, and payment records have been deleted.");
     }
 
     private function validated(Request $request, ?int $ignoreId = null): array

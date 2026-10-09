@@ -288,4 +288,120 @@ class PurchaseBillTest extends TestCase
         $this->assertEquals(0, $supplier->total_paid);
         $this->assertEquals(5000, $supplier->balance_due);
     }
+
+    public function test_can_delete_supplier_with_cascading_stock_reversal_and_cleanup(): void
+    {
+        $admin = $this->actingAdmin();
+
+        $supplier = Supplier::create([
+            'name' => 'Valley Orchard Equipment & Seeds',
+            'phone' => '9876500000',
+            'is_active' => true,
+        ]);
+
+        $product = Product::create([
+            'name' => 'Golden Delicious Sapling',
+            'unit' => 'pcs',
+            'rate' => 350,
+            'stock_qty' => 10,
+            'supplier_id' => $supplier->id,
+            'is_active' => true,
+        ]);
+
+        // Create purchase bill that increases stock by 25
+        $bill = PurchaseBill::create([
+            'bill_number' => 'PB-2026-9999',
+            'supplier_id' => $supplier->id,
+            'bill_date' => now()->format('Y-m-d'),
+            'subtotal' => 6250,
+            'tax_amount' => 0,
+            'discount' => 0,
+            'shipping_cost' => 0,
+            'total_amount' => 6250,
+            'paid_amount' => 2000,
+            'balance_due' => 4250,
+            'payment_status' => 'partial',
+            'status' => 'received',
+            'created_by' => $admin->id,
+        ]);
+
+        $batch = ProductBatch::create([
+            'product_id' => $product->id,
+            'batch_number' => 'LOT-VALLEY-01',
+            'inward_date' => now()->format('Y-m-d'),
+            'initial_qty' => 25,
+            'current_qty' => 25,
+            'unit_cost' => 250,
+            'selling_price' => 350,
+            'supplier_id' => $supplier->id,
+            'status' => ProductBatch::STATUS_ACTIVE,
+        ]);
+
+        $item = $bill->items()->create([
+            'product_id' => $product->id,
+            'batch_id' => $batch->id,
+            'batch_number' => 'LOT-VALLEY-01',
+            'quantity' => 25,
+            'unit_cost' => 250,
+            'selling_price' => 350,
+            'tax_percent' => 0,
+            'tax_amount' => 0,
+            'line_total' => 6250,
+        ]);
+
+        // Reflect inward stock addition
+        $product->update(['stock_qty' => 35]);
+
+        $movement = StockMovement::create([
+            'product_id' => $product->id,
+            'batch_id' => $batch->id,
+            'type' => 'in',
+            'quantity' => 25,
+            'stock_after' => 35,
+            'unit_cost' => 250,
+            'supplier_id' => $supplier->id,
+            'reference' => 'Purchase Bill ' . $bill->bill_number,
+            'created_by' => $admin->id,
+        ]);
+
+        $payment = SupplierPayment::create([
+            'payment_number' => 'SPAY-2026-9999',
+            'supplier_id' => $supplier->id,
+            'purchase_bill_id' => $bill->id,
+            'amount' => 2000,
+            'payment_date' => now()->format('Y-m-d'),
+            'payment_method' => 'cash',
+            'created_by' => $admin->id,
+        ]);
+
+        $this->assertEquals(35, (float) $product->stock_qty);
+        $this->assertEquals($supplier->id, $product->supplier_id);
+        $this->assertDatabaseHas('suppliers', ['id' => $supplier->id]);
+        $this->assertDatabaseHas('purchase_bills', ['id' => $bill->id]);
+        $this->assertDatabaseHas('purchase_bill_items', ['id' => $item->id]);
+        $this->assertDatabaseHas('product_batches', ['id' => $batch->id]);
+        $this->assertDatabaseHas('stock_movements', ['id' => $movement->id]);
+        $this->assertDatabaseHas('supplier_payments', ['id' => $payment->id]);
+
+        // Perform deletion of supplier
+        $response = $this->actingAs($admin, 'admin')
+            ->delete("/admin/suppliers/{$supplier->id}");
+
+        $response->assertRedirect('/admin/suppliers');
+        $response->assertSessionHas('success');
+
+        // Product stock is reversed back to initial 10 and supplier unlinked
+        $product->refresh();
+        $this->assertEquals(10, (float) $product->stock_qty);
+        $this->assertNull($product->supplier_id);
+
+        // Supplier and all related records deleted
+        $this->assertDatabaseMissing('suppliers', ['id' => $supplier->id]);
+        $this->assertDatabaseMissing('purchase_bills', ['id' => $bill->id]);
+        $this->assertDatabaseMissing('purchase_bill_items', ['id' => $item->id]);
+        $this->assertDatabaseMissing('product_batches', ['id' => $batch->id]);
+        $this->assertDatabaseMissing('stock_movements', ['id' => $movement->id]);
+        $this->assertDatabaseMissing('supplier_payments', ['id' => $payment->id]);
+    }
 }
+
