@@ -580,7 +580,7 @@ function purchaseBillForm(productsData, preselectedSupplierId) {
                     selling_price: this.newProduct.selling_price && !isNaN(this.newProduct.selling_price) ? parseFloat(this.newProduct.selling_price) : null,
                     gst_rate: this.newProduct.gst_rate !== '' && !isNaN(this.newProduct.gst_rate) ? parseFloat(this.newProduct.gst_rate) : 0,
                     hsn_code: this.newProduct.hsn_code && this.newProduct.hsn_code.trim() ? this.newProduct.hsn_code.trim() : null,
-                    low_stock_threshold: this.newProduct.low_stock_threshold && !isNaN(this.newProduct.low_stock_threshold) ? parseFloat(this.newProduct.low_stock_threshold) : null,
+                    low_stock_threshold: this.newProduct.low_stock_threshold && !isNaN(this.newProduct.low_stock_threshold) ? parseFloat(this.newProduct.low_stock_threshold) : 0,
                     supplier_id: this.supplierId ? parseInt(this.supplierId) : null,
                     is_active: 1,
                 };

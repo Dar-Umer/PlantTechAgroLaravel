@@ -35,6 +35,16 @@ class Product extends Model
         ];
     }
 
+    public function setLowStockThresholdAttribute($value): void
+    {
+        $this->attributes['low_stock_threshold'] = ($value !== null && $value !== '') ? (float) $value : 0;
+    }
+
+    public function setGstRateAttribute($value): void
+    {
+        $this->attributes['gst_rate'] = ($value !== null && $value !== '') ? (float) $value : 0;
+    }
+
     /**
      * Storefront price: explicit selling price, falling back to the
      * billing rate. Work orders/invoices always use `rate` directly.

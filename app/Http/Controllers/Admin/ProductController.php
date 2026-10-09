@@ -65,6 +65,8 @@ class ProductController extends Controller
         $openingStock = (float) ($data['stock_qty'] ?? 0);
         unset($data['stock_qty']);
         $data['type'] = $data['type'] ?? 'material';
+        $data['low_stock_threshold'] = (float) ($data['low_stock_threshold'] ?? 0);
+        $data['gst_rate'] = (float) ($data['gst_rate'] ?? 0);
 
         $product = Product::create($data);
 

@@ -481,6 +481,22 @@ class PurchaseBillTest extends TestCase
             'sku' => 'RC-TREE-01',
             'supplier_id' => $supplier->id,
             'rate' => 380,
+            'low_stock_threshold' => 0,
+        ]);
+
+        // Explicit null low_stock_threshold should safely default to 0 without constraint violation
+        $nullThresholdResponse = $this->actingAs($admin, 'admin')
+            ->postJson('/admin/products', [
+                'name' => 'Fuji Beni Shogun Tree',
+                'sku' => 'FBS-01',
+                'unit' => 'pcs',
+                'rate' => 300,
+                'low_stock_threshold' => null,
+            ]);
+        $nullThresholdResponse->assertStatus(201);
+        $this->assertDatabaseHas('products', [
+            'name' => 'Fuji Beni Shogun Tree',
+            'low_stock_threshold' => 0,
         ]);
 
         // Validation returns 422 JSON for invalid inputs
