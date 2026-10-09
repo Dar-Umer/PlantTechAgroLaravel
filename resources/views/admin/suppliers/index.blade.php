@@ -185,7 +185,7 @@
                                         </a>
                                         <x-admin.button href="{{ route('admin.suppliers.edit', $supplier) }}" variant="secondary" size="sm">Edit</x-admin.button>
                                         <form action="{{ route('admin.suppliers.destroy', $supplier) }}" method="POST" class="inline"
-                                              onsubmit="return confirm('⚠️ DANGER: Deleting supplier \'{{ addslashes($supplier->name) }}\' will permanently delete all associated purchase bills, inward stock movements, and payment records, and reverse added product inventory. Are you absolutely sure?');">
+                                              onsubmit="return confirm('⚠️ DANGER: Deleting supplier \'{{ addslashes($supplier->name) }}\' will permanently delete this supplier along with all its assigned products, inventory stock, stock movements, purchase bills, and payment records. Are you absolutely sure?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"

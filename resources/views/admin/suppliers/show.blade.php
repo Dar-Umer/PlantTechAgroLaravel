@@ -41,7 +41,7 @@
             </x-admin.button>
 
             <form action="{{ route('admin.suppliers.destroy', $supplier) }}" method="POST" class="inline"
-                  onsubmit="return confirm('⚠️ DANGER: Deleting supplier \'{{ addslashes($supplier->name) }}\' will permanently delete all associated purchase bills, inward stock movements, and payment records, and reverse added product inventory. This cannot be undone. Are you sure you want to proceed?');">
+                  onsubmit="return confirm('⚠️ DANGER: Deleting supplier \'{{ addslashes($supplier->name) }}\' will permanently delete this supplier along with all its assigned products, inventory stock, stock movements, purchase bills, and payment records. This cannot be undone. Are you sure you want to proceed?');">
                 @csrf
                 @method('DELETE')
                 <button type="submit"

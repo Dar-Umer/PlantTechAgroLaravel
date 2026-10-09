@@ -299,6 +299,7 @@ class PurchaseBillTest extends TestCase
             'is_active' => true,
         ]);
 
+        // Product belonging to this supplier (should be deleted when supplier is deleted)
         $product = Product::create([
             'name' => 'Golden Delicious Sapling',
             'unit' => 'pcs',
@@ -308,18 +309,28 @@ class PurchaseBillTest extends TestCase
             'is_active' => true,
         ]);
 
-        // Create purchase bill that increases stock by 25
+        // External product belonging to catalog/no supplier (stock should be reversed, product kept)
+        $externalProduct = Product::create([
+            'name' => 'General Pruning Shears',
+            'unit' => 'pcs',
+            'rate' => 500,
+            'stock_qty' => 5,
+            'supplier_id' => null,
+            'is_active' => true,
+        ]);
+
+        // Create purchase bill that increases stock of $product by 25 and $externalProduct by 10
         $bill = PurchaseBill::create([
             'bill_number' => 'PB-2026-9999',
             'supplier_id' => $supplier->id,
             'bill_date' => now()->format('Y-m-d'),
-            'subtotal' => 6250,
+            'subtotal' => 10000,
             'tax_amount' => 0,
             'discount' => 0,
             'shipping_cost' => 0,
-            'total_amount' => 6250,
+            'total_amount' => 10000,
             'paid_amount' => 2000,
-            'balance_due' => 4250,
+            'balance_due' => 8000,
             'payment_status' => 'partial',
             'status' => 'received',
             'created_by' => $admin->id,
@@ -337,7 +348,7 @@ class PurchaseBillTest extends TestCase
             'status' => ProductBatch::STATUS_ACTIVE,
         ]);
 
-        $item = $bill->items()->create([
+        $item1 = $bill->items()->create([
             'product_id' => $product->id,
             'batch_id' => $batch->id,
             'batch_number' => 'LOT-VALLEY-01',
@@ -349,8 +360,19 @@ class PurchaseBillTest extends TestCase
             'line_total' => 6250,
         ]);
 
-        // Reflect inward stock addition
+        $item2 = $bill->items()->create([
+            'product_id' => $externalProduct->id,
+            'quantity' => 10,
+            'unit_cost' => 375,
+            'selling_price' => 500,
+            'tax_percent' => 0,
+            'tax_amount' => 0,
+            'line_total' => 3750,
+        ]);
+
+        // Reflect inward stock additions
         $product->update(['stock_qty' => 35]);
+        $externalProduct->update(['stock_qty' => 15]);
 
         $movement = StockMovement::create([
             'product_id' => $product->id,
@@ -375,10 +397,14 @@ class PurchaseBillTest extends TestCase
         ]);
 
         $this->assertEquals(35, (float) $product->stock_qty);
+        $this->assertEquals(15, (float) $externalProduct->stock_qty);
         $this->assertEquals($supplier->id, $product->supplier_id);
         $this->assertDatabaseHas('suppliers', ['id' => $supplier->id]);
+        $this->assertDatabaseHas('products', ['id' => $product->id]);
+        $this->assertDatabaseHas('products', ['id' => $externalProduct->id]);
         $this->assertDatabaseHas('purchase_bills', ['id' => $bill->id]);
-        $this->assertDatabaseHas('purchase_bill_items', ['id' => $item->id]);
+        $this->assertDatabaseHas('purchase_bill_items', ['id' => $item1->id]);
+        $this->assertDatabaseHas('purchase_bill_items', ['id' => $item2->id]);
         $this->assertDatabaseHas('product_batches', ['id' => $batch->id]);
         $this->assertDatabaseHas('stock_movements', ['id' => $movement->id]);
         $this->assertDatabaseHas('supplier_payments', ['id' => $payment->id]);
@@ -390,15 +416,19 @@ class PurchaseBillTest extends TestCase
         $response->assertRedirect('/admin/suppliers');
         $response->assertSessionHas('success');
 
-        // Product stock is reversed back to initial 10 and supplier unlinked
-        $product->refresh();
-        $this->assertEquals(10, (float) $product->stock_qty);
-        $this->assertNull($product->supplier_id);
+        // Products of the supplier are permanently deleted
+        $this->assertDatabaseMissing('products', ['id' => $product->id]);
 
-        // Supplier and all related records deleted
+        // External product remains in catalog, but stock added from this bill is reversed back from 15 to 5
+        $this->assertDatabaseHas('products', ['id' => $externalProduct->id]);
+        $externalProduct->refresh();
+        $this->assertEquals(5, (float) $externalProduct->stock_qty);
+
+        // Supplier, purchase bills, batches, stock movements, and payments deleted
         $this->assertDatabaseMissing('suppliers', ['id' => $supplier->id]);
         $this->assertDatabaseMissing('purchase_bills', ['id' => $bill->id]);
-        $this->assertDatabaseMissing('purchase_bill_items', ['id' => $item->id]);
+        $this->assertDatabaseMissing('purchase_bill_items', ['id' => $item1->id]);
+        $this->assertDatabaseMissing('purchase_bill_items', ['id' => $item2->id]);
         $this->assertDatabaseMissing('product_batches', ['id' => $batch->id]);
         $this->assertDatabaseMissing('stock_movements', ['id' => $movement->id]);
         $this->assertDatabaseMissing('supplier_payments', ['id' => $payment->id]);
