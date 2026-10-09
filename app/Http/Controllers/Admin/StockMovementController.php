@@ -45,6 +45,43 @@ class StockMovementController extends Controller
         return view('admin.stock_movements.show', compact('movement'));
     }
 
+    public function destroy(StockMovement $movement)
+    {
+        $product = $movement->product;
+        $ref = $movement->reference ?: ('#' . $movement->id);
+
+        DB::transaction(function () use ($movement, $product) {
+            if ($product) {
+                // Reversing the movement:
+                // When created: stock_after was previous_stock + movement->quantity
+                // To reverse: newStock = current_stock - movement->quantity
+                $newStock = max(0, round((float) $product->stock_qty - (float) $movement->quantity, 3));
+                $product->update(['stock_qty' => $newStock]);
+
+                // If movement was attached to a batch, reverse the batch stock
+                if ($movement->batch) {
+                    $batch = $movement->batch;
+                    if ($movement->type === 'in') {
+                        $batch->current_qty = max(0, round((float) $batch->current_qty - abs((float) $movement->quantity), 3));
+                        $batch->initial_qty = max(0, round((float) $batch->initial_qty - abs((float) $movement->quantity), 3));
+                    } elseif ($movement->type === 'out') {
+                        $batch->current_qty = round((float) $batch->current_qty + abs((float) $movement->quantity), 3);
+                    } elseif ($movement->type === 'adjustment') {
+                        $batch->current_qty = max(0, round((float) $batch->current_qty - (float) $movement->quantity, 3));
+                    }
+                    $batch->refreshStatus();
+                }
+            }
+
+            $movement->delete();
+        });
+
+        $productMsg = $product ? ' ' . $product->name . ' stock reversed to ' . Format::qty($product->refresh()->stock_qty) . ' ' . $product->unit . '.' : '';
+
+        return redirect()->route('admin.stock-movements.index')
+            ->with('success', "Stock movement {$ref} deleted successfully.{$productMsg}");
+    }
+
     public function create(Request $request)
     {
         $products = Product::active()

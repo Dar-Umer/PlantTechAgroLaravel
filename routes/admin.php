@@ -290,9 +290,10 @@ Route::middleware('admin')->group(function () {
     // ==========================================
     // Inventory & Products Catalogue
     // ==========================================
-    Route::middleware('permission:inventory.stock-in|inventory.stock-out,admin')->group(function () {
+    Route::middleware('permission:inventory.stock-in|inventory.stock-out|inventory.manage,admin')->group(function () {
         Route::get('stock-movements/create', [StockMovementController::class, 'create'])->name('admin.stock-movements.create');
         Route::post('stock-movements', [StockMovementController::class, 'store'])->name('admin.stock-movements.store');
+        Route::delete('stock-movements/{movement}', [StockMovementController::class, 'destroy'])->name('admin.stock-movements.destroy')->whereNumber('movement');
     });
     Route::middleware('permission:inventory.view,admin')->group(function () {
         Route::get('products', [ProductController::class, 'index'])->name('admin.products.index');

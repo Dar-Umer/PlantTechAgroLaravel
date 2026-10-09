@@ -103,6 +103,7 @@
                             <th class="px-6 py-3 font-semibold text-gray-600 text-right">Value</th>
                             <th class="px-6 py-3 font-semibold text-gray-600">Reference</th>
                             <th class="px-6 py-3 font-semibold text-gray-600">By</th>
+                            <th class="px-6 py-3 font-semibold text-gray-600 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -182,10 +183,22 @@
                                         @endif
                                     </div>
                                 </td>
+                                <td class="px-6 py-4 text-right whitespace-nowrap" onclick="event.stopPropagation()">
+                                    <form action="{{ route('admin.stock-movements.destroy', $movement) }}" method="POST" class="inline"
+                                          onsubmit="return confirm('⚠️ Are you sure you want to delete stock movement {{ $movement->reference ?: ('#' . $movement->id) }}? The product inventory will be reversed accordingly.');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                                title="Delete Stock Movement"
+                                                class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </form>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                                <td colspan="9" class="px-6 py-12 text-center text-gray-500">
                                     <div class="flex flex-col items-center">
                                         <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                                         <p class="text-sm">No stock movements found.</p>
