@@ -104,11 +104,18 @@
                     </h3>
                     <p class="text-xs text-gray-500">Received quantities will automatically increment warehouse inventory and generate lot tracking.</p>
                 </div>
-                <button type="button" @click="addItem()"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    + Add Item Row
-                </button>
+                <div class="flex items-center gap-2">
+                    <button type="button" @click="openProductModal(null)"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        + Quick Add Product
+                    </button>
+                    <button type="button" @click="addItem()"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        + Add Item Row
+                    </button>
+                </div>
             </div>
 
             <!-- Items Table -->
@@ -116,7 +123,7 @@
                 <table class="w-full text-sm text-left">
                     <thead>
                         <tr class="text-xs font-semibold text-gray-500 uppercase border-b border-gray-100 bg-gray-50/50">
-                            <th class="py-2.5 px-3 min-w-[220px]">Product *</th>
+                            <th class="py-2.5 px-3 min-w-[240px]">Product *</th>
                             <th class="py-2.5 px-3 min-w-[140px]">Batch / Lot #</th>
                             <th class="py-2.5 px-3 min-w-[130px]">Expiry Date</th>
                             <th class="py-2.5 px-3 min-w-[100px] text-right">Qty *</th>
@@ -130,18 +137,25 @@
                     <tbody class="divide-y divide-gray-100">
                         <template x-for="(item, index) in items" :key="index">
                             <tr class="align-top">
-                                <!-- Product selector -->
+                                <!-- Product selector with Quick Add button -->
                                 <td class="py-3 px-3">
-                                    <select :name="`items[${index}][product_id]`"
-                                            x-model="item.product_id"
-                                            @change="onProductChange(index)"
-                                            required
-                                            class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-medium focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
-                                        <option value="">-- Choose Product --</option>
-                                        <template x-for="p in products" :key="p.id">
-                                            <option :value="p.id" x-text="`${p.name} (Stock: ${p.stock_qty} ${p.unit})`"></option>
-                                        </template>
-                                    </select>
+                                    <div class="flex items-center gap-1.5">
+                                        <select :name="`items[${index}][product_id]`"
+                                                x-model="item.product_id"
+                                                @change="onProductChange(index)"
+                                                required
+                                                class="flex-1 min-w-0 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-medium focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                                            <option value="">-- Choose Product --</option>
+                                            <template x-for="p in products" :key="p.id">
+                                                <option :value="p.id" x-text="`${p.name} (Stock: ${p.stock_qty} ${p.unit})`"></option>
+                                            </template>
+                                        </select>
+                                        <button type="button" @click="openProductModal(index)"
+                                                title="Add New Product immediately"
+                                                class="p-2 rounded-xl bg-gray-100 hover:bg-emerald-50 hover:text-emerald-700 text-gray-600 transition flex-shrink-0">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                        </button>
+                                    </div>
                                 </td>
 
                                 <!-- Batch Number -->
@@ -332,6 +346,163 @@
             </button>
         </div>
     </form>
+
+    <!-- Quick Add Product Modal -->
+    <div x-show="showProductModal"
+         x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto"
+         aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div x-show="showProductModal"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 @click="showProductModal = false"
+                 class="fixed inset-0 bg-gray-900/50 backdrop-blur-xs transition-opacity"></div>
+
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div x-show="showProductModal"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-100">
+
+                <form @submit.prevent="submitNewProduct()" class="p-6 space-y-4">
+                    <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Add New Product</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">Create catalog item instantly without losing your purchase bill draft.</p>
+                        </div>
+                        <button type="button" @click="showProductModal = false" class="text-gray-400 hover:text-gray-600 p-1">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+
+                    <!-- General Error Alert -->
+                    <template x-if="productModalErrors.general">
+                        <div class="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700" x-text="productModalErrors.general[0]"></div>
+                    </template>
+
+                    <!-- Product Name -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Product Name *</label>
+                        <input type="text" x-model="newProduct.name" required placeholder="e.g. Red Chief Apple Rootstock"
+                               class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                        <template x-if="productModalErrors.name">
+                            <p class="text-[11px] text-red-600 mt-1" x-text="productModalErrors.name[0]"></p>
+                        </template>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- SKU -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">SKU / Code</label>
+                            <input type="text" x-model="newProduct.sku" placeholder="e.g. ROOT-RC-01"
+                                   class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                            <template x-if="productModalErrors.sku">
+                                <p class="text-[11px] text-red-600 mt-1" x-text="productModalErrors.sku[0]"></p>
+                            </template>
+                        </div>
+
+                        <!-- Unit -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Unit *</label>
+                            <select x-model="newProduct.unit" required
+                                    class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                                <option value="pcs">Pieces (pcs)</option>
+                                <option value="kg">Kilogram (kg)</option>
+                                <option value="g">Gram (g)</option>
+                                <option value="ltr">Litre (ltr)</option>
+                                <option value="ml">Millilitre (ml)</option>
+                                <option value="mtr">Metre (mtr)</option>
+                                <option value="bag">Bag</option>
+                                <option value="box">Box</option>
+                                <option value="set">Set</option>
+                                <option value="roll">Roll</option>
+                                <option value="units">Units</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Cost / Rate -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Purchase Cost / Rate (₹) *</label>
+                            <input type="number" step="0.01" min="0" x-model.number="newProduct.rate" required placeholder="0.00"
+                                   class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm font-semibold focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                            <template x-if="productModalErrors.rate">
+                                <p class="text-[11px] text-red-600 mt-1" x-text="productModalErrors.rate[0]"></p>
+                            </template>
+                        </div>
+
+                        <!-- Selling Price -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Selling Price / MRP (₹)</label>
+                            <input type="number" step="0.01" min="0" x-model.number="newProduct.selling_price" placeholder="0.00"
+                                   class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm font-semibold focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                            <template x-if="productModalErrors.selling_price">
+                                <p class="text-[11px] text-red-600 mt-1" x-text="productModalErrors.selling_price[0]"></p>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <!-- GST Rate -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">GST Rate (%)</label>
+                            <select x-model.number="newProduct.gst_rate"
+                                    class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                                <option value="0">0%</option>
+                                <option value="5">5%</option>
+                                <option value="12">12%</option>
+                                <option value="18">18%</option>
+                                <option value="28">28%</option>
+                            </select>
+                        </div>
+
+                        <!-- HSN Code -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">HSN Code</label>
+                            <input type="text" x-model="newProduct.hsn_code" placeholder="e.g. 0602"
+                                   class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                        </div>
+
+                        <!-- Product Type -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Catalog Type</label>
+                            <select x-model="newProduct.type"
+                                    class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                                <option value="material">Service Material</option>
+                                <option value="sellable">Sellable Item</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
+                        <button type="button" @click="showProductModal = false"
+                                class="px-4 py-2 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition">
+                            Cancel
+                        </button>
+                        <button type="submit" :disabled="productModalLoading"
+                                class="px-5 py-2 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition shadow-xs flex items-center gap-2 disabled:opacity-50">
+                            <svg x-show="productModalLoading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                            </svg>
+                            <span x-text="productModalLoading ? 'Creating...' : 'Save & Select in Bill'"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -355,6 +526,123 @@ function purchaseBillForm(productsData, preselectedSupplierId) {
                 unit: 'units',
             }
         ],
+        // Quick Add Product Modal state
+        showProductModal: false,
+        productModalTargetRowIndex: null,
+        productModalLoading: false,
+        productModalErrors: {},
+        newProduct: {
+            name: '',
+            sku: '',
+            unit: 'pcs',
+            type: 'material',
+            rate: '',
+            selling_price: '',
+            gst_rate: 0,
+            hsn_code: '',
+            low_stock_threshold: '',
+        },
+        openProductModal(targetIndex = null) {
+            this.productModalTargetRowIndex = targetIndex;
+            this.newProduct = {
+                name: '',
+                sku: '',
+                unit: 'pcs',
+                type: 'material',
+                rate: '',
+                selling_price: '',
+                gst_rate: 0,
+                hsn_code: '',
+                low_stock_threshold: '',
+            };
+            this.productModalErrors = {};
+            this.showProductModal = true;
+        },
+        async submitNewProduct() {
+            this.productModalErrors = {};
+            if (!this.newProduct.name || !this.newProduct.name.trim()) {
+                this.productModalErrors = { name: ['Product name is required.'] };
+                return;
+            }
+            if (this.newProduct.rate === '' || isNaN(this.newProduct.rate) || Number(this.newProduct.rate) < 0) {
+                this.productModalErrors = { rate: ['Please provide a valid purchase rate / cost (>= 0).'] };
+                return;
+            }
+
+            this.productModalLoading = true;
+            try {
+                const payload = {
+                    name: this.newProduct.name.trim(),
+                    sku: this.newProduct.sku && this.newProduct.sku.trim() ? this.newProduct.sku.trim() : null,
+                    unit: this.newProduct.unit,
+                    type: this.newProduct.type || 'material',
+                    rate: parseFloat(this.newProduct.rate) || 0,
+                    selling_price: this.newProduct.selling_price && !isNaN(this.newProduct.selling_price) ? parseFloat(this.newProduct.selling_price) : null,
+                    gst_rate: this.newProduct.gst_rate !== '' && !isNaN(this.newProduct.gst_rate) ? parseFloat(this.newProduct.gst_rate) : 0,
+                    hsn_code: this.newProduct.hsn_code && this.newProduct.hsn_code.trim() ? this.newProduct.hsn_code.trim() : null,
+                    low_stock_threshold: this.newProduct.low_stock_threshold && !isNaN(this.newProduct.low_stock_threshold) ? parseFloat(this.newProduct.low_stock_threshold) : null,
+                    supplier_id: this.supplierId ? parseInt(this.supplierId) : null,
+                    is_active: 1,
+                };
+
+                const res = await fetch('{{ route('admin.products.store') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    if (res.status === 422 && data.errors) {
+                        this.productModalErrors = data.errors;
+                    } else {
+                        this.productModalErrors = { general: [data.message || 'Failed to create product.'] };
+                    }
+                    return;
+                }
+
+                const newProd = data.product;
+                // Prepend to products list so it shows in all line item dropdowns
+                this.products.unshift(newProd);
+
+                // Target row selection
+                let targetIdx = this.productModalTargetRowIndex;
+                if (targetIdx === null) {
+                    const emptyIdx = this.items.findIndex(it => !it.product_id);
+                    if (emptyIdx !== -1) {
+                        targetIdx = emptyIdx;
+                    } else {
+                        this.addItem();
+                        targetIdx = this.items.length - 1;
+                    }
+                }
+
+                if (this.items[targetIdx]) {
+                    this.items[targetIdx].product_id = newProd.id;
+                    this.onProductChange(targetIdx);
+                    if (newProd.rate > 0) {
+                        this.items[targetIdx].unit_cost = newProd.rate;
+                    }
+                    if (newProd.selling_price > 0) {
+                        this.items[targetIdx].selling_price = newProd.selling_price;
+                    }
+                    if (newProd.gst_rate > 0) {
+                        this.items[targetIdx].tax_percent = newProd.gst_rate;
+                    }
+                }
+
+                this.showProductModal = false;
+            } catch (err) {
+                this.productModalErrors = { general: [err.message || 'An unexpected error occurred.'] };
+            } finally {
+                this.productModalLoading = false;
+            }
+        },
         addItem() {
             this.items.push({
                 product_id: '',
@@ -377,8 +665,8 @@ function purchaseBillForm(productsData, preselectedSupplierId) {
             const p = this.products.find(prod => prod.id == item.product_id);
             if (p) {
                 item.unit = p.unit || 'units';
-                item.unit_cost = parseFloat(p.cost_price) || 0;
-                item.selling_price = parseFloat(p.rate) || 0;
+                item.unit_cost = parseFloat(p.cost_price || p.rate) || 0;
+                item.selling_price = parseFloat(p.selling_price || p.rate) || 0;
                 if (p.gst_rate !== undefined && p.gst_rate !== null) {
                     item.tax_percent = parseFloat(p.gst_rate) || 0;
                 }

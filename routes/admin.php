@@ -301,9 +301,11 @@ Route::middleware('admin')->group(function () {
         Route::get('stock-movements/export', [StockMovementController::class, 'export'])->name('admin.stock-movements.export');
         Route::get('stock-movements/{movement}', [StockMovementController::class, 'show'])->name('admin.stock-movements.show')->whereNumber('movement');
     });
-    Route::middleware('permission:inventory.manage,admin')->group(function () {
+    Route::middleware('permission:inventory.manage|inventory.stock-in,admin')->group(function () {
         Route::get('products/create', [ProductController::class, 'create'])->name('admin.products.create');
         Route::post('products', [ProductController::class, 'store'])->name('admin.products.store');
+    });
+    Route::middleware('permission:inventory.manage,admin')->group(function () {
         Route::get('products/{product}/edit', [ProductController::class, 'edit'])->name('admin.products.edit');
         Route::put('products/{product}', [ProductController::class, 'update'])->name('admin.products.update');
         Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('admin.products.destroy');

@@ -72,6 +72,25 @@ class ProductController extends Controller
             StockService::record($product, 'in', $openingStock, 'OPENING', 'Opening stock', null, null, $request->user('admin')->id ?? null);
         }
 
+        if ($request->wantsJson() || $request->ajax() || $request->header('Accept') === 'application/json') {
+            return response()->json([
+                'success' => true,
+                'message' => "Product '{$product->name}' created successfully.",
+                'product' => [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'sku' => $product->sku,
+                    'unit' => $product->unit,
+                    'rate' => (float) $product->rate,
+                    'cost_price' => (float) $product->rate,
+                    'selling_price' => $product->selling_price !== null ? (float) $product->selling_price : (float) $product->rate,
+                    'stock_qty' => (float) $product->stock_qty,
+                    'gst_rate' => $product->gst_rate !== null ? (float) $product->gst_rate : 0,
+                    'type' => $product->type,
+                ],
+            ], 201);
+        }
+
         return redirect()->route('admin.products.index')->with('success', 'Product created.');
     }
 

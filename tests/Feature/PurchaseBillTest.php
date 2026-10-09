@@ -433,5 +433,66 @@ class PurchaseBillTest extends TestCase
         $this->assertDatabaseMissing('stock_movements', ['id' => $movement->id]);
         $this->assertDatabaseMissing('supplier_payments', ['id' => $payment->id]);
     }
+
+    public function test_purchase_bill_create_screen_supports_inline_quick_product_creation(): void
+    {
+        $admin = $this->actingAdmin();
+
+        $supplier = Supplier::create([
+            'name' => 'Kashmir Agro Bio Corp',
+            'phone' => '9876599999',
+            'is_active' => true,
+        ]);
+
+        // Screen loads with Quick Add button and modal
+        $response = $this->actingAs($admin, 'admin')->get("/admin/purchase-bills/create?supplier_id={$supplier->id}");
+        $response->assertStatus(200);
+        $response->assertSee('Quick Add Product');
+        $response->assertSee('Add New Product');
+
+        // Inline product AJAX creation endpoint
+        $createResponse = $this->actingAs($admin, 'admin')
+            ->postJson('/admin/products', [
+                'name' => 'Red Chief Apple Feathered Tree',
+                'sku' => 'RC-TREE-01',
+                'unit' => 'pcs',
+                'type' => 'material',
+                'rate' => 380,
+                'selling_price' => 550,
+                'gst_rate' => 12,
+                'supplier_id' => $supplier->id,
+            ]);
+
+        $createResponse->assertStatus(201);
+        $createResponse->assertJson([
+            'success' => true,
+            'product' => [
+                'name' => 'Red Chief Apple Feathered Tree',
+                'sku' => 'RC-TREE-01',
+                'unit' => 'pcs',
+                'rate' => 380,
+                'selling_price' => 550,
+                'gst_rate' => 12,
+            ],
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'name' => 'Red Chief Apple Feathered Tree',
+            'sku' => 'RC-TREE-01',
+            'supplier_id' => $supplier->id,
+            'rate' => 380,
+        ]);
+
+        // Validation returns 422 JSON for invalid inputs
+        $invalidResponse = $this->actingAs($admin, 'admin')
+            ->postJson('/admin/products', [
+                'name' => '',
+                'rate' => -5,
+            ]);
+
+        $invalidResponse->assertStatus(422);
+        $invalidResponse->assertJsonValidationErrors(['name', 'rate', 'unit']);
+    }
 }
+
 
