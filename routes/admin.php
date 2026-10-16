@@ -336,11 +336,26 @@ Route::middleware('admin')->group(function () {
     });
 
     // ==========================================
-    // Finance & Reports: GST
+    // Finance, Audit & Compliance Reports
     // ==========================================
-    Route::middleware('permission:reports.gst,admin')->group(function () {
+    Route::middleware('permission:reports.gst|invoices.view|inventory.view,admin')->group(function () {
+        Route::get('reports', [ReportController::class, 'index'])->name('admin.reports.index');
+        Route::get('reports/sales', [ReportController::class, 'sales'])->name('admin.reports.sales');
+        Route::get('reports/purchases', [ReportController::class, 'purchases'])->name('admin.reports.purchases');
+        Route::get('reports/day-book', [ReportController::class, 'dayBook'])->name('admin.reports.day-book');
+        Route::get('reports/transactions', [ReportController::class, 'allTransactions'])->name('admin.reports.transactions');
+        Route::get('reports/bill-wise-profit', [ReportController::class, 'billWiseProfit'])->name('admin.reports.bill-wise-profit');
+        Route::get('reports/profit-loss', [ReportController::class, 'profitLoss'])->name('admin.reports.profit-loss');
+        Route::get('reports/profit-loss/export', [ReportController::class, 'exportProfitLoss'])->name('admin.reports.profit-loss.export');
+        Route::get('reports/party-statement', [ReportController::class, 'partyStatement'])->name('admin.reports.party-statement');
+        Route::get('reports/stock-statement', [ReportController::class, 'stockStatement'])->name('admin.reports.stock-statement');
+        Route::get('reports/item-batches', [ReportController::class, 'itemBatches'])->name('admin.reports.item-batches');
         Route::get('reports/gst', [ReportController::class, 'gstReport'])->name('admin.reports.gst');
         Route::get('reports/gst/export', [ReportController::class, 'exportGst'])->name('admin.reports.gst.export');
+        Route::get('reports/gst-rate', [ReportController::class, 'gstRateReport'])->name('admin.reports.gst-rate');
+        Route::get('reports/form-27eq', [ReportController::class, 'form27eq'])->name('admin.reports.form-27eq');
+        Route::get('reports/tcs-receivable', [ReportController::class, 'tcsReceivable'])->name('admin.reports.tcs-receivable');
+        Route::get('reports/tds-payable', [ReportController::class, 'tdsPayable'])->name('admin.reports.tds-payable');
     });
 
     // ==========================================
