@@ -129,7 +129,7 @@ class AuditInventory extends Command
 
             // Apply fixes if --fix flag was passed
             if ($shouldFix && !empty($issues)) {
-                DB::transaction(function () use ($p, $netMovementStock, $currentStock, $unattributedOpening, $totalInward, $hasBatches, $activeBatchQty) {
+                DB::transaction(function () use ($p, $netMovementStock, $currentStock, $unattributedOpening, $totalInward, $hasBatches) {
                     // 1. Backfill supplier_id on OPENING movement
                     if ($unattributedOpening > 0 && $p->supplier_id) {
                         StockMovement::where('product_id', $p->id)
@@ -144,15 +144,73 @@ class AuditInventory extends Command
                         $currentStock = max(0, $netMovementStock);
                     }
 
-                    // 3. If batches exist and differ from product stock, synchronize
-                    if ($hasBatches && abs($currentStock - $activeBatchQty) > 0.001) {
-                        $diff = round($currentStock - $activeBatchQty, 3);
-                        $targetBatch = $p->batches()->where('supplier_id', $p->supplier_id)->where('current_qty', '>', 0)->latest()->first()
-                            ?? $p->batches()->where('current_qty', '>', 0)->latest()->first();
+                    // 3. Backfill missing batches for Purchase Bill items
+                    $unbatchedItems = PurchaseBillItem::where('product_id', $p->id)
+                        ->whereNull('batch_id')
+                        ->whereHas('purchaseBill', fn($b) => $b->where('status', '!=', 'cancelled'))
+                        ->with('purchaseBill')
+                        ->get();
 
-                        if ($targetBatch && ((float) $targetBatch->current_qty + $diff) >= 0) {
-                            $targetBatch->current_qty = round((float) $targetBatch->current_qty + $diff, 3);
-                            $targetBatch->refreshStatus();
+                    foreach ($unbatchedItems as $item) {
+                        $bill = $item->purchaseBill;
+                        $batchNumber = !empty($item->batch_number) ? trim($item->batch_number) : ('BILL-' . ($bill ? $bill->bill_number : 'INIT'));
+                        $lotCode = 'LOT-' . ($bill?->bill_date ? date('ymd', strtotime($bill->bill_date)) : date('ymd')) . '-' . strtoupper(substr(uniqid(), -4));
+
+                        $batch = ProductBatch::create([
+                            'product_id' => $p->id,
+                            'batch_number' => $batchNumber,
+                            'lot_number' => $lotCode,
+                            'inward_date' => $bill?->bill_date ?? now()->toDateString(),
+                            'mfg_date' => $item->mfg_date,
+                            'expiry_date' => $item->expiry_date,
+                            'initial_qty' => $item->quantity,
+                            'current_qty' => $item->quantity,
+                            'unit_cost' => $item->unit_cost ?? $p->rate ?? 0,
+                            'selling_price' => $item->selling_price ?? $p->rate ?? 0,
+                            'supplier_id' => $bill?->supplier_id ?? $p->supplier_id,
+                            'status' => ProductBatch::STATUS_ACTIVE,
+                            'notes' => 'Auto-created from Purchase Bill #' . ($bill ? $bill->bill_number : 'UNBATCHED'),
+                        ]);
+
+                        $item->update(['batch_id' => $batch->id, 'batch_number' => $batchNumber]);
+
+                        StockMovement::where('product_id', $p->id)
+                            ->where('purchase_bill_id', $bill?->id)
+                            ->whereNull('batch_id')
+                            ->update(['batch_id' => $batch->id]);
+                    }
+
+                    // 4. Synchronize batches with product current stock
+                    if ($hasBatches || $unbatchedItems->isNotEmpty()) {
+                        $freshBatchQty = round((float) $p->batches()->where('current_qty', '>', 0)->sum('current_qty'), 3);
+                        $batchDiff = round($currentStock - $freshBatchQty, 3);
+
+                        if ($batchDiff > 0.001) {
+                            // Unbatched stock exists: create a dedicated lot for the difference
+                            ProductBatch::create([
+                                'product_id' => $p->id,
+                                'batch_number' => 'LOT-UNBATCHED',
+                                'lot_number' => 'LOT-' . date('ymd') . '-INIT',
+                                'inward_date' => $p->created_at?->toDateString() ?? now()->toDateString(),
+                                'initial_qty' => $batchDiff,
+                                'current_qty' => $batchDiff,
+                                'unit_cost' => (float) ($p->rate ?? 0),
+                                'selling_price' => (float) ($p->selling_price ?? $p->rate ?? 0),
+                                'supplier_id' => $p->supplier_id,
+                                'status' => ProductBatch::STATUS_ACTIVE,
+                                'notes' => 'Auto-generated lot for unbatched physical stock',
+                            ]);
+                        } elseif ($batchDiff < -0.001) {
+                            // Batches exceed physical stock: deduct the difference via FIFO
+                            $toDeduct = abs($batchDiff);
+                            $batchesToDeduct = $p->batches()->where('current_qty', '>', 0)->orderBy('created_at')->get();
+                            foreach ($batchesToDeduct as $b) {
+                                if ($toDeduct <= 0) break;
+                                $take = min((float) $b->current_qty, $toDeduct);
+                                $b->current_qty = round((float) $b->current_qty - $take, 3);
+                                $b->refreshStatus();
+                                $toDeduct -= $take;
+                            }
                         }
                     }
                 });
