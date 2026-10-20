@@ -73,6 +73,9 @@ class StockService
             if ($batchId) {
                 $batch = ProductBatch::where('product_id', $product->id)->find($batchId);
                 if ($batch) {
+                    if ($supplierId === null && $batch->supplier_id) {
+                        $supplierId = $batch->supplier_id;
+                    }
                     if ($type === 'in') {
                         $batch->initial_qty = round((float) $batch->initial_qty + $quantity, 3);
                         $batch->current_qty = round((float) $batch->current_qty + $quantity, 3);
@@ -136,6 +139,9 @@ class StockService
                 } elseif ($type === 'out') {
                     $batch = ProductBatch::where('product_id', $product->id)->where('batch_number', $batchNumber)->first();
                     if ($batch && $batch->exists) {
+                        if ($supplierId === null && $batch->supplier_id) {
+                            $supplierId = $batch->supplier_id;
+                        }
                         if ((float) $batch->current_qty < $quantity) {
                             throw ValidationException::withMessages([
                                 'batch_number' => "Insufficient stock in batch {$batch->batch_number}. Available: {$batch->current_qty} {$product->unit}.",
@@ -171,8 +177,14 @@ class StockService
                     $resolvedBatchId = $batch->id;
                 } elseif ($type === 'out') {
                     // FIFO: Deduct from oldest active batches
-                    $activeBatches = ProductBatch::where('product_id', $product->id)
-                        ->where('current_qty', '>', 0)
+                    $activeBatchesQuery = ProductBatch::where('product_id', $product->id)
+                        ->where('current_qty', '>', 0);
+
+                    if ($supplierId !== null) {
+                        $activeBatchesQuery->where('supplier_id', $supplierId);
+                    }
+
+                    $activeBatches = $activeBatchesQuery
                         ->orderByRaw('COALESCE(inward_date, created_at) ASC, id ASC')
                         ->get();
 
@@ -190,6 +202,9 @@ class StockService
 
                         if ($resolvedBatchId === null) {
                             $resolvedBatchId = $actBatch->id;
+                            if ($supplierId === null && $actBatch->supplier_id) {
+                                $supplierId = $actBatch->supplier_id;
+                            }
                             if ($unitCost === null && $actBatch->unit_cost !== null) {
                                 $unitCost = (float) $actBatch->unit_cost;
                             }
@@ -255,10 +270,16 @@ class StockService
      *
      * @return array<int, array{batch_id: ?int, batch_number: string, unit_cost: float, quantity: float}>
      */
-    public static function allocateFifo(Product $product, float $quantity): array
+    public static function allocateFifo(Product $product, float $quantity, ?int $supplierId = null): array
     {
-        $activeBatches = ProductBatch::where('product_id', $product->id)
-            ->where('current_qty', '>', 0)
+        $query = ProductBatch::where('product_id', $product->id)
+            ->where('current_qty', '>', 0);
+
+        if ($supplierId !== null) {
+            $query->where('supplier_id', $supplierId);
+        }
+
+        $activeBatches = $query
             ->orderByRaw('COALESCE(inward_date, created_at) ASC, id ASC')
             ->get();
 
@@ -273,6 +294,7 @@ class StockService
             $take = min((float) $batch->current_qty, $remaining);
             $allocations[] = [
                 'batch_id' => $batch->id,
+                'supplier_id' => $batch->supplier_id,
                 'batch_number' => $batch->batch_number,
                 'unit_cost' => (float) ($batch->unit_cost ?? $product->rate ?? 0),
                 'quantity' => $take,
@@ -283,6 +305,7 @@ class StockService
         if ($remaining > 0) {
             $allocations[] = [
                 'batch_id' => null,
+                'supplier_id' => $supplierId ?? $product->supplier_id,
                 'batch_number' => 'UNTRACKED',
                 'unit_cost' => (float) ($product->rate ?? 0),
                 'quantity' => $remaining,

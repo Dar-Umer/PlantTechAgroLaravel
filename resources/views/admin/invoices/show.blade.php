@@ -60,7 +60,23 @@
                             <tbody class="divide-y divide-gray-100">
                                 @forelse($invoice->items as $item)
                                     <tr>
-                                        <td class="px-6 py-3 font-medium text-gray-900">{{ $item->name }}</td>
+                                        <td class="px-6 py-3 font-medium text-gray-900">
+                                            <div>{{ $item->name }}</div>
+                                            @if($item->batch || $item->supplier)
+                                                <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                                                    @if($item->batch)
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded font-mono text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                                            Batch: {{ $item->batch->batch_number }}
+                                                        </span>
+                                                    @endif
+                                                    @if($item->supplier)
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] bg-amber-50 text-amber-800 border border-amber-200">
+                                                            Supplier: {{ $item->supplier->name }}
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </td>
                                         <td class="px-6 py-3 text-gray-600">{{ \App\Support\Format::qty($item->qty) }} {{ $item->unit }}</td>
                                         <td class="px-6 py-3 text-gray-600">₹{{ number_format((float) $item->rate, 2) }}</td>
                                         <td class="px-6 py-3 text-gray-600">{{ (float) $item->discount > 0 ? '₹' . number_format((float) $item->discount, 2) : '—' }}</td>

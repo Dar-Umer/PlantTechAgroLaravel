@@ -90,7 +90,12 @@
                 @foreach($sale->items as $item)
                     <tr>
                         <td class="py-3 px-4 font-semibold text-gray-900">{{ $item->product_name }}</td>
-                        <td class="py-3 px-4 font-mono text-gray-500">{{ $item->batch?->batch_number ?? 'Auto Lot' }}</td>
+                        <td class="py-3 px-4 font-mono text-gray-500">
+                            <div>{{ $item->batch?->batch_number ?? 'Auto Lot' }}</div>
+                            @if($item->supplier)
+                                <div class="text-[10px] text-gray-400 font-sans font-normal">({{ $item->supplier->name }})</div>
+                            @endif
+                        </td>
                         <td class="py-3 px-4 text-right font-medium">{{ number_format($item->quantity, 2) }} {{ $item->unit }}</td>
                         <td class="py-3 px-4 text-right">₹{{ number_format($item->unit_price, 2) }}</td>
                         <td class="py-3 px-4 text-right font-bold text-gray-900">₹{{ number_format($item->total_price, 2) }}</td>

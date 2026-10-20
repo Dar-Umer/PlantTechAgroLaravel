@@ -139,7 +139,10 @@
                             <td colspan="4" class="bold">{{ $item->product_name }}</td>
                         </tr>
                         <tr style="font-size: 10px;">
-                            <td style="color: #444;">{{ $item->batch?->batch_number ? 'Batch: '.$item->batch->batch_number : '' }}</td>
+                            <td style="color: #444;">
+                                {{ $item->batch?->batch_number ? 'B: '.$item->batch->batch_number : '' }}
+                                {{ $item->supplier ? ' | S: '.$item->supplier->name : '' }}
+                            </td>
                             <td class="right">{{ number_format($item->quantity, $item->quantity == (int)$item->quantity ? 0 : 2) }} {{ $item->unit }}</td>
                             <td class="right">₹{{ number_format($item->unit_price, 2) }}</td>
                             <td class="right bold">₹{{ number_format($item->total_price, 2) }}</td>

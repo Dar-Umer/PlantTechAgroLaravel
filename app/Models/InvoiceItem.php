@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class InvoiceItem extends Model
 {
     protected $fillable = [
-        'invoice_id', 'product_id', 'hsn_code', 'name', 'unit', 'qty', 'rate', 'discount', 'gst_rate', 'total', 'sort_order',
+        'invoice_id', 'product_id', 'batch_id', 'supplier_id', 'hsn_code', 'name', 'unit', 'qty', 'rate', 'discount', 'gst_rate', 'total', 'sort_order',
     ];
 
     protected function casts(): array
@@ -30,6 +30,16 @@ class InvoiceItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function batch(): BelongsTo
+    {
+        return $this->belongsTo(ProductBatch::class, 'batch_id');
+    }
+
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(Supplier::class);
     }
 
     public function lineTotal(): float

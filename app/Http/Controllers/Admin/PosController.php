@@ -28,9 +28,14 @@ class PosController extends Controller
     public function terminal()
     {
         $products = Product::active()
-            ->with(['activeBatchesFifo' => function ($q) {
-                $q->select('id', 'product_id', 'batch_number', 'lot_number', 'current_qty', 'unit_cost', 'selling_price', 'expiry_date');
-            }])
+            ->with([
+                'supplier:id,name',
+                'suppliers:id,name',
+                'activeBatchesFifo' => function ($q) {
+                    $q->select('id', 'product_id', 'batch_number', 'lot_number', 'current_qty', 'unit_cost', 'selling_price', 'expiry_date', 'supplier_id')
+                        ->with('supplier:id,name');
+                }
+            ])
             ->orderBy('name')
             ->get();
 
@@ -47,7 +52,13 @@ class PosController extends Controller
     {
         $q = trim((string) $request->query('q', ''));
 
-        $query = Product::active()->with(['activeBatchesFifo']);
+        $query = Product::active()->with([
+            'supplier:id,name',
+            'suppliers:id,name',
+            'activeBatchesFifo' => function ($q) {
+                $q->with('supplier:id,name');
+            }
+        ]);
 
         if ($q !== '') {
             $safeQ = addcslashes($q, '%_\\');
@@ -69,10 +80,15 @@ class PosController extends Controller
                 'stock' => (float) $p->stock_qty,
                 'rate' => (float) ($p->selling_price ?? $p->rate),
                 'cost' => (float) ($p->rate ?? 0),
+                'supplier_id' => $p->supplier_id,
+                'supplier_name' => $p->supplier?->name,
+                'suppliers' => $p->suppliers->map(fn ($s) => ['id' => $s->id, 'name' => $s->name])->values(),
                 'batches' => $p->activeBatchesFifo->map(fn ($b) => [
                     'id' => $b->id,
                     'batch_number' => $b->batch_number,
                     'lot_number' => $b->lot_number,
+                    'supplier_id' => $b->supplier_id,
+                    'supplier_name' => $b->supplier?->name ?? 'Default Supplier',
                     'current_qty' => (float) $b->current_qty,
                     'unit_cost' => (float) ($b->unit_cost ?? 0),
                     'selling_price' => $b->effectiveSellingPrice(),
@@ -199,6 +215,7 @@ class PosController extends Controller
             'items.*.unit_price' => ['required', 'numeric', 'min:0'],
             'items.*.discount' => ['nullable', 'numeric', 'min:0'],
             'items.*.batch_id' => ['nullable', 'exists:product_batches,id'],
+            'items.*.supplier_id' => ['nullable', 'exists:suppliers,id'],
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'discount_type' => ['nullable', 'in:fixed,percent'],
             'payment_method' => ['required', 'in:cash,upi,card,bank_transfer,split,other'],
@@ -225,6 +242,7 @@ class PosController extends Controller
                 $price = (float) $itemData['unit_price'];
                 $discount = (float) ($itemData['discount'] ?? 0);
                 $batchId = $itemData['batch_id'] ?? null;
+                $supplierId = $itemData['supplier_id'] ?? null;
 
                 if ((float) $product->stock_qty < $qty) {
                     throw ValidationException::withMessages([
@@ -234,10 +252,15 @@ class PosController extends Controller
 
                 if ($batchId) {
                     $selectedBatch = ProductBatch::where('product_id', $product->id)->find($batchId);
-                    if ($selectedBatch && (float) $selectedBatch->current_qty < $qty) {
-                        throw ValidationException::withMessages([
-                            'items' => "Insufficient stock in batch {$selectedBatch->batch_number} for {$product->name}. Available in batch: " . Format::qty($selectedBatch->current_qty) . " {$product->unit}.",
-                        ]);
+                    if ($selectedBatch) {
+                        if ((float) $selectedBatch->current_qty < $qty) {
+                            throw ValidationException::withMessages([
+                                'items' => "Insufficient stock in batch {$selectedBatch->batch_number} for {$product->name}. Available in batch: " . Format::qty($selectedBatch->current_qty) . " {$product->unit}.",
+                            ]);
+                        }
+                        if ($supplierId === null && $selectedBatch->supplier_id) {
+                            $supplierId = $selectedBatch->supplier_id;
+                        }
                     }
                 }
 
@@ -249,8 +272,8 @@ class PosController extends Controller
 
                 // Determine batch cost and deduct stock
                 $allocations = $batchId
-                    ? [['batch_id' => $batchId, 'unit_cost' => (float) ProductBatch::find($batchId)?->unit_cost, 'quantity' => $qty]]
-                    : StockService::allocateFifo($product, $qty);
+                    ? [['batch_id' => $batchId, 'supplier_id' => $supplierId, 'unit_cost' => (float) ProductBatch::find($batchId)?->unit_cost, 'quantity' => $qty]]
+                    : StockService::allocateFifo($product, $qty, $supplierId);
 
                 // Deduct stock using StockService
                 StockService::record(
@@ -261,14 +284,17 @@ class PosController extends Controller
                     note: "POS Sale #{$invoiceNumber}",
                     userId: $adminId,
                     batchId: $batchId,
+                    supplierId: $supplierId,
                 );
 
                 $primaryCost = ! empty($allocations) ? ($allocations[0]['unit_cost'] ?? $product->rate) : $product->rate;
                 $primaryBatchId = ! empty($allocations) ? ($allocations[0]['batch_id'] ?? null) : $batchId;
+                $primarySupplierId = ! empty($allocations) ? ($allocations[0]['supplier_id'] ?? $supplierId) : $supplierId;
 
                 $itemsToCreate[] = [
                     'product_id' => $product->id,
                     'batch_id' => $primaryBatchId,
+                    'supplier_id' => $primarySupplierId,
                     'product_name' => $product->name,
                     'unit' => $product->unit,
                     'unit_price' => $price,
@@ -469,7 +495,7 @@ class PosController extends Controller
      */
     public function show(PosSale $sale)
     {
-        $sale->load(['customer', 'cashier', 'items.product', 'items.batch', 'payments']);
+        $sale->load(['customer', 'cashier', 'items.product', 'items.batch', 'items.supplier', 'payments']);
 
         return view('admin.pos.show', compact('sale'));
     }
@@ -479,7 +505,7 @@ class PosController extends Controller
      */
     public function receipt(PosSale $sale)
     {
-        $sale->load(['customer', 'cashier', 'items.product', 'payments']);
+        $sale->load(['customer', 'cashier', 'items.product', 'items.batch', 'items.supplier', 'payments']);
         $settings = app(\App\Services\ShopSettingsService::class)->all();
 
         return view('admin.pos.receipt', compact('sale', 'settings'));
@@ -490,7 +516,7 @@ class PosController extends Controller
      */
     public function invoice(PosSale $sale)
     {
-        $sale->load(['customer', 'cashier', 'items.product', 'items.batch', 'payments']);
+        $sale->load(['customer', 'cashier', 'items.product', 'items.batch', 'items.supplier', 'payments']);
         $settings = app(\App\Services\ShopSettingsService::class)->all();
 
         return view('admin.pos.invoice', compact('sale', 'settings'));
@@ -519,7 +545,8 @@ class PosController extends Controller
                         note: "Reversal of cancelled POS Sale #{$sale->invoice_number}",
                         userId: $adminId,
                         batchId: $item->batch_id,
-                        unitCost: $item->cost_price
+                        unitCost: $item->cost_price,
+                        supplierId: $item->supplier_id,
                     );
                 }
             }

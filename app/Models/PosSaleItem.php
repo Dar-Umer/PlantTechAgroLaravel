@@ -14,6 +14,7 @@ class PosSaleItem extends Model
         'pos_sale_id',
         'product_id',
         'batch_id',
+        'supplier_id',
         'product_name',
         'unit',
         'unit_price',
@@ -51,6 +52,11 @@ class PosSaleItem extends Model
     public function batch(): BelongsTo
     {
         return $this->belongsTo(ProductBatch::class);
+    }
+
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(Supplier::class);
     }
 
     public function profitMargin(): float

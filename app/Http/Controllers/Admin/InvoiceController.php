@@ -54,7 +54,17 @@ class InvoiceController extends Controller
     public function create(Request $request)
     {
         $customers = Customer::where('status', 'active')->orderBy('name')->get(['id', 'name', 'phone']);
-        $products = Product::active()->orderBy('name')->get(['id', 'name', 'sku', 'unit', 'rate', 'gst_rate', 'stock_qty', 'low_stock_threshold']);
+        $products = Product::active()
+            ->with([
+                'supplier:id,name',
+                'suppliers:id,name',
+                'activeBatchesFifo' => function ($q) {
+                    $q->select('id', 'product_id', 'batch_number', 'lot_number', 'current_qty', 'unit_cost', 'selling_price', 'expiry_date', 'supplier_id')
+                        ->with('supplier:id,name');
+                }
+            ])
+            ->orderBy('name')
+            ->get();
         $services = \App\Models\Service::where('is_active', true)->orderBy('name')->get();
         $servicesJson = $services->map(fn($s) => [
             'id' => $s->id,
@@ -88,6 +98,8 @@ class InvoiceController extends Controller
             'notes' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['nullable', 'exists:products,id'],
+            'items.*.batch_id' => ['nullable', 'exists:product_batches,id'],
+            'items.*.supplier_id' => ['nullable', 'exists:suppliers,id'],
             'items.*.name' => ['required', 'string', 'max:255'],
             'items.*.unit' => ['nullable', 'string', 'max:20'],
             'items.*.qty' => ['required', 'numeric', 'min:0.001'],
@@ -118,7 +130,16 @@ class InvoiceController extends Controller
 
                 if ($item->product_id) {
                     $product = Product::find($item->product_id);
-                    StockService::record($product, 'out', (float) $item->qty, $invoice->number, 'Invoice sale', null, null, $request->user('admin')->id ?? null);
+                    StockService::record(
+                        product: $product,
+                        type: 'out',
+                        quantity: (float) $item->qty,
+                        reference: $invoice->number,
+                        note: 'Invoice sale',
+                        userId: $request->user('admin')->id ?? null,
+                        batchId: $item->batch_id,
+                        supplierId: $item->supplier_id,
+                    );
                 }
             }
 
@@ -133,7 +154,7 @@ class InvoiceController extends Controller
 
     public function show(Invoice $invoice)
     {
-        $invoice->load(['items', 'payments', 'customer', 'workOrder', 'service']);
+        $invoice->load(['items.batch', 'items.supplier', 'payments', 'customer', 'workOrder', 'service']);
 
         return view('admin.invoices.show', compact('invoice'));
     }
@@ -206,7 +227,16 @@ class InvoiceController extends Controller
                 $product = Product::find($item->product_id);
 
                 if ($product) {
-                    StockService::record($product, 'in', (float) $item->qty, 'REV-'.$invoice->number, 'Stock reversed — invoice cancelled', null, null, auth('admin')->id());
+                    StockService::record(
+                        product: $product,
+                        type: 'in',
+                        quantity: (float) $item->qty,
+                        reference: 'REV-'.$invoice->number,
+                        note: 'Stock reversed — invoice cancelled',
+                        userId: auth('admin')->id(),
+                        batchId: $item->batch_id,
+                        supplierId: $item->supplier_id,
+                    );
                 }
             }
 
@@ -231,6 +261,8 @@ class InvoiceController extends Controller
 
         return $invoice->items()->create([
             'product_id' => $row['product_id'] ?? null,
+            'batch_id' => $row['batch_id'] ?? null,
+            'supplier_id' => $row['supplier_id'] ?? null,
             'hsn_code' => $hsnCode,
             'name' => $row['name'],
             'unit' => $row['unit'] ?? null,

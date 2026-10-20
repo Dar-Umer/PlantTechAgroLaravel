@@ -225,6 +225,40 @@
                                 </div>
                             </div>
 
+                            {{-- Supplier & Batch Selectors for Inventory Products --}}
+                            <div x-show="row.product_id" class="mt-2.5 pt-2 border-t border-gray-200/70 grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white/70 p-2.5 rounded-lg">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-gray-700 mb-1 flex items-center justify-between">
+                                        <span>Supplier / Vendor</span>
+                                        <span class="text-[10px] text-gray-400 font-normal">Optional filter</span>
+                                    </label>
+                                    <select x-model="row.supplier_id"
+                                            @change="onRowSupplierChange(row)"
+                                            :name="'items[' + i + '][supplier_id]'"
+                                            class="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-800 focus:outline-none focus:border-brand-500">
+                                        <option value="">Any / Default Supplier</option>
+                                        <template x-for="s in getRowSuppliers(row)" :key="s.id">
+                                            <option :value="s.id" x-text="s.name"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-gray-700 mb-1 flex items-center justify-between">
+                                        <span>Batch / Lot</span>
+                                        <span class="text-[10px] text-gray-400 font-normal">FIFO if empty</span>
+                                    </label>
+                                    <select x-model="row.batch_id"
+                                            @change="onRowBatchChange(row)"
+                                            :name="'items[' + i + '][batch_id]'"
+                                            class="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-800 focus:outline-none focus:border-brand-500 font-mono">
+                                        <option value="">Default FIFO (Oldest Active Batch)</option>
+                                        <template x-for="b in getRowBatches(row)" :key="b.id">
+                                            <option :value="b.id" x-text="b.batch_number + (b.supplier_name ? ' [' + b.supplier_name + ']' : '') + ' | Avail: ' + b.current_qty + ' ' + (row.unit || '') + ' @ ₹' + Number(b.selling_price).toFixed(0)"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                            </div>
+
                             {{-- Unit (hidden input) --}}
                             <input type="hidden" x-model="row.unit" :name="'items[' + i + '][unit]'">
                         </div>
@@ -269,7 +303,30 @@
             return {
                 rows: [],
                 productSearch: '',
-                products: @js($products->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'sku' => $p->sku, 'unit' => $p->unit, 'rate' => (float) $p->rate, 'gst' => (float) $p->gst_rate, 'stock_qty' => (float) $p->stock_qty, 'low_stock' => (float) $p->low_stock_threshold])),
+                products: @js($products->map(fn ($p) => [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'sku' => $p->sku,
+                    'unit' => $p->unit,
+                    'rate' => (float) ($p->selling_price ?? $p->rate),
+                    'gst' => (float) $p->gst_rate,
+                    'stock_qty' => (float) $p->stock_qty,
+                    'low_stock' => (float) $p->low_stock_threshold,
+                    'supplier_id' => $p->supplier_id,
+                    'supplier_name' => $p->supplier?->name,
+                    'suppliers' => $p->suppliers->map(fn ($s) => ['id' => $s->id, 'name' => $s->name])->values(),
+                    'batches' => $p->activeBatchesFifo->map(fn ($b) => [
+                        'id' => $b->id,
+                        'batch_number' => $b->batch_number,
+                        'lot_number' => $b->lot_number,
+                        'supplier_id' => $b->supplier_id,
+                        'supplier_name' => $b->supplier?->name ?? 'Default Supplier',
+                        'current_qty' => (float) $b->current_qty,
+                        'unit_cost' => (float) ($b->unit_cost ?? 0),
+                        'selling_price' => $b->effectiveSellingPrice(),
+                        'expiry' => $b->expiry_date?->format('d M Y'),
+                    ])->values(),
+                ])),
                 services: @js($servicesJson),
                 selectedServiceId: '{{ old('service_id', '') }}',
                 variations: [],
@@ -361,12 +418,24 @@
                 },
 
                 addEmpty() {
-                    this.rows.push({ product_id: '', name: '', unit: '', qty: 1, rate: 0, discount: 0, gst_rate: 0 });
+                    this.rows.push({
+                        product_id: '',
+                        supplier_id: '',
+                        batch_id: '',
+                        name: '',
+                        unit: '',
+                        qty: 1,
+                        rate: 0,
+                        discount: 0,
+                        gst_rate: 0
+                    });
                 },
 
                 quickAdd(product) {
                     this.rows.push({
                         product_id: product.id,
+                        supplier_id: product.supplier_id || '',
+                        batch_id: '',
                         name: product.name,
                         unit: product.unit,
                         qty: 1,
@@ -378,10 +447,66 @@
 
                 pickProduct(row, product) {
                     row.product_id = product.id;
+                    row.supplier_id = product.supplier_id || '';
+                    row.batch_id = '';
                     row.name = product.name;
                     row.unit = product.unit;
                     row.rate = product.rate;
                     row.gst_rate = product.gst;
+                },
+
+                getProduct(row) {
+                    if (!row.product_id) return null;
+                    return this.products.find(p => p.id === row.product_id);
+                },
+
+                getRowSuppliers(row) {
+                    const prod = this.getProduct(row);
+                    if (!prod) return [];
+                    const map = new Map();
+                    (prod.suppliers || []).forEach(s => map.set(s.id, s));
+                    (prod.batches || []).forEach(b => {
+                        if (b.supplier_id && b.supplier_name && !map.has(b.supplier_id)) {
+                            map.set(b.supplier_id, { id: b.supplier_id, name: b.supplier_name });
+                        }
+                    });
+                    if (prod.supplier_id && prod.supplier_name && !map.has(prod.supplier_id)) {
+                        map.set(prod.supplier_id, { id: prod.supplier_id, name: prod.supplier_name });
+                    }
+                    return Array.from(map.values());
+                },
+
+                getRowBatches(row) {
+                    const prod = this.getProduct(row);
+                    if (!prod || !prod.batches) return [];
+                    if (row.supplier_id) {
+                        return prod.batches.filter(b => String(b.supplier_id) === String(row.supplier_id));
+                    }
+                    return prod.batches;
+                },
+
+                onRowSupplierChange(row) {
+                    if (row.batch_id) {
+                        const prod = this.getProduct(row);
+                        const batch = prod?.batches?.find(b => String(b.id) === String(row.batch_id));
+                        if (batch && row.supplier_id && String(batch.supplier_id) !== String(row.supplier_id)) {
+                            row.batch_id = '';
+                        }
+                    }
+                },
+
+                onRowBatchChange(row) {
+                    if (!row.batch_id) return;
+                    const prod = this.getProduct(row);
+                    const batch = prod?.batches?.find(b => String(b.id) === String(row.batch_id));
+                    if (batch) {
+                        if (batch.supplier_id) {
+                            row.supplier_id = batch.supplier_id;
+                        }
+                        if (batch.selling_price && Number(batch.selling_price) > 0) {
+                            row.rate = Number(batch.selling_price);
+                        }
+                    }
                 },
 
                 remove(i) {
