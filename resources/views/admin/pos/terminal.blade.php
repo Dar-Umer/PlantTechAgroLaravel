@@ -650,7 +650,12 @@
                              :class="String(batchPickerSupplierFilter) === String(sup.id) ? 'border-amber-500 bg-amber-50/70 shadow-xs' : 'border-slate-200 bg-white hover:border-slate-300'">
                             <div class="min-w-0">
                                 <span class="text-xs font-bold text-slate-900 block truncate" x-text="sup.name"></span>
-                                <span class="text-[10px] text-slate-500" x-text="getSupplierBatchCount(sup.id) > 0 ? (getSupplierBatchCount(sup.id) + ' active lots') : 'General stock'"></span>
+                                <div class="flex items-center gap-1.5 flex-wrap mt-0.5">
+                                    <span class="text-xs font-extrabold"
+                                          :class="sup.stock > 0 ? 'text-emerald-700' : 'text-slate-400'"
+                                          x-text="'Available: ' + sup.stock + ' ' + batchPickerProduct.unit"></span>
+                                    <span x-show="getSupplierBatchCount(sup.id) > 0" class="text-[10px] text-slate-400 font-mono" x-text="'(' + getSupplierBatchCount(sup.id) + ' lots)'"></span>
+                                </div>
                             </div>
                             <div class="flex items-center gap-1 flex-shrink-0">
                                 <button type="button"
@@ -888,7 +893,11 @@
                     'cost' => (float) ($p->rate ?? 0),
                     'supplier_id' => $p->supplier_id,
                     'supplier_name' => $p->supplier?->name,
-                    'suppliers' => $allSuppliers->map(fn ($s) => ['id' => $s->id, 'name' => $s->name])->values(),
+                    'suppliers' => $allSuppliers->map(fn ($s) => [
+                        'id' => $s->id,
+                        'name' => $s->name,
+                        'stock' => (float) $p->getSupplierStock($s->id),
+                    ])->values(),
                     'batches' => $p->activeBatchesFifo->map(fn ($b) => [
                         'id' => $b->id,
                         'batch_number' => $b->batch_number,
@@ -999,14 +1008,28 @@
             getBatchPickerSuppliers() {
                 if (!this.batchPickerProduct) return [];
                 const map = new Map();
-                (this.batchPickerProduct.suppliers || []).forEach(s => map.set(s.id, s));
+                (this.batchPickerProduct.suppliers || []).forEach(s => {
+                    map.set(s.id, {
+                        id: s.id,
+                        name: s.name,
+                        stock: Number(s.stock !== undefined ? s.stock : 0)
+                    });
+                });
                 (this.batchPickerProduct.batches || []).forEach(b => {
                     if (b.supplier_id && b.supplier_name && !map.has(b.supplier_id)) {
-                        map.set(b.supplier_id, { id: b.supplier_id, name: b.supplier_name });
+                        map.set(b.supplier_id, {
+                            id: b.supplier_id,
+                            name: b.supplier_name,
+                            stock: Number(b.current_qty || 0)
+                        });
                     }
                 });
                 if (this.batchPickerProduct.supplier_id && this.batchPickerProduct.supplier_name && !map.has(this.batchPickerProduct.supplier_id)) {
-                    map.set(this.batchPickerProduct.supplier_id, { id: this.batchPickerProduct.supplier_id, name: this.batchPickerProduct.supplier_name });
+                    map.set(this.batchPickerProduct.supplier_id, {
+                        id: this.batchPickerProduct.supplier_id,
+                        name: this.batchPickerProduct.supplier_name,
+                        stock: Number(this.batchPickerProduct.stock || 0)
+                    });
                 }
                 return Array.from(map.values());
             },

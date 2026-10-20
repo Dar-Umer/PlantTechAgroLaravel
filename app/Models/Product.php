@@ -151,4 +151,53 @@ class Product extends Model
     {
         return $query->where('type', 'sellable');
     }
+
+    /**
+     * Calculate available stock for a specific supplier of this product.
+     */
+    public function getSupplierStock(int $supplierId): float
+    {
+        $batches = $this->relationLoaded('activeBatchesFifo')
+            ? $this->activeBatchesFifo
+            : $this->activeBatchesFifo()->get();
+
+        if ($batches->isNotEmpty()) {
+            $supplierBatchQty = (float) $batches->where('supplier_id', $supplierId)->sum('current_qty');
+            $allBatchesQty = (float) $batches->sum('current_qty');
+            $untracked = max(0, (float) $this->stock_qty - $allBatchesQty);
+
+            if ((int) $this->supplier_id === (int) $supplierId) {
+                return round($supplierBatchQty + $untracked, 3);
+            }
+
+            return round($supplierBatchQty, 3);
+        }
+
+        $inward = (float) StockMovement::where('product_id', $this->id)
+            ->where('supplier_id', $supplierId)
+            ->where('type', 'in')
+            ->sum('quantity');
+
+        $outward = (float) StockMovement::where('product_id', $this->id)
+            ->where('supplier_id', $supplierId)
+            ->where('type', 'out')
+            ->sum('quantity');
+
+        $netMovement = max(0, $inward - abs($outward));
+
+        if ($inward > 0) {
+            return round(min((float) $this->stock_qty, $netMovement), 3);
+        }
+
+        if ((int) $this->supplier_id === (int) $supplierId) {
+            $otherInwards = (float) StockMovement::where('product_id', $this->id)
+                ->where('supplier_id', '!=', $supplierId)
+                ->where('type', 'in')
+                ->sum('quantity');
+
+            return round(max(0, (float) $this->stock_qty - $otherInwards), 3);
+        }
+
+        return 0.0;
+    }
 }

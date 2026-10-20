@@ -92,7 +92,11 @@ class PosController extends Controller
                 'cost' => (float) ($p->rate ?? 0),
                 'supplier_id' => $p->supplier_id,
                 'supplier_name' => $p->supplier?->name,
-                'suppliers' => $allSuppliers->map(fn ($s) => ['id' => $s->id, 'name' => $s->name])->values(),
+                'suppliers' => $allSuppliers->map(fn ($s) => [
+                    'id' => $s->id,
+                    'name' => $s->name,
+                    'stock' => (float) $p->getSupplierStock($s->id),
+                ])->values(),
                 'batches' => $p->activeBatchesFifo->map(fn ($b) => [
                     'id' => $b->id,
                     'batch_number' => $b->batch_number,

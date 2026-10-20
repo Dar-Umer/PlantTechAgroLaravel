@@ -238,7 +238,7 @@
                                             class="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-800 focus:outline-none focus:border-brand-500">
                                         <option value="">Any / Default Supplier</option>
                                         <template x-for="s in getRowSuppliers(row)" :key="s.id">
-                                            <option :value="s.id" x-text="s.name"></option>
+                                            <option :value="s.id" x-text="s.name + (s.stock !== undefined ? ' (' + s.stock + ' ' + (row.unit || getProduct(row)?.unit || 'pcs') + ' available)' : '')"></option>
                                         </template>
                                     </select>
                                 </div>
@@ -325,7 +325,11 @@
                         'low_stock' => (float) $p->low_stock_threshold,
                         'supplier_id' => $p->supplier_id,
                         'supplier_name' => $p->supplier?->name,
-                        'suppliers' => $allSuppliers->map(fn ($s) => ['id' => $s->id, 'name' => $s->name])->values(),
+                        'suppliers' => $allSuppliers->map(fn ($s) => [
+                            'id' => $s->id,
+                            'name' => $s->name,
+                            'stock' => (float) $p->getSupplierStock($s->id),
+                        ])->values(),
                         'batches' => $p->activeBatchesFifo->map(fn ($b) => [
                             'id' => $b->id,
                             'batch_number' => $b->batch_number,
@@ -479,11 +483,11 @@
                     (prod.suppliers || []).forEach(s => map.set(s.id, s));
                     (prod.batches || []).forEach(b => {
                         if (b.supplier_id && b.supplier_name && !map.has(b.supplier_id)) {
-                            map.set(b.supplier_id, { id: b.supplier_id, name: b.supplier_name });
+                            map.set(b.supplier_id, { id: b.supplier_id, name: b.supplier_name, stock: Number(b.current_qty || 0) });
                         }
                     });
                     if (prod.supplier_id && prod.supplier_name && !map.has(prod.supplier_id)) {
-                        map.set(prod.supplier_id, { id: prod.supplier_id, name: prod.supplier_name });
+                        map.set(prod.supplier_id, { id: prod.supplier_id, name: prod.supplier_name, stock: Number(prod.stock_qty || 0) });
                     }
                     return Array.from(map.values());
                 },

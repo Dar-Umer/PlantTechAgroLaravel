@@ -280,4 +280,46 @@ class PosAndInvoiceSupplierBatchSaleTest extends TestCase
         $this->assertEquals(25.0, (float) $product->fresh()->stock_qty);
         $this->assertEquals('cancelled', $invoice->fresh()->status);
     }
+
+    public function test_supplier_stock_is_accurate_and_exposed_in_pos_and_invoice(): void
+    {
+        $admin = $this->actingAdmin();
+
+        $supplierA = Supplier::create(['name' => 'Hadeed', 'phone' => '1111111111', 'is_active' => true]);
+        $supplierB = Supplier::create(['name' => 'Madina Enterprises', 'phone' => '2222222222', 'is_active' => true]);
+
+        $product = Product::create([
+            'name' => 'Extantion 2.5 ft',
+            'unit' => 'pcs',
+            'rate' => 100,
+            'selling_price' => 150,
+            'stock_qty' => 56,
+            'supplier_id' => $supplierA->id,
+            'is_active' => true,
+        ]);
+        $product->suppliers()->sync([$supplierA->id, $supplierB->id]);
+
+        // Model helper check
+        $this->assertEquals(56.0, $product->getSupplierStock($supplierA->id));
+        $this->assertEquals(0.0, $product->getSupplierStock($supplierB->id));
+
+        // POS Product Search API check
+        $response = $this->actingAs($admin, 'admin')->getJson(route('pos.products.search'));
+        $response->assertOk();
+        $posProduct = collect($response->json())->firstWhere('id', $product->id);
+        $this->assertNotNull($posProduct);
+
+        $suppliers = collect($posProduct['suppliers']);
+        $supA = $suppliers->firstWhere('id', $supplierA->id);
+        $supB = $suppliers->firstWhere('id', $supplierB->id);
+
+        $this->assertNotNull($supA);
+        $this->assertNotNull($supB);
+        $this->assertEquals(56.0, $supA['stock']);
+        $this->assertEquals(0.0, $supB['stock']);
+
+        // Invoice create view check
+        $invResponse = $this->actingAs($admin, 'admin')->get(route('admin.invoices.create'));
+        $invResponse->assertOk();
+    }
 }
