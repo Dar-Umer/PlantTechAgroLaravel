@@ -70,6 +70,16 @@ class PosController extends Controller
         }
 
         $products = $query->orderBy('name')->limit(60)->get()->map(function ($p) {
+            $allSuppliers = collect($p->suppliers);
+            if ($p->supplier && ! $allSuppliers->contains('id', $p->supplier->id)) {
+                $allSuppliers->prepend($p->supplier);
+            }
+            foreach ($p->activeBatchesFifo as $b) {
+                if ($b->supplier && ! $allSuppliers->contains('id', $b->supplier->id)) {
+                    $allSuppliers->push($b->supplier);
+                }
+            }
+
             return [
                 'id' => $p->id,
                 'name' => $p->name,
@@ -82,7 +92,7 @@ class PosController extends Controller
                 'cost' => (float) ($p->rate ?? 0),
                 'supplier_id' => $p->supplier_id,
                 'supplier_name' => $p->supplier?->name,
-                'suppliers' => $p->suppliers->map(fn ($s) => ['id' => $s->id, 'name' => $s->name])->values(),
+                'suppliers' => $allSuppliers->map(fn ($s) => ['id' => $s->id, 'name' => $s->name])->values(),
                 'batches' => $p->activeBatchesFifo->map(fn ($b) => [
                     'id' => $b->id,
                     'batch_number' => $b->batch_number,

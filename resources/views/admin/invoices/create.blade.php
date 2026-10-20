@@ -303,30 +303,42 @@
             return {
                 rows: [],
                 productSearch: '',
-                products: @js($products->map(fn ($p) => [
-                    'id' => $p->id,
-                    'name' => $p->name,
-                    'sku' => $p->sku,
-                    'unit' => $p->unit,
-                    'rate' => (float) ($p->selling_price ?? $p->rate),
-                    'gst' => (float) $p->gst_rate,
-                    'stock_qty' => (float) $p->stock_qty,
-                    'low_stock' => (float) $p->low_stock_threshold,
-                    'supplier_id' => $p->supplier_id,
-                    'supplier_name' => $p->supplier?->name,
-                    'suppliers' => $p->suppliers->map(fn ($s) => ['id' => $s->id, 'name' => $s->name])->values(),
-                    'batches' => $p->activeBatchesFifo->map(fn ($b) => [
-                        'id' => $b->id,
-                        'batch_number' => $b->batch_number,
-                        'lot_number' => $b->lot_number,
-                        'supplier_id' => $b->supplier_id,
-                        'supplier_name' => $b->supplier?->name ?? 'Default Supplier',
-                        'current_qty' => (float) $b->current_qty,
-                        'unit_cost' => (float) ($b->unit_cost ?? 0),
-                        'selling_price' => $b->effectiveSellingPrice(),
-                        'expiry' => $b->expiry_date?->format('d M Y'),
-                    ])->values(),
-                ])),
+                products: @js($products->map(function ($p) {
+                    $allSuppliers = collect($p->suppliers);
+                    if ($p->supplier && ! $allSuppliers->contains('id', $p->supplier->id)) {
+                        $allSuppliers->prepend($p->supplier);
+                    }
+                    foreach ($p->activeBatchesFifo as $b) {
+                        if ($b->supplier && ! $allSuppliers->contains('id', $b->supplier->id)) {
+                            $allSuppliers->push($b->supplier);
+                        }
+                    }
+
+                    return [
+                        'id' => $p->id,
+                        'name' => $p->name,
+                        'sku' => $p->sku,
+                        'unit' => $p->unit,
+                        'rate' => (float) ($p->selling_price ?? $p->rate),
+                        'gst' => (float) $p->gst_rate,
+                        'stock_qty' => (float) $p->stock_qty,
+                        'low_stock' => (float) $p->low_stock_threshold,
+                        'supplier_id' => $p->supplier_id,
+                        'supplier_name' => $p->supplier?->name,
+                        'suppliers' => $allSuppliers->map(fn ($s) => ['id' => $s->id, 'name' => $s->name])->values(),
+                        'batches' => $p->activeBatchesFifo->map(fn ($b) => [
+                            'id' => $b->id,
+                            'batch_number' => $b->batch_number,
+                            'lot_number' => $b->lot_number,
+                            'supplier_id' => $b->supplier_id,
+                            'supplier_name' => $b->supplier?->name ?? 'Default Supplier',
+                            'current_qty' => (float) $b->current_qty,
+                            'unit_cost' => (float) ($b->unit_cost ?? 0),
+                            'selling_price' => $b->effectiveSellingPrice(),
+                            'expiry' => $b->expiry_date?->format('d M Y'),
+                        ])->values(),
+                    ];
+                })->values()),
                 services: @js($servicesJson),
                 selectedServiceId: '{{ old('service_id', '') }}',
                 variations: [],

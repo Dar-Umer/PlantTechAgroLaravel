@@ -170,6 +170,14 @@
                                 {{-- Product Title --}}
                                 <h3 class="text-xs sm:text-sm font-semibold text-slate-800 group-hover:text-brand-600 transition line-clamp-2 leading-snug mt-1" x-text="product.name"></h3>
 
+                                {{-- Multi-supplier Pill Tag --}}
+                                <div x-show="product.suppliers && product.suppliers.length > 1" class="mt-1">
+                                    <span class="inline-flex items-center text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                                        <svg class="w-2.5 h-2.5 mr-1 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                        <span x-text="product.suppliers.length + ' Suppliers'"></span>
+                                    </span>
+                                </div>
+
                                 {{-- Multi-batch Pill Tag --}}
                                 <div x-show="product.batches && product.batches.length > 1" class="mt-1">
                                     <span class="inline-flex items-center text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
@@ -202,6 +210,9 @@
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-2">
                                     <h4 class="text-xs sm:text-sm font-semibold text-slate-900 group-hover:text-brand-700 truncate" x-text="product.name"></h4>
+                                    <span x-show="product.suppliers && product.suppliers.length > 1"
+                                          class="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200 flex-shrink-0"
+                                          x-text="product.suppliers.length + ' Suppliers'"></span>
                                     <span x-show="product.batches && product.batches.length > 1"
                                           class="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 flex-shrink-0"
                                           x-text="product.batches.length + ' Batches'"></span>
@@ -334,18 +345,22 @@
                                 <div class="flex items-center flex-wrap gap-1 mt-0.5 text-[10px] text-slate-500">
                                     <span class="text-slate-400" x-text="'(' + item.unit + ')'"></span>
                                     <template x-if="item.supplier_name">
-                                        <span class="inline-flex items-center px-1.5 py-0.2 rounded font-sans bg-amber-50 text-amber-800 border border-amber-200">
+                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded font-sans bg-amber-50 text-amber-900 border border-amber-200">
                                             <span x-text="'S: ' + item.supplier_name"></span>
+                                            <button type="button" @click.stop="openSupplierBatchPicker(item)" class="text-amber-800 underline font-extrabold hover:text-amber-950 ml-0.5 cursor-pointer" title="Change Supplier / Batch">Switch</button>
                                         </span>
+                                    </template>
+                                    <template x-if="!item.supplier_name && (item.product_ref?.suppliers?.length > 1)">
+                                        <button type="button" @click.stop="openSupplierBatchPicker(item)" class="text-amber-700 underline font-bold hover:text-amber-900">Choose Supplier</button>
                                     </template>
                                     <template x-if="item.batch_number">
-                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded font-mono bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded font-mono bg-indigo-50 text-indigo-700 border border-indigo-100">
                                             <span x-text="'B: ' + item.batch_number"></span>
-                                            <button type="button" x-show="item.has_multiple_batches" @click="changeItemBatch(item)" class="text-indigo-900 underline font-bold hover:text-indigo-600">Switch</button>
+                                            <button type="button" @click.stop="openSupplierBatchPicker(item)" class="text-indigo-900 underline font-bold hover:text-indigo-600 ml-0.5 cursor-pointer">Switch</button>
                                         </span>
                                     </template>
-                                    <template x-if="!item.batch_number && item.has_batches">
-                                        <button type="button" @click="changeItemBatch(item)" class="text-brand-600 underline font-semibold hover:text-brand-700">Choose Batch</button>
+                                    <template x-if="!item.batch_number && (item.product_ref?.batches?.length > 0)">
+                                        <button type="button" @click.stop="openSupplierBatchPicker(item)" class="text-brand-600 underline font-semibold hover:text-brand-700">Choose Batch</button>
                                     </template>
                                 </div>
                             </div>
@@ -611,9 +626,13 @@
     {{-- Batch & Supplier Selection Modal (Clean & Touch-friendly) --}}
     <div x-show="batchPickerProduct" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs">
         <div class="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 space-y-4 shadow-2xl animate-in fade-in duration-200" @click.away="batchPickerProduct = null">
+            {{-- Header --}}
             <div class="flex items-start justify-between pb-3 border-b border-slate-100">
                 <div>
-                    <span class="text-xs font-bold uppercase tracking-wider text-brand-700">Select Supplier & Batch</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-brand-700">Select Supplier & Batch</span>
+                        <span x-show="editingCartItem" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">Switching Cart Item</span>
+                    </div>
                     <h3 class="text-base font-bold text-slate-900 mt-0.5" x-text="batchPickerProduct?.name"></h3>
                     <p class="text-xs text-slate-500 font-mono" x-text="batchPickerProduct?.sku"></p>
                 </div>
@@ -622,71 +641,77 @@
                 </button>
             </div>
 
-            {{-- Supplier Filter Tabs (if multiple suppliers exist) --}}
-            <div x-show="getBatchPickerSuppliers().length > 1" class="space-y-1">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Filter by Supplier:</span>
-                <div class="flex items-center gap-1.5 overflow-x-auto pb-1">
-                    <button type="button"
-                            @click="batchPickerSupplierFilter = 'all'"
-                            :class="batchPickerSupplierFilter === 'all' ? 'bg-slate-900 text-white font-bold shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
-                            class="px-2.5 py-1 rounded-lg text-xs transition flex-shrink-0">
-                        All Suppliers
-                    </button>
+            {{-- 1. Available Suppliers for this Product --}}
+            <div x-show="getBatchPickerSuppliers().length > 0" class="space-y-1.5">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Choose Supplier / Vendor:</span>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <template x-for="sup in getBatchPickerSuppliers()" :key="sup.id">
-                        <button type="button"
-                                @click="batchPickerSupplierFilter = sup.id"
-                                :class="String(batchPickerSupplierFilter) === String(sup.id) ? 'bg-amber-600 text-white font-bold shadow-xs' : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'"
-                                class="px-2.5 py-1 rounded-lg text-xs transition flex-shrink-0"
-                                x-text="sup.name">
-                        </button>
+                        <div class="p-2.5 rounded-xl border transition flex items-center justify-between gap-2"
+                             :class="String(batchPickerSupplierFilter) === String(sup.id) ? 'border-amber-500 bg-amber-50/70 shadow-xs' : 'border-slate-200 bg-white hover:border-slate-300'">
+                            <div class="min-w-0">
+                                <span class="text-xs font-bold text-slate-900 block truncate" x-text="sup.name"></span>
+                                <span class="text-[10px] text-slate-500" x-text="getSupplierBatchCount(sup.id) > 0 ? (getSupplierBatchCount(sup.id) + ' active lots') : 'General stock'"></span>
+                            </div>
+                            <div class="flex items-center gap-1 flex-shrink-0">
+                                <button type="button"
+                                        @click="selectSupplierForSale(batchPickerProduct, sup, null)"
+                                        class="px-2.5 py-1 text-[11px] font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-lg shadow-2xs transition cursor-pointer">
+                                    Select
+                                </button>
+                            </div>
+                        </div>
                     </template>
                 </div>
             </div>
 
-            <p class="text-xs text-slate-500">Select which supplier lot and batch you want to sell from:</p>
+            {{-- 2. Specific Inventory Lots / Batches --}}
+            <div x-show="batchPickerProduct?.batches && batchPickerProduct.batches.length > 0" class="space-y-1.5 pt-1 border-t border-slate-100">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Or Select Specific Batch / Lot:</span>
+                    <button type="button" x-show="batchPickerSupplierFilter !== 'all'" @click="batchPickerSupplierFilter = 'all'" class="text-[10px] text-brand-600 hover:underline font-semibold cursor-pointer">Show All Batches</button>
+                </div>
 
-            <div class="space-y-2.5 max-h-72 overflow-y-auto pr-1">
-                <template x-for="b in getFilteredPickerBatches()" :key="b.id">
-                    <div @click="addBatchToCart(batchPickerProduct, b)"
-                         class="p-3.5 rounded-2xl border border-slate-200 hover:border-brand-500 hover:bg-brand-50/40 transition cursor-pointer flex items-center justify-between gap-3 group active:scale-[0.99]">
-                        <div class="space-y-1 min-w-0">
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <span class="font-mono font-bold text-xs text-slate-900 group-hover:text-brand-700" x-text="b.batch_number"></span>
-                                <template x-if="b.supplier_name">
-                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 truncate max-w-[150px]" x-text="'Sup: ' + b.supplier_name"></span>
-                                </template>
-                                <span x-show="b.is_near_expiry" class="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-amber-100 text-amber-800">Near Expiry</span>
+                <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                    <template x-for="b in getFilteredPickerBatches()" :key="b.id">
+                        <div @click="selectSupplierForSale(batchPickerProduct, { id: b.supplier_id, name: b.supplier_name }, b)"
+                             class="p-3 rounded-xl border border-slate-200 hover:border-brand-500 hover:bg-brand-50/40 transition cursor-pointer flex items-center justify-between gap-3 group active:scale-[0.99]">
+                            <div class="space-y-0.5 min-w-0">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="font-mono font-bold text-xs text-slate-900 group-hover:text-brand-700" x-text="b.batch_number"></span>
+                                    <template x-if="b.supplier_name">
+                                        <span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 truncate max-w-[130px]" x-text="'Sup: ' + b.supplier_name"></span>
+                                    </template>
+                                    <span x-show="b.is_near_expiry" class="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-amber-100 text-amber-800">Near Expiry</span>
+                                </div>
+                                <div class="text-[11px] text-slate-500 flex items-center gap-2">
+                                    <span>Avail: <strong class="text-emerald-700 font-bold" x-text="b.current_qty + ' ' + batchPickerProduct.unit"></strong></span>
+                                    <span x-show="b.expiry">Exp: <span x-text="b.expiry"></span></span>
+                                </div>
                             </div>
-                            <div class="text-[11px] text-slate-500 flex items-center gap-3">
-                                <span>Avail: <strong class="text-emerald-700 font-bold" x-text="b.current_qty + ' ' + batchPickerProduct.unit"></strong></span>
-                                <span x-show="b.expiry">Exp: <span x-text="b.expiry"></span></span>
+
+                            <div class="flex items-center gap-2.5 flex-shrink-0">
+                                <div class="text-right">
+                                    <span class="text-sm font-black text-slate-900 block" x-text="'₹' + Number(b.selling_price).toFixed(0)"></span>
+                                    <span class="text-[9px] text-slate-400">per <span x-text="batchPickerProduct.unit"></span></span>
+                                </div>
+                                <button type="button"
+                                        class="px-3 py-1 bg-brand-600 group-hover:bg-brand-700 text-white rounded-lg text-xs font-bold transition shadow-xs cursor-pointer">
+                                    Select
+                                </button>
                             </div>
                         </div>
-
-                        <div class="flex items-center gap-3 flex-shrink-0">
-                            <div class="text-right">
-                                <span class="text-base font-black text-slate-900 block" x-text="'₹' + Number(b.selling_price).toFixed(0)"></span>
-                                <span class="text-[10px] text-slate-400">per <span x-text="batchPickerProduct.unit"></span></span>
-                            </div>
-                            <button type="button"
-                                    class="px-3.5 py-1.5 bg-brand-600 group-hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition shadow-xs">
-                                Select
-                            </button>
-                        </div>
-                    </div>
-                </template>
-                <div x-show="getFilteredPickerBatches().length === 0" class="py-6 text-center text-xs text-slate-400">
-                    No active batches found for this selection.
+                    </template>
                 </div>
             </div>
 
+            {{-- Footer Controls --}}
             <div class="flex items-center justify-between pt-2 border-t border-slate-100">
                 <button type="button"
-                        @click="addBatchToCart(batchPickerProduct, null)"
-                        class="px-3 py-1.5 text-xs font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-xl transition">
-                    Auto FIFO (Oldest Batch)
+                        @click="selectSupplierForSale(batchPickerProduct, null, null)"
+                        class="px-3 py-1.5 text-xs font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-xl transition cursor-pointer">
+                    Auto FIFO (Default Stock)
                 </button>
-                <button type="button" @click="batchPickerProduct = null" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition">
+                <button type="button" @click="batchPickerProduct = null" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer">
                     Cancel
                 </button>
             </div>
@@ -841,31 +866,43 @@
 <script>
     function posTerminal() {
         return {
-            allProducts: @js($products->map(fn($p) => [
-                'id' => $p->id,
-                'name' => $p->name,
-                'sku' => $p->sku,
-                'type' => $p->type,
-                'unit' => $p->unit,
-                'stock' => (float) $p->stock_qty,
-                'rate' => (float) ($p->selling_price ?? $p->rate),
-                'cost' => (float) ($p->rate ?? 0),
-                'supplier_id' => $p->supplier_id,
-                'supplier_name' => $p->supplier?->name,
-                'suppliers' => $p->suppliers->map(fn ($s) => ['id' => $s->id, 'name' => $s->name])->values(),
-                'batches' => $p->activeBatchesFifo->map(fn ($b) => [
-                    'id' => $b->id,
-                    'batch_number' => $b->batch_number,
-                    'lot_number' => $b->lot_number,
-                    'supplier_id' => $b->supplier_id,
-                    'supplier_name' => $b->supplier?->name ?? 'Default Supplier',
-                    'current_qty' => (float) $b->current_qty,
-                    'unit_cost' => (float) ($b->unit_cost ?? 0),
-                    'selling_price' => $b->effectiveSellingPrice(),
-                    'expiry' => $b->expiry_date?->format('d M Y'),
-                    'is_near_expiry' => $b->isNearExpiry(60),
-                ])->values(),
-            ])->values()),
+            allProducts: @js($products->map(function ($p) {
+                $allSuppliers = collect($p->suppliers);
+                if ($p->supplier && ! $allSuppliers->contains('id', $p->supplier->id)) {
+                    $allSuppliers->prepend($p->supplier);
+                }
+                foreach ($p->activeBatchesFifo as $b) {
+                    if ($b->supplier && ! $allSuppliers->contains('id', $b->supplier->id)) {
+                        $allSuppliers->push($b->supplier);
+                    }
+                }
+
+                return [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'sku' => $p->sku,
+                    'type' => $p->type,
+                    'unit' => $p->unit,
+                    'stock' => (float) $p->stock_qty,
+                    'rate' => (float) ($p->selling_price ?? $p->rate),
+                    'cost' => (float) ($p->rate ?? 0),
+                    'supplier_id' => $p->supplier_id,
+                    'supplier_name' => $p->supplier?->name,
+                    'suppliers' => $allSuppliers->map(fn ($s) => ['id' => $s->id, 'name' => $s->name])->values(),
+                    'batches' => $p->activeBatchesFifo->map(fn ($b) => [
+                        'id' => $b->id,
+                        'batch_number' => $b->batch_number,
+                        'lot_number' => $b->lot_number,
+                        'supplier_id' => $b->supplier_id,
+                        'supplier_name' => $b->supplier?->name ?? 'Default Supplier',
+                        'current_qty' => (float) $b->current_qty,
+                        'unit_cost' => (float) ($b->unit_cost ?? 0),
+                        'selling_price' => $b->effectiveSellingPrice(),
+                        'expiry' => $b->expiry_date?->format('d M Y'),
+                        'is_near_expiry' => $b->isNearExpiry(60),
+                    ])->values(),
+                ];
+            })->values()),
             filteredProducts: [],
             searchQuery: '',
             filterType: 'all',
@@ -888,6 +925,7 @@
             completedSale: null,
             batchPickerProduct: null,
             batchPickerSupplierFilter: 'all',
+            editingCartItem: null,
             showHeldCarts: false,
             heldCarts: [],
             showAddCustomer: false,
@@ -981,10 +1019,46 @@
                 return this.batchPickerProduct.batches.filter(b => String(b.supplier_id) === String(this.batchPickerSupplierFilter));
             },
 
-            handleProductClick(product) {
-                if (product.batches && product.batches.length > 1) {
+            getSupplierBatchCount(supplierId) {
+                if (!this.batchPickerProduct || !this.batchPickerProduct.batches) return 0;
+                return this.batchPickerProduct.batches.filter(b => String(b.supplier_id) === String(supplierId)).length;
+            },
+
+            getSelectedSupplierObj() {
+                if (!this.batchPickerProduct || this.batchPickerSupplierFilter === 'all') return null;
+                return this.getBatchPickerSuppliers().find(s => String(s.id) === String(this.batchPickerSupplierFilter)) || null;
+            },
+
+            getSelectedSupplierName() {
+                const s = this.getSelectedSupplierObj();
+                return s ? s.name : 'All Suppliers';
+            },
+
+            hasMultipleOptions(product) {
+                if (!product) return false;
+                const suppliers = (product.suppliers || []);
+                const batches = (product.batches || []);
+                return suppliers.length > 1 || batches.length > 1;
+            },
+
+            openSupplierBatchPicker(target) {
+                if (!target) return;
+                if (target.product_ref) {
+                    // Editing an existing item in cart!
+                    this.editingCartItem = target;
+                    this.batchPickerProduct = target.product_ref;
+                    this.batchPickerSupplierFilter = target.supplier_id ? target.supplier_id : 'all';
+                } else {
+                    // Opening from catalog
+                    this.editingCartItem = null;
+                    this.batchPickerProduct = target;
                     this.batchPickerSupplierFilter = 'all';
-                    this.batchPickerProduct = product;
+                }
+            },
+
+            handleProductClick(product) {
+                if (this.hasMultipleOptions(product)) {
+                    this.openSupplierBatchPicker(product);
                 } else if (product.batches && product.batches.length === 1) {
                     this.addBatchToCart(product, product.batches[0]);
                 } else {
@@ -992,44 +1066,59 @@
                 }
             },
 
-            addBatchToCart(product, batch) {
+            selectSupplierForSale(product, supplier, batch) {
                 const batchId = batch ? batch.id : null;
                 const batchNumber = batch ? batch.batch_number : null;
-                const supplierId = batch ? (batch.supplier_id || null) : (product.supplier_id || null);
-                const supplierName = batch ? (batch.supplier_name || null) : (product.supplier_name || null);
+                const supplierId = supplier ? supplier.id : (batch ? batch.supplier_id : (product.supplier_id || null));
+                const supplierName = supplier ? supplier.name : (batch ? batch.supplier_name : (product.supplier_name || null));
                 const price = batch ? batch.selling_price : product.rate;
                 const cost = batch ? batch.unit_cost : product.cost;
-                const cartKey = `${product.id}_${batchId || 'auto'}_${supplierId || 'auto'}`;
 
-                const existing = this.cart.find(i => i.cart_key === cartKey);
-                if (existing) {
-                    existing.quantity += 1;
+                if (this.editingCartItem) {
+                    // Update the existing cart item in-place
+                    this.editingCartItem.batch_id = batchId;
+                    this.editingCartItem.batch_number = batchNumber;
+                    this.editingCartItem.supplier_id = supplierId;
+                    this.editingCartItem.supplier_name = supplierName;
+                    this.editingCartItem.unit_price = price;
+                    this.editingCartItem.cost_price = cost;
+                    this.editingCartItem.cart_key = `${product.id}_${batchId || 'auto'}_${supplierId || 'auto'}`;
+                    this.editingCartItem = null;
                 } else {
-                    this.cart.push({
-                        cart_key: cartKey,
-                        product_id: product.id,
-                        batch_id: batchId,
-                        batch_number: batchNumber,
-                        supplier_id: supplierId,
-                        supplier_name: supplierName,
-                        has_multiple_batches: (product.batches && product.batches.length > 1),
-                        has_batches: (product.batches && product.batches.length > 0),
-                        name: product.name,
-                        unit: product.unit,
-                        unit_price: price,
-                        cost_price: cost,
-                        quantity: 1,
-                        product_ref: product,
-                    });
+                    // Add to cart
+                    const cartKey = `${product.id}_${batchId || 'auto'}_${supplierId || 'auto'}`;
+                    const existing = this.cart.find(i => i.cart_key === cartKey);
+                    if (existing) {
+                        existing.quantity += 1;
+                    } else {
+                        this.cart.push({
+                            cart_key: cartKey,
+                            product_id: product.id,
+                            batch_id: batchId,
+                            batch_number: batchNumber,
+                            supplier_id: supplierId,
+                            supplier_name: supplierName,
+                            has_multiple_batches: (product.batches && product.batches.length > 1),
+                            has_batches: (product.batches && product.batches.length > 0),
+                            name: product.name,
+                            unit: product.unit,
+                            unit_price: price,
+                            cost_price: cost,
+                            quantity: 1,
+                            product_ref: product,
+                        });
+                    }
                 }
+
                 this.batchPickerProduct = null;
             },
 
+            addBatchToCart(product, batch, supplier = null) {
+                this.selectSupplierForSale(product, supplier, batch);
+            },
+
             changeItemBatch(item) {
-                if (item.product_ref) {
-                    this.batchPickerSupplierFilter = item.supplier_id ? item.supplier_id : 'all';
-                    this.batchPickerProduct = item.product_ref;
-                }
+                this.openSupplierBatchPicker(item);
             },
 
             removeFromCart(idx) {
