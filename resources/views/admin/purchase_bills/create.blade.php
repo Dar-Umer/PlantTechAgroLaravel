@@ -582,6 +582,7 @@ function purchaseBillForm(productsData, preselectedSupplierId) {
                     hsn_code: this.newProduct.hsn_code && this.newProduct.hsn_code.trim() ? this.newProduct.hsn_code.trim() : null,
                     low_stock_threshold: this.newProduct.low_stock_threshold && !isNaN(this.newProduct.low_stock_threshold) ? parseFloat(this.newProduct.low_stock_threshold) : 0,
                     supplier_id: this.supplierId ? parseInt(this.supplierId) : null,
+                    supplier_ids: this.supplierId ? [parseInt(this.supplierId)] : [],
                     is_active: 1,
                 };
 

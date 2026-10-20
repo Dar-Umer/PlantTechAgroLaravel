@@ -163,7 +163,7 @@
                class="pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 whitespace-nowrap {{ $tab === 'products' ? 'border-brand-600 text-brand-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200' }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
                 Supplied Products
-                <span class="ml-1 px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">{{ $supplier->products()->count() }}</span>
+                <span class="ml-1 px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">{{ $supplier->suppliedProductsQuery()->count() }}</span>
             </a>
         </div>
 
@@ -432,7 +432,7 @@
                         <tr>
                             <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Product Name</th>
                             <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">SKU</th>
-                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">In Stock</th>
+                            <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">In Stock (Supplier)</th>
                             <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Latest Purchase Cost</th>
                             <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500 text-right">Retail Rate</th>
                             <th class="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500">Active Batches</th>
@@ -443,14 +443,24 @@
                         @forelse($products as $prod)
                             <tr class="hover:bg-gray-50/80 transition">
                                 <td class="px-6 py-4 font-semibold text-gray-900">
-                                    {{ $prod->name }}
+                                    <div class="flex items-center gap-2">
+                                        <span>{{ $prod->name }}</span>
+                                        @if($prod->supplier_id === $supplier->id)
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200" title="Primary supplier for this product">Primary</span>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 text-xs font-medium text-gray-500">
                                     {{ $prod->sku ?: '—' }}
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <span class="font-bold text-gray-900">{{ \App\Support\Format::qty($prod->stock_qty) }}</span>
+                                    <span class="font-bold text-gray-900">{{ \App\Support\Format::qty($prod->supplier_stock ?? $prod->stock_qty) }}</span>
                                     <span class="text-xs text-gray-500">{{ $prod->unit }}</span>
+                                    @if(round((float) ($prod->supplier_stock ?? $prod->stock_qty), 3) !== round((float) $prod->stock_qty, 3))
+                                        <div class="text-[11px] text-gray-400 font-normal" title="Total inventory across all suppliers">
+                                            Total: {{ \App\Support\Format::qty($prod->stock_qty) }} {{ $prod->unit }}
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 text-right font-medium text-gray-800">
                                     ₹{{ number_format((float) $prod->latestCostPrice(), 2) }}
@@ -459,15 +469,15 @@
                                     ₹{{ number_format((float) $prod->rate, 2) }}
                                 </td>
                                 <td class="px-6 py-4">
-                                    @if($prod->activeBatchesFifo->isNotEmpty())
+                                    @if($prod->batches->isNotEmpty())
                                         <div class="flex flex-wrap gap-1">
-                                            @foreach($prod->activeBatchesFifo->take(3) as $b)
+                                            @foreach($prod->batches->take(3) as $b)
                                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-100">
                                                     {{ $b->batch_number }} ({{ \App\Support\Format::qty($b->current_qty) }})
                                                 </span>
                                             @endforeach
-                                            @if($prod->activeBatchesFifo->count() > 3)
-                                                <span class="text-xs text-gray-400">+{{ $prod->activeBatchesFifo->count() - 3 }} more</span>
+                                            @if($prod->batches->count() > 3)
+                                                <span class="text-xs text-gray-400">+{{ $prod->batches->count() - 3 }} more</span>
                                             @endif
                                         </div>
                                     @else
@@ -483,7 +493,7 @@
                         @empty
                             <tr>
                                 <td colspan="7" class="px-6 py-12 text-center text-gray-500">
-                                    No products currently assigned to this supplier.
+                                    No products currently supplied by this supplier.
                                 </td>
                             </tr>
                         @endforelse

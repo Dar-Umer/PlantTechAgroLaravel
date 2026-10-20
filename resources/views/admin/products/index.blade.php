@@ -87,7 +87,24 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-gray-600 font-medium">{{ $product->supplier?->name ?? '—' }}</td>
+                                <td class="px-6 py-4">
+                                    @if($product->suppliers->isNotEmpty())
+                                        <div class="flex flex-wrap items-center gap-1 max-w-[260px]">
+                                            @foreach($product->suppliers as $s)
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $s->id === $product->supplier_id ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold' : 'bg-gray-100 text-gray-700' }}" title="{{ $s->id === $product->supplier_id ? 'Primary Supplier' : 'Supplier' }}">
+                                                    {{ $s->name }}
+                                                    @if($s->id === $product->supplier_id)
+                                                        <span class="ml-1 text-[9px] text-emerald-600 uppercase tracking-wider font-bold">★</span>
+                                                    @endif
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    @elseif($product->supplier)
+                                        <span class="font-medium text-gray-700 text-xs">{{ $product->supplier->name }}</span>
+                                    @else
+                                        <span class="text-gray-400 text-xs">—</span>
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 text-gray-900 font-semibold">₹{{ number_format((float) $product->rate, 2) }}</td>
                                 <td class="px-6 py-4 text-gray-600">{{ $product->gst_rate }}%</td>
                                 <td class="px-6 py-4">

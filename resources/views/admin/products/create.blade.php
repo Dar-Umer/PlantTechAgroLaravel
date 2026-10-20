@@ -25,7 +25,92 @@
                         <x-admin.input name="mrp" label="MRP (₹)" type="number" step="0.01" min="0" :value="old('mrp')" helptext="For sellables — shown struck through in the catalog." />
                         <x-admin.input name="selling_price" label="Selling Price (₹)" type="number" step="0.01" min="0" :value="old('selling_price')" helptext="For sellables — blank falls back to rate." />
                         <x-admin.input name="gst_rate" label="GST Rate (%)" type="number" step="0.01" min="0" max="100" :value="old('gst_rate', 0)" />
-                        <x-admin.select name="supplier_id" label="Primary Supplier" :options="$suppliers->pluck('name', 'id')->all()" :value="old('supplier_id')" placeholder="None" helptext="Receives low stock alert emails." />
+
+                        <!-- Multiple Suppliers Selection with Primary Indicator -->
+                        <div class="col-span-1 md:col-span-2 bg-gray-50/80 p-4 rounded-2xl border border-gray-200"
+                             x-data="{
+                                search: '',
+                                selected: {{ json_encode(array_map('strval', old('supplier_ids', []))) }},
+                                primary: '{{ old('supplier_id', '') }}',
+                                toggle(id) {
+                                    id = String(id);
+                                    if (this.selected.includes(id)) {
+                                        this.selected = this.selected.filter(x => x !== id);
+                                        if (this.primary === id) {
+                                            this.primary = this.selected.length ? this.selected[0] : '';
+                                        }
+                                    } else {
+                                        this.selected.push(id);
+                                        if (!this.primary) {
+                                            this.primary = id;
+                                        }
+                                    }
+                                },
+                                setPrimary(id) {
+                                    id = String(id);
+                                    if (!this.selected.includes(id)) {
+                                        this.selected.push(id);
+                                    }
+                                    this.primary = id;
+                                }
+                             }">
+                            <div class="flex items-center justify-between mb-2">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-900">
+                                        Suppliers <span class="text-xs font-normal text-gray-500">(Multiple vendors can supply this product)</span>
+                                    </label>
+                                    <p class="text-xs text-gray-500 mt-0.5">Select all suppliers that provide this product. Use the button to set one as <strong>Primary</strong> for low-stock alerts.</p>
+                                </div>
+                                <div class="text-xs font-semibold px-2.5 py-1 rounded-full bg-white border border-gray-200 text-gray-700">
+                                    <span x-text="selected.length"></span> selected
+                                </div>
+                            </div>
+
+                            <!-- Search / Filter -->
+                            <div class="relative mb-2.5">
+                                <input type="text" x-model="search" placeholder="Type to filter suppliers..."
+                                       class="w-full text-xs rounded-xl border border-gray-200 bg-white px-3 py-2 pl-8 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
+                                <svg class="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </div>
+
+                            <!-- Suppliers List -->
+                            <div class="max-h-52 overflow-y-auto divide-y divide-gray-100 bg-white rounded-xl border border-gray-200 p-1.5 shadow-inner">
+                                @forelse($suppliers as $s)
+                                    <div x-show="!search || '{{ strtolower(addslashes($s->name)) }}'.includes(search.toLowerCase())"
+                                         class="flex items-center justify-between p-2 hover:bg-gray-50/80 transition rounded-lg">
+                                        <label class="flex items-center gap-2.5 cursor-pointer flex-1 select-none">
+                                            <input type="checkbox"
+                                                   name="supplier_ids[]"
+                                                   value="{{ $s->id }}"
+                                                   :checked="selected.includes('{{ $s->id }}')"
+                                                   @change="toggle('{{ $s->id }}')"
+                                                   class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500">
+                                            <span class="text-xs font-medium text-gray-900">{{ $s->name }}</span>
+                                            @if($s->phone)
+                                                <span class="text-[11px] text-gray-400 font-mono">({{ $s->phone }})</span>
+                                            @endif
+                                        </label>
+                                        <div x-show="selected.includes('{{ $s->id }}')" class="flex items-center gap-1">
+                                            <button type="button"
+                                                    @click="setPrimary('{{ $s->id }}')"
+                                                    :class="primary === '{{ $s->id }}' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                                                    class="px-2.5 py-1 text-[11px] rounded-lg transition inline-flex items-center gap-1 cursor-pointer">
+                                                <span x-show="primary === '{{ $s->id }}'" class="text-emerald-600">★</span>
+                                                <span x-text="primary === '{{ $s->id }}' ? 'Primary Supplier' : 'Set as Primary'"></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="py-4 text-center text-xs text-gray-400">
+                                        No suppliers available.
+                                    </div>
+                                @endforelse
+                            </div>
+                            <!-- Hidden input to submit primary supplier id -->
+                            <input type="hidden" name="supplier_id" :value="primary">
+                        </div>
                     </div>
                     <x-admin.textarea name="description" label="Description" :value="old('description')" rows="2" />
                 </div>

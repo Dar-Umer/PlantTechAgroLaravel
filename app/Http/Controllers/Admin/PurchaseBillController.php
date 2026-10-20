@@ -180,45 +180,60 @@ class PurchaseBillController extends Controller
             foreach ($itemsData as $data) {
                 $product = Product::lockForUpdate()->findOrFail($data['product_id']);
 
-                // Find or create product batch
+                // Find or create product batch (auto-generate lot code if none provided)
                 $batch = null;
-                if (! empty($data['batch_number'])) {
-                    $batch = ProductBatch::firstOrCreate(
-                        [
-                            'product_id' => $product->id,
-                            'batch_number' => $data['batch_number'],
-                        ],
-                        [
-                            'inward_date' => $bill->bill_date,
-                            'mfg_date' => $data['mfg_date'],
-                            'expiry_date' => $data['expiry_date'],
-                            'initial_qty' => $data['quantity'],
-                            'current_qty' => $data['quantity'],
-                            'unit_cost' => $data['unit_cost'],
-                            'selling_price' => $data['selling_price'] ?? $product->rate,
-                            'supplier_id' => $bill->supplier_id,
-                            'status' => ProductBatch::STATUS_ACTIVE,
-                        ]
-                    );
+                $batchNumber = ! empty($data['batch_number']) ? trim($data['batch_number']) : null;
+                if (empty($batchNumber)) {
+                    $batchNumber = 'LOT-' . date('ymd') . '-' . strtoupper(substr(uniqid(), -4));
+                }
 
-                    if (! $batch->wasRecentlyCreated) {
-                        $batch->current_qty = round((float) $batch->current_qty + $data['quantity'], 3);
-                        $batch->initial_qty = round((float) $batch->initial_qty + $data['quantity'], 3);
-                        if ($data['unit_cost'] > 0) {
-                            $batch->unit_cost = $data['unit_cost'];
-                        }
-                        if (! empty($data['selling_price'])) {
-                            $batch->selling_price = $data['selling_price'];
-                        }
-                        $batch->refreshStatus();
+                // If a batch with this number already exists for a different supplier, suffix supplier id to keep batches isolated
+                $existingBatch = ProductBatch::where('product_id', $product->id)
+                    ->where('batch_number', $batchNumber)
+                    ->first();
+
+                if ($existingBatch && $existingBatch->supplier_id && (int) $existingBatch->supplier_id !== (int) $bill->supplier_id) {
+                    $batchNumber = $batchNumber . '-S' . $bill->supplier_id;
+                }
+
+                $batch = ProductBatch::firstOrCreate(
+                    [
+                        'product_id' => $product->id,
+                        'batch_number' => $batchNumber,
+                    ],
+                    [
+                        'inward_date' => $bill->bill_date,
+                        'mfg_date' => $data['mfg_date'],
+                        'expiry_date' => $data['expiry_date'],
+                        'initial_qty' => $data['quantity'],
+                        'current_qty' => $data['quantity'],
+                        'unit_cost' => $data['unit_cost'],
+                        'selling_price' => $data['selling_price'] ?? $product->rate,
+                        'supplier_id' => $bill->supplier_id,
+                        'status' => ProductBatch::STATUS_ACTIVE,
+                    ]
+                );
+
+                if (! $batch->wasRecentlyCreated) {
+                    $batch->current_qty = round((float) $batch->current_qty + $data['quantity'], 3);
+                    $batch->initial_qty = round((float) $batch->initial_qty + $data['quantity'], 3);
+                    if ($data['unit_cost'] > 0) {
+                        $batch->unit_cost = $data['unit_cost'];
                     }
+                    if (! empty($data['selling_price'])) {
+                        $batch->selling_price = $data['selling_price'];
+                    }
+                    if (empty($batch->supplier_id)) {
+                        $batch->supplier_id = $bill->supplier_id;
+                    }
+                    $batch->refreshStatus();
                 }
 
                 // Create bill item
                 $billItem = $bill->items()->create([
                     'product_id' => $data['product_id'],
                     'batch_id' => $batch?->id,
-                    'batch_number' => $data['batch_number'],
+                    'batch_number' => $batchNumber,
                     'mfg_date' => $data['mfg_date'],
                     'expiry_date' => $data['expiry_date'],
                     'quantity' => $data['quantity'],
@@ -229,16 +244,22 @@ class PurchaseBillController extends Controller
                     'line_total' => $data['line_total'],
                 ]);
 
-                // Update product stock and supplier
+                // Update product stock and primary supplier ONLY IF NOT ALREADY SET
                 $newStock = round((float) $product->stock_qty + $data['quantity'], 3);
                 $updateData = [
                     'stock_qty' => $newStock,
-                    'supplier_id' => $bill->supplier_id,
                 ];
+                // Only assign as primary supplier if the product currently has no supplier
+                if (empty($product->supplier_id)) {
+                    $updateData['supplier_id'] = $bill->supplier_id;
+                }
                 if (! empty($data['selling_price']) && $data['selling_price'] > 0) {
                     $updateData['rate'] = $data['selling_price'];
                 }
                 $product->update($updateData);
+
+                // Ensure this supplier is linked in product's multiple suppliers
+                $product->suppliers()->syncWithoutDetaching([$bill->supplier_id]);
 
                 // Record stock movement (inward)
                 StockMovement::create([

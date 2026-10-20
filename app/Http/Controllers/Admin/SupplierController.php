@@ -98,10 +98,7 @@ class SupplierController extends Controller
                 ->paginate(20)
                 ->withQueryString();
         } elseif ($tab === 'products') {
-            $products = $supplier->products()
-                ->with(['activeBatchesFifo'])
-                ->orderBy('name')
-                ->get();
+            $products = $supplier->getSuppliedProducts();
         }
 
         $unpaidBills = $supplier->purchaseBills()
@@ -117,7 +114,7 @@ class SupplierController extends Controller
     {
         return view('admin.suppliers.edit', [
             'supplier' => $supplier,
-            'products' => $supplier->products()->orderBy('name')->get(['id', 'name', 'stock_qty', 'unit', 'low_stock_threshold']),
+            'products' => $supplier->getSuppliedProducts(),
         ]);
     }
 
@@ -210,18 +207,18 @@ class SupplierController extends Controller
             $bills = $supplier->purchaseBills()->with(['items.product', 'items.batch'])->get();
             $billNumbers = $bills->pluck('bill_number')->filter()->all();
 
-            // Products belonging directly to this supplier
+            // Products belonging directly to this supplier as primary supplier
             $supplierProducts = Product::where('supplier_id', $supplier->id)->get();
             $supplierProductIds = $supplierProducts->pluck('id')->all();
 
-            // Reverse inventory for products in purchase bills that do NOT belong to this supplier
+            // Reverse inventory for products in purchase bills
             foreach ($bills as $bill) {
                 foreach ($bill->items as $item) {
-                    if ($item->product && ! in_array($item->product_id, $supplierProductIds)) {
+                    if ($item->product) {
                         $newStock = max(0, round((float) $item->product->stock_qty - (float) $item->quantity, 3));
                         $item->product->update(['stock_qty' => $newStock]);
 
-                        if ($item->batch && $item->batch->supplier_id !== $supplier->id) {
+                        if ($item->batch && (int) $item->batch->supplier_id === (int) $supplier->id) {
                             $newBatchQty = max(0, round((float) $item->batch->current_qty - (float) $item->quantity, 3));
                             $item->batch->update(['current_qty' => $newBatchQty]);
                             $item->batch->refreshStatus();
@@ -230,24 +227,16 @@ class SupplierController extends Controller
                 }
             }
 
-            // 2. Delete stock movements associated with this supplier, bills, or the supplier's products
-            StockMovement::where(function ($q) use ($supplier, $billNumbers, $supplierProductIds) {
+            // 2. Delete stock movements associated with this supplier or bills
+            StockMovement::where(function ($q) use ($supplier, $billNumbers) {
                 $q->where('supplier_id', $supplier->id);
-                if (! empty($supplierProductIds)) {
-                    $q->orWhereIn('product_id', $supplierProductIds);
-                }
                 foreach ($billNumbers as $num) {
                     $q->orWhere('reference', 'like', "%{$num}%");
                 }
             })->delete();
 
-            // 3. Delete batches associated with this supplier or the supplier's products
-            ProductBatch::where(function ($q) use ($supplier, $supplierProductIds) {
-                $q->where('supplier_id', $supplier->id);
-                if (! empty($supplierProductIds)) {
-                    $q->orWhereIn('product_id', $supplierProductIds);
-                }
-            })->delete();
+            // 3. Delete batches directly associated with this supplier
+            ProductBatch::where('supplier_id', $supplier->id)->delete();
 
             // 4. Delete all supplier payments
             $supplier->payments()->delete();
@@ -258,12 +247,44 @@ class SupplierController extends Controller
                 $bill->delete();
             }
 
-            // 6. Delete products belonging to this supplier (including stored media)
+            // 6. Handle products where this supplier was primary
             foreach ($supplierProducts as $product) {
-                if ($product->image && Storage::disk('public')->exists($product->image)) {
-                    Storage::disk('public')->delete($product->image);
+                // Check if this product has other suppliers or transactions
+                $hasOtherSuppliers = DB::table('purchase_bill_items')
+                    ->join('purchase_bills', 'purchase_bills.id', '=', 'purchase_bill_items.purchase_bill_id')
+                    ->where('purchase_bill_items.product_id', $product->id)
+                    ->where('purchase_bills.supplier_id', '!=', $supplier->id)
+                    ->exists()
+                    || ProductBatch::where('product_id', $product->id)
+                        ->where('supplier_id', '!=', $supplier->id)
+                        ->whereNotNull('supplier_id')
+                        ->exists();
+
+                $hasCustomerTransactions = DB::table('invoice_items')->where('product_id', $product->id)->exists()
+                    || DB::table('work_order_stage_products')->where('product_id', $product->id)->exists()
+                    || DB::table('quotation_items')->where('product_id', $product->id)->exists()
+                    || DB::table('pos_sale_items')->where('product_id', $product->id)->exists();
+
+                if ($hasOtherSuppliers || $hasCustomerTransactions) {
+                    // Try to reassign primary supplier to the next active supplier, or set to null
+                    $otherSupplierId = ProductBatch::where('product_id', $product->id)
+                        ->where('supplier_id', '!=', $supplier->id)
+                        ->whereNotNull('supplier_id')
+                        ->value('supplier_id')
+                        ?? DB::table('purchase_bill_items')
+                            ->join('purchase_bills', 'purchase_bills.id', '=', 'purchase_bill_items.purchase_bill_id')
+                            ->where('purchase_bill_items.product_id', $product->id)
+                            ->where('purchase_bills.supplier_id', '!=', $supplier->id)
+                            ->value('purchase_bills.supplier_id');
+
+                    $product->update(['supplier_id' => $otherSupplierId]);
+                } else {
+                    // Safe to delete solely owned product
+                    if ($product->image && Storage::disk('public')->exists($product->image)) {
+                        Storage::disk('public')->delete($product->image);
+                    }
+                    $product->delete();
                 }
-                $product->delete();
             }
 
             // 7. Delete the supplier record
@@ -271,7 +292,7 @@ class SupplierController extends Controller
         });
 
         return redirect()->route('admin.suppliers.index')
-            ->with('success', "Supplier '{$supplierName}' along with all its products, inventory stock, stock movements, and purchase bills have been deleted successfully.");
+            ->with('success', "Supplier '{$supplierName}' and its associated purchase bills, inward stock, and payment records have been deleted successfully.");
     }
 
     private function validated(Request $request, ?int $ignoreId = null): array

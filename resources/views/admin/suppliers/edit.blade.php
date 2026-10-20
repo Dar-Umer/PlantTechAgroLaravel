@@ -32,11 +32,21 @@
                         <tbody class="divide-y divide-gray-100">
                             @foreach($products as $product)
                                 <tr>
-                                    <td class="px-4 py-2.5 font-medium text-gray-900">{{ $product->name }}</td>
+                                    <td class="px-4 py-2.5 font-medium text-gray-900">
+                                        <div class="flex items-center gap-1.5">
+                                            <span>{{ $product->name }}</span>
+                                            @if($product->supplier_id === $supplier->id)
+                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700">Primary</span>
+                                            @endif
+                                        </div>
+                                    </td>
                                     <td class="px-4 py-2.5">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $product->isLowStock() ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700' }}">
-                                            {{ \App\Support\Format::qty($product->stock_qty) }} {{ $product->unit }}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                                            {{ \App\Support\Format::qty($product->supplier_stock ?? $product->stock_qty) }} {{ $product->unit }}
                                         </span>
+                                        @if(round((float) ($product->supplier_stock ?? $product->stock_qty), 3) !== round((float) $product->stock_qty, 3))
+                                            <span class="text-[11px] text-gray-400 ml-1">({{ \App\Support\Format::qty($product->stock_qty) }} total)</span>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-2.5 text-gray-600">{{ \App\Support\Format::qty($product->low_stock_threshold) }} {{ $product->unit }}</td>
                                     <td class="px-4 py-2.5 text-right">

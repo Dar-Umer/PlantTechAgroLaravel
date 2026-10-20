@@ -8,13 +8,14 @@ use App\Models\Supplier;
 use App\Services\StockService;
 use App\Support\Media;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::query()->with('supplier')->orderBy('name');
+        $query = Product::query()->with(['supplier', 'suppliers'])->orderBy('name');
 
         if ($request->query('stock') === 'low') {
             $query->whereColumn('stock_qty', '<=', 'low_stock_threshold')
@@ -22,7 +23,19 @@ class ProductController extends Controller
         }
 
         if ($supplierId = $request->query('supplier_id')) {
-            $query->where('supplier_id', $supplierId);
+            $query->where(function ($q) use ($supplierId) {
+                $q->where('supplier_id', $supplierId)
+                  ->orWhereHas('suppliers', fn($s) => $s->where('suppliers.id', $supplierId))
+                  ->orWhereHas('batches', fn($b) => $b->where('supplier_id', $supplierId))
+                  ->orWhereHas('movements', fn($m) => $m->where('supplier_id', $supplierId))
+                  ->orWhereExists(function ($sub) use ($supplierId) {
+                      $sub->select(DB::raw(1))
+                          ->from('purchase_bill_items')
+                          ->join('purchase_bills', 'purchase_bills.id', '=', 'purchase_bill_items.purchase_bill_id')
+                          ->whereColumn('purchase_bill_items.product_id', 'products.id')
+                          ->where('purchase_bills.supplier_id', $supplierId);
+                  });
+            });
         }
 
         if ($type = $request->query('type')) {
@@ -49,7 +62,7 @@ class ProductController extends Controller
     public function create()
     {
         return view('admin.products.create', [
-            'suppliers' => Supplier::orderBy('name')->get(['id', 'name']),
+            'suppliers' => Supplier::orderBy('name')->get(['id', 'name', 'phone']),
             'units' => $this->units(),
         ]);
     }
@@ -57,6 +70,21 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $data = $this->validated($request);
+
+        $supplierIds = $request->input('supplier_ids', []);
+        if (! is_array($supplierIds)) {
+            $supplierIds = array_filter([(int) $supplierIds]);
+        } else {
+            $supplierIds = array_values(array_filter(array_map('intval', $supplierIds)));
+        }
+
+        if (! empty($data['supplier_id']) && ! in_array((int) $data['supplier_id'], $supplierIds, true)) {
+            $supplierIds[] = (int) $data['supplier_id'];
+        }
+
+        if (empty($data['supplier_id']) && ! empty($supplierIds)) {
+            $data['supplier_id'] = $supplierIds[0];
+        }
 
         if ($request->hasFile('image')) {
             $data['image'] = Media::storeImage($request->file('image'), 'products');
@@ -69,6 +97,10 @@ class ProductController extends Controller
         $data['gst_rate'] = (float) ($data['gst_rate'] ?? 0);
 
         $product = Product::create($data);
+
+        if (! empty($supplierIds)) {
+            $product->suppliers()->sync($supplierIds);
+        }
 
         if ($openingStock > 0) {
             StockService::record($product, 'in', $openingStock, 'OPENING', 'Opening stock', null, null, $request->user('admin')->id ?? null);
@@ -98,9 +130,12 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
+        $product->load('suppliers');
+
         return view('admin.products.edit', [
             'product' => $product,
-            'suppliers' => Supplier::orderBy('name')->get(['id', 'name']),
+            'suppliers' => Supplier::orderBy('name')->get(['id', 'name', 'phone']),
+            'selectedSupplierIds' => $product->suppliers->pluck('id')->all(),
             'units' => $this->units(),
         ]);
     }
@@ -108,6 +143,23 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $data = $this->validated($request, $product->id);
+
+        $supplierIds = $request->input('supplier_ids', []);
+        if (! is_array($supplierIds)) {
+            $supplierIds = array_filter([(int) $supplierIds]);
+        } else {
+            $supplierIds = array_values(array_filter(array_map('intval', $supplierIds)));
+        }
+
+        if (! empty($data['supplier_id']) && ! in_array((int) $data['supplier_id'], $supplierIds, true)) {
+            $supplierIds[] = (int) $data['supplier_id'];
+        }
+
+        if (empty($data['supplier_id']) && ! empty($supplierIds)) {
+            $data['supplier_id'] = $supplierIds[0];
+        }
+
+        $product->suppliers()->sync($supplierIds);
 
         if ($request->hasFile('image')) {
             $data['image'] = Media::storeImage($request->file('image'), 'products');
@@ -167,6 +219,8 @@ class ProductController extends Controller
             'stock_qty' => ['nullable', 'numeric', 'min:0'],
             'low_stock_threshold' => ['nullable', 'numeric', 'min:0'],
             'supplier_id' => ['nullable', Rule::exists('suppliers', 'id')],
+            'supplier_ids' => ['nullable', 'array'],
+            'supplier_ids.*' => ['exists:suppliers,id'],
             'is_active' => ['nullable', 'boolean'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:2048'],
         ]);
