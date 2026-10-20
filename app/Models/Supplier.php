@@ -96,7 +96,7 @@ class Supplier extends Model
 
     public function getTotalPurchasedAttribute(): float
     {
-        return (float) $this->purchaseBills()->sum('total_amount');
+        return (float) $this->purchaseBills()->where('status', '!=', 'cancelled')->sum('total_amount');
     }
 
     public function getTotalPaidAttribute(): float
@@ -106,6 +106,78 @@ class Supplier extends Model
 
     public function getBalanceDueAttribute(): float
     {
-        return (float) $this->purchaseBills()->sum('balance_due');
+        return max(0, round($this->total_purchased - $this->total_paid, 2));
+    }
+
+    /**
+     * Reconcile any unallocated payments against unpaid purchase bills in FIFO order.
+     */
+    public function reconcilePayments(): void
+    {
+        $unallocatedPayments = $this->payments()
+            ->whereNull('purchase_bill_id')
+            ->orderBy('payment_date')
+            ->orderBy('id')
+            ->get();
+
+        if ($unallocatedPayments->isEmpty()) {
+            return;
+        }
+
+        $unpaidBills = $this->purchaseBills()
+            ->where('status', '!=', 'cancelled')
+            ->where('balance_due', '>', 0)
+            ->orderBy('bill_date')
+            ->orderBy('id')
+            ->get();
+
+        if ($unpaidBills->isEmpty()) {
+            return;
+        }
+
+        foreach ($unallocatedPayments as $payment) {
+            $paymentRemaining = (float) $payment->amount;
+
+            foreach ($unpaidBills as $bill) {
+                if ($paymentRemaining <= 0) {
+                    break;
+                }
+
+                $billDue = (float) $bill->balance_due;
+                if ($billDue <= 0) {
+                    continue;
+                }
+
+                if ($paymentRemaining <= $billDue) {
+                    // This payment fits entirely into this bill
+                    $payment->update(['purchase_bill_id' => $bill->id]);
+                    $bill->refreshPaymentStatus();
+                    $paymentRemaining = 0;
+                    break;
+                } else {
+                    // Payment is larger than this bill's due amount.
+                    // Allocate $billDue to this bill, and create remaining payment record.
+                    $payment->update([
+                        'purchase_bill_id' => $bill->id,
+                        'amount' => $billDue,
+                    ]);
+                    $bill->refreshPaymentStatus();
+
+                    $paymentRemaining = round($paymentRemaining - $billDue, 2);
+
+                    $payment = SupplierPayment::create([
+                        'payment_number' => SupplierPayment::nextPaymentNumber(),
+                        'supplier_id' => $this->id,
+                        'purchase_bill_id' => null,
+                        'amount' => $paymentRemaining,
+                        'payment_date' => $payment->payment_date,
+                        'payment_method' => $payment->payment_method,
+                        'reference_no' => $payment->reference_no,
+                        'notes' => $payment->notes,
+                        'created_by' => $payment->created_by,
+                    ]);
+                }
+            }
+        }
     }
 }

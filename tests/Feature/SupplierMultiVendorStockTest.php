@@ -209,4 +209,57 @@ class SupplierMultiVendorStockTest extends TestCase
         $filterResponse->assertStatus(200);
         $filterResponse->assertSee('Honeycrisp Apple Scion');
     }
+
+    public function test_general_payment_without_specific_bill_deducts_supplier_balance_due_and_allocates_fifo(): void
+    {
+        $admin = $this->actingAdmin();
+
+        $supplier = Supplier::create([
+            'name' => 'Nursery Nischler',
+            'phone' => '1234567890',
+            'is_active' => true,
+        ]);
+
+        $bill = PurchaseBill::create([
+            'bill_number' => 'PB-TEST-0001',
+            'supplier_id' => $supplier->id,
+            'bill_date' => now()->toDateString(),
+            'status' => 'received',
+            'subtotal' => 1770,
+            'tax_amount' => 0,
+            'total_amount' => 1770,
+            'paid_amount' => 0,
+            'balance_due' => 1770,
+            'payment_status' => 'unpaid',
+            'created_by' => $admin->id,
+        ]);
+
+        $this->assertEquals(1770.0, (float) $supplier->balance_due);
+
+        // Record a general payment with NO specific bill (purchase_bill_id = null)
+        $response = $this->actingAs($admin, 'admin')->post(route('admin.suppliers.payments.store', $supplier), [
+            'purchase_bill_id' => '',
+            'amount' => 1000,
+            'payment_date' => now()->toDateString(),
+            'payment_method' => 'bank_transfer',
+            'reference_no' => 'REF-1000',
+            'notes' => 'On account payment',
+        ]);
+        $response->assertRedirect();
+
+        // Verify supplier balance due is now 770
+        $supplier->refresh();
+        $this->assertEquals(770.0, (float) $supplier->balance_due);
+
+        // Verify the bill's balance due was automatically updated via FIFO allocation
+        $bill->refresh();
+        $this->assertEquals(770.0, (float) $bill->balance_due);
+        $this->assertEquals(1000.0, (float) $bill->paid_amount);
+        $this->assertEquals('partial', $bill->payment_status);
+
+        // Verify supplier view renders with the updated balance due
+        $viewResponse = $this->actingAs($admin, 'admin')->get(route('admin.suppliers.show', $supplier));
+        $viewResponse->assertOk();
+        $viewResponse->assertSee('770.00');
+    }
 }

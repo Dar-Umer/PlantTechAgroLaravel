@@ -64,13 +64,19 @@ class SupplierController extends Controller
 
     public function show(Supplier $supplier, Request $request)
     {
+        $supplier->reconcilePayments();
+
         $tab = $request->query('tab', 'bills');
 
+        $totalPurchased = (float) $supplier->purchaseBills()->where('status', '!=', 'cancelled')->sum('total_amount');
+        $totalPaid = (float) $supplier->payments()->sum('amount');
+        $balanceDue = max(0, round($totalPurchased - $totalPaid, 2));
+
         $metrics = [
-            'total_purchased' => (float) $supplier->purchaseBills()->where('status', '!=', 'cancelled')->sum('total_amount'),
-            'total_paid' => (float) $supplier->payments()->sum('amount'),
-            'balance_due' => (float) $supplier->purchaseBills()->where('status', '!=', 'cancelled')->sum('balance_due'),
-            'bills_count' => $supplier->purchaseBills()->count(),
+            'total_purchased' => $totalPurchased,
+            'total_paid' => $totalPaid,
+            'balance_due' => $balanceDue,
+            'bills_count' => $supplier->purchaseBills()->where('status', '!=', 'cancelled')->count(),
             'inward_qty' => (float) $supplier->stockMovements()->where('type', 'in')->sum('quantity'),
         ];
 
@@ -157,20 +163,7 @@ class SupplierController extends Controller
             if ($bill) {
                 $bill->refreshPaymentStatus();
             } else {
-                // If payment is unallocated, apply it against oldest unpaid bills automatically
-                $remaining = (float) $validated['amount'];
-                $dueBills = $supplier->purchaseBills()
-                    ->where('balance_due', '>', 0)
-                    ->where('status', '!=', 'cancelled')
-                    ->orderBy('bill_date')
-                    ->get();
-
-                foreach ($dueBills as $dueBill) {
-                    if ($remaining <= 0) break;
-                    $allocated = min($remaining, (float) $dueBill->balance_due);
-                    $remaining -= $allocated;
-                    $dueBill->refreshPaymentStatus();
-                }
+                $supplier->reconcilePayments();
             }
         });
 
@@ -186,13 +179,15 @@ class SupplierController extends Controller
         $paymentNumber = $payment->payment_number;
         $amount = (float) $payment->amount;
 
-        DB::transaction(function () use ($payment) {
+        DB::transaction(function () use ($payment, $supplier) {
             $bill = $payment->purchaseBill;
             $payment->delete();
 
             if ($bill) {
                 $bill->refreshPaymentStatus();
             }
+
+            $supplier->reconcilePayments();
         });
 
         return back()->with('success', "Payment {$paymentNumber} of ₹" . number_format($amount, 2) . ' deleted successfully.');
