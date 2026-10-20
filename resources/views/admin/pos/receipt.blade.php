@@ -140,8 +140,7 @@
                         </tr>
                         <tr style="font-size: 10px;">
                             <td style="color: #444;">
-                                {{ $item->batch?->batch_number ? 'B: '.$item->batch->batch_number : '' }}
-                                {{ $item->supplier ? ' | S: '.$item->supplier->name : '' }}
+                                {{ $item->batch?->batch_number ? 'Lot: '.$item->batch->batch_number : '' }}
                             </td>
                             <td class="right">{{ number_format($item->quantity, $item->quantity == (int)$item->quantity ? 0 : 2) }} {{ $item->unit }}</td>
                             <td class="right">₹{{ number_format($item->unit_price, 2) }}</td>

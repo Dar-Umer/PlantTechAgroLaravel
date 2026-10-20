@@ -322,8 +322,11 @@ class PosSaleTest extends TestCase
             'created_by' => $this->admin->id,
         ]);
 
+        $supplier = \App\Models\Supplier::create(['name' => 'Secret Vendor Ltd', 'phone' => '1234567890']);
+
         $sale->items()->create([
             'product_id' => $this->product->id,
+            'supplier_id' => $supplier->id,
             'product_name' => $this->product->name,
             'unit' => 'bottle',
             'unit_price' => 350.00,
@@ -334,19 +337,21 @@ class PosSaleTest extends TestCase
             'total_price' => 350.00,
         ]);
 
-        // 80mm Receipt (No tax lines)
+        // 80mm Receipt (No tax lines, no vendor/supplier exposure)
         $receiptResp = $this->actingAs($this->admin, 'admin')->get(route('admin.pos.receipt', $sale));
         $receiptResp->assertOk();
         $receiptResp->assertSee('RETAIL RECEIPT / CASH BILL');
         $receiptResp->assertDontSee('Total GST');
+        $receiptResp->assertDontSee('Secret Vendor Ltd');
         $receiptResp->assertSee('POS/2026-27/0001');
 
-        // A4 Retail Invoice (No tax lines)
+        // A4 Retail Invoice (No tax lines, no vendor/supplier exposure)
         $invoiceResp = $this->actingAs($this->admin, 'admin')->get(route('admin.pos.invoice', $sale));
         $invoiceResp->assertOk();
         $invoiceResp->assertSee('PLANT TECH AGRO');
         $invoiceResp->assertSee('Retail Invoice');
         $invoiceResp->assertDontSee('Total GST Amount');
+        $invoiceResp->assertDontSee('Secret Vendor Ltd');
         $invoiceResp->assertSee('POS/2026-27/0001');
     }
 

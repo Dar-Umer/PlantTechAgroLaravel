@@ -92,10 +92,7 @@
                                     {{ $item->product_name }}
                                 </td>
                                 <td class="py-3 px-2 text-gray-500 font-mono">
-                                    <div>{{ $item->batch?->batch_number ?? 'Auto Lot' }}</div>
-                                    @if($item->supplier)
-                                        <div class="text-[10px] text-gray-400 font-sans font-normal">({{ $item->supplier->name }})</div>
-                                    @endif
+                                    {{ $item->batch?->batch_number ?? 'Auto Lot' }}
                                 </td>
                                 <td class="py-3 px-2 text-right font-medium text-gray-800">{{ number_format($item->quantity, 2) }} {{ $item->unit }}</td>
                                 <td class="py-3 px-2 text-right font-medium text-gray-800">{{ number_format($item->unit_price, 2) }}</td>
