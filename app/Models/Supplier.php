@@ -88,40 +88,7 @@ class Supplier extends Model
             ->get();
 
         foreach ($products as $prod) {
-            // Active batches belonging to this supplier
-            $supplierActiveBatchQty = (float) $prod->batches->sum('current_qty');
-            $hasBatchesForSupplier = ProductBatch::where('supplier_id', $this->id)
-                ->where('product_id', $prod->id)
-                ->exists();
-
-            if ($hasBatchesForSupplier) {
-                $prod->supplier_stock = $supplierActiveBatchQty;
-            } else {
-                // If no batches exist for this product and supplier
-                if ($prod->supplier_id === $this->id) {
-                    $otherBillsExist = DB::table('purchase_bill_items')
-                        ->join('purchase_bills', 'purchase_bills.id', '=', 'purchase_bill_items.purchase_bill_id')
-                        ->where('purchase_bill_items.product_id', $prod->id)
-                        ->where('purchase_bills.supplier_id', '!=', $this->id)
-                        ->exists();
-
-                    if (! $otherBillsExist) {
-                        $prod->supplier_stock = (float) $prod->stock_qty;
-                    } else {
-                        $inward = (float) StockMovement::where('supplier_id', $this->id)
-                            ->where('product_id', $prod->id)
-                            ->where('type', 'in')
-                            ->sum('quantity');
-                        $prod->supplier_stock = min((float) $prod->stock_qty, $inward);
-                    }
-                } else {
-                    $inward = (float) StockMovement::where('supplier_id', $this->id)
-                        ->where('product_id', $prod->id)
-                        ->where('type', 'in')
-                        ->sum('quantity');
-                    $prod->supplier_stock = min((float) $prod->stock_qty, $inward);
-                }
-            }
+            $prod->supplier_stock = $prod->getSupplierStock($this->id);
         }
 
         return $products;

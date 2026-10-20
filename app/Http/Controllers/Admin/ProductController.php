@@ -103,7 +103,7 @@ class ProductController extends Controller
         }
 
         if ($openingStock > 0) {
-            StockService::record($product, 'in', $openingStock, 'OPENING', 'Opening stock', null, null, $request->user('admin')->id ?? null);
+            StockService::record($product, 'in', $openingStock, 'OPENING', 'Opening stock', $product->supplier_id, null, $request->user('admin')->id ?? null);
         }
 
         if ($request->wantsJson() || $request->ajax() || $request->header('Accept') === 'application/json') {
