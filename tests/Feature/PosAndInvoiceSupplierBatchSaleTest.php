@@ -322,4 +322,94 @@ class PosAndInvoiceSupplierBatchSaleTest extends TestCase
         $invResponse = $this->actingAs($admin, 'admin')->get(route('admin.invoices.create'));
         $invResponse->assertOk();
     }
+
+    public function test_unbatched_purchase_bill_from_secondary_supplier_correctly_computes_and_reconciles(): void
+    {
+        $admin = $this->actingAdmin();
+
+        $hadeed = Supplier::create(['name' => 'Hadeed', 'phone' => '1111111111', 'is_active' => true]);
+        $madina = Supplier::create(['name' => 'Madina Enterprises', 'phone' => '2222222222', 'is_active' => true]);
+
+        $product = Product::create([
+            'name' => 'Extantion 2.5 ft',
+            'unit' => 'pcs',
+            'rate' => 235,
+            'selling_price' => 240,
+            'stock_qty' => 232,
+            'supplier_id' => $hadeed->id,
+            'is_active' => true,
+        ]);
+        $product->suppliers()->sync([$hadeed->id, $madina->id]);
+
+        // Hadeed has a batch of 201 pcs
+        $hadeedBatch = ProductBatch::create([
+            'product_id' => $product->id,
+            'batch_number' => 'LOT-261020-A61E',
+            'lot_number' => 'LOT-261020-A61E',
+            'inward_date' => now()->toDateString(),
+            'initial_qty' => 201,
+            'current_qty' => 201,
+            'unit_cost' => 235,
+            'selling_price' => 240,
+            'supplier_id' => $hadeed->id,
+            'status' => ProductBatch::STATUS_ACTIVE,
+        ]);
+
+        // Madina has an unbatched Purchase Bill of 31 pcs
+        $bill = \App\Models\PurchaseBill::create([
+            'bill_number' => 'PB-2026-0005',
+            'supplier_id' => $madina->id,
+            'bill_date' => now()->toDateString(),
+            'status' => 'paid',
+            'subtotal' => 7285,
+            'tax_amount' => 0,
+            'total_amount' => 7285,
+            'amount_paid' => 7285,
+            'balance_due' => 0,
+            'payment_status' => 'paid',
+            'created_by' => $admin->id,
+        ]);
+
+        $billItem = \App\Models\PurchaseBillItem::create([
+            'purchase_bill_id' => $bill->id,
+            'product_id' => $product->id,
+            'batch_id' => null, // unbatched!
+            'batch_number' => null,
+            'quantity' => 31,
+            'unit_cost' => 235,
+            'selling_price' => 240,
+            'tax_percent' => 0,
+            'tax_amount' => 0,
+            'line_total' => 7285,
+        ]);
+
+        \App\Models\StockMovement::create([
+            'product_id' => $product->id,
+            'batch_id' => null,
+            'purchase_bill_id' => $bill->id,
+            'type' => 'in',
+            'quantity' => 31,
+            'stock_after' => 232,
+            'unit_cost' => 235,
+            'supplier_id' => $madina->id,
+            'reference' => 'Bill #' . $bill->bill_number,
+        ]);
+
+        // Model helper check before artisan reconcile
+        $this->assertEquals(31.0, $product->getSupplierStock($madina->id));
+        $this->assertEquals(201.0, $product->getSupplierStock($hadeed->id));
+
+        // Run reconciliation command
+        $this->artisan('inventory:reconcile-suppliers')->assertSuccessful();
+
+        // Verify Madina now has a real batch created
+        $madinaBatch = ProductBatch::where('product_id', $product->id)->where('supplier_id', $madina->id)->first();
+        $this->assertNotNull($madinaBatch);
+        $this->assertEquals(31.0, (float) $madinaBatch->current_qty);
+        $this->assertEquals($madinaBatch->id, $billItem->fresh()->batch_id);
+
+        // Verify stock calculations remain 100% accurate
+        $this->assertEquals(31.0, $product->getSupplierStock($madina->id));
+        $this->assertEquals(201.0, $product->getSupplierStock($hadeed->id));
+    }
 }

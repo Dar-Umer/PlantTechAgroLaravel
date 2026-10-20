@@ -166,8 +166,34 @@ class Product extends Model
             $allBatchesQty = (float) $batches->sum('current_qty');
             $untracked = max(0, (float) $this->stock_qty - $allBatchesQty);
 
-            if ((int) $this->supplier_id === (int) $supplierId) {
-                return round($supplierBatchQty + $untracked, 3);
+            if ($untracked > 0) {
+                // Check if this specific supplier has unbatched inward movements
+                $supplierBatchedInward = (float) StockMovement::where('product_id', $this->id)
+                    ->where('supplier_id', $supplierId)
+                    ->whereNotNull('batch_id')
+                    ->where('type', 'in')
+                    ->sum('quantity');
+
+                $supplierTotalInward = (float) StockMovement::where('product_id', $this->id)
+                    ->where('supplier_id', $supplierId)
+                    ->where('type', 'in')
+                    ->sum('quantity');
+
+                $supplierUnbatchedInward = max(0, $supplierTotalInward - $supplierBatchedInward);
+
+                if ($supplierUnbatchedInward > 0) {
+                    return round($supplierBatchQty + min($untracked, $supplierUnbatchedInward), 3);
+                }
+
+                if ((int) $this->supplier_id === (int) $supplierId) {
+                    $otherUnbatchedInwards = (float) StockMovement::where('product_id', $this->id)
+                        ->where('supplier_id', '!=', $supplierId)
+                        ->whereNull('batch_id')
+                        ->where('type', 'in')
+                        ->sum('quantity');
+
+                    return round($supplierBatchQty + max(0, $untracked - $otherUnbatchedInwards), 3);
+                }
             }
 
             return round($supplierBatchQty, 3);

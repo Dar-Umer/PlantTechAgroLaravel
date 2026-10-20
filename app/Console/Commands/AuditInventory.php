@@ -19,6 +19,12 @@ class AuditInventory extends Command
 
     public function handle(): int
     {
+        $shouldFix = (bool) $this->option('fix');
+
+        if ($shouldFix) {
+            $this->call('inventory:reconcile-suppliers');
+        }
+
         $this->info('Starting inventory audit...');
 
         $query = Product::query()->with(['supplier', 'suppliers', 'batches']);
