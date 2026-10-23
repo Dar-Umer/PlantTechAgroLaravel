@@ -157,6 +157,12 @@
                     <td>Items Subtotal:</td>
                     <td class="right">₹{{ number_format($sale->subtotal, 2) }}</td>
                 </tr>
+                @if($sale->labour_charges > 0)
+                    <tr>
+                        <td>Labour / Installation:</td>
+                        <td class="right">+₹{{ number_format($sale->labour_charges, 2) }}</td>
+                    </tr>
+                @endif
                 @if($sale->discount_amount > 0)
                     <tr>
                         <td>Discount:</td>

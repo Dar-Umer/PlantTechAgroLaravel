@@ -128,6 +128,12 @@
                     <span class="text-gray-700 font-medium">Inward Freight &amp; Shipping Charges</span>
                     <span class="font-bold text-gray-900">₹{{ number_format($shippingCost, 2) }}</span>
                 </div>
+                @if(isset($posLabourCosts) && $posLabourCosts > 0)
+                <div class="py-3 flex justify-between items-center text-sm">
+                    <span class="text-gray-700 font-medium">POS Labour &amp; Installation Direct Cost</span>
+                    <span class="font-bold text-gray-900">₹{{ number_format($posLabourCosts, 2) }}</span>
+                </div>
+                @endif
                 <div class="pt-4 flex justify-between items-center text-base font-bold border-t-2 border-gray-200">
                     <span class="text-gray-900">Total Direct Operating Expenses</span>
                     <span class="text-amber-600">₹{{ number_format($totalCogs, 2) }}</span>

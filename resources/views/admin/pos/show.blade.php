@@ -111,6 +111,22 @@
                     <span>Subtotal:</span>
                     <span class="font-medium text-gray-900">₹{{ number_format($sale->subtotal, 2) }}</span>
                 </div>
+                @if($sale->labour_charges > 0 || $sale->labour_cost > 0)
+                    <div class="py-1 border-t border-dashed border-gray-200 space-y-1">
+                        <div class="flex justify-between text-gray-700 font-medium">
+                            <span>Labour / Installation:</span>
+                            <span class="font-bold text-gray-900">+₹{{ number_format($sale->labour_charges, 2) }}</span>
+                        </div>
+                        <div class="flex justify-between text-gray-500 text-[11px]">
+                            <span>Internal Labour Cost:</span>
+                            <span>₹{{ number_format($sale->labour_cost, 2) }}</span>
+                        </div>
+                        <div class="flex justify-between text-[11px] font-bold {{ $sale->labourProfit() >= 0 ? 'text-emerald-700' : 'text-rose-600' }}">
+                            <span>Labour Profit:</span>
+                            <span>+₹{{ number_format($sale->labourProfit(), 2) }}</span>
+                        </div>
+                    </div>
+                @endif
                 @if($sale->discount_amount > 0)
                     <div class="flex justify-between text-emerald-700 font-medium">
                         <span>Discount:</span>
@@ -137,6 +153,10 @@
                         <span>₹{{ number_format($sale->balance_due, 2) }}</span>
                     </div>
                 @endif
+                <div class="flex justify-between pt-2 border-t border-gray-200 text-xs font-bold text-emerald-700">
+                    <span>Estimated Net Profit:</span>
+                    <span>₹{{ number_format($sale->totalProfit(), 2) }}</span>
+                </div>
             </div>
         </div>
     </div>

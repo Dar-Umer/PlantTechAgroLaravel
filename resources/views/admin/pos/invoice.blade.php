@@ -130,6 +130,12 @@
                         <span>Items Subtotal:</span>
                         <span class="font-medium text-gray-900">₹{{ number_format($sale->subtotal, 2) }}</span>
                     </div>
+                    @if($sale->labour_charges > 0)
+                        <div class="flex justify-between py-1 text-gray-700 font-medium">
+                            <span>Labour / Installation Charges:</span>
+                            <span class="font-bold text-gray-900">+₹{{ number_format($sale->labour_charges, 2) }}</span>
+                        </div>
+                    @endif
                     @if($sale->discount_amount > 0)
                         <div class="flex justify-between py-1 text-emerald-700 font-medium">
                             <span>Special Discount:</span>

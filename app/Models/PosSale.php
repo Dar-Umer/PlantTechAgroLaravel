@@ -47,6 +47,8 @@ class PosSale extends Model
         'sale_date',
         'status',
         'subtotal',
+        'labour_charges',
+        'labour_cost',
         'discount_amount',
         'discount_type',
         'gst_amount',
@@ -68,6 +70,8 @@ class PosSale extends Model
         return [
             'sale_date' => 'datetime',
             'subtotal' => 'decimal:2',
+            'labour_charges' => 'decimal:2',
+            'labour_cost' => 'decimal:2',
             'discount_amount' => 'decimal:2',
             'gst_amount' => 'decimal:2',
             'round_off' => 'decimal:2',
@@ -109,9 +113,17 @@ class PosSale extends Model
         return $this->status === self::STATUS_CANCELLED;
     }
 
+    public function labourProfit(): float
+    {
+        return round((float) ($this->labour_charges ?? 0) - (float) ($this->labour_cost ?? 0), 2);
+    }
+
     public function totalProfit(): float
     {
-        return round($this->items->sum(fn ($item) => $item->profitMargin()), 2);
+        $itemsProfit = (float) $this->items->sum(fn ($item) => $item->profitMargin());
+        $labourProfit = $this->labourProfit();
+        $discount = (float) ($this->discount_amount ?? 0);
+        return round($itemsProfit + $labourProfit - $discount, 2);
     }
 
     public function statusBadge(): array

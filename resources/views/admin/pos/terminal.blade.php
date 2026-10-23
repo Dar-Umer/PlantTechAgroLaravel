@@ -410,6 +410,51 @@
 
             {{-- DOCKED CART FOOTER: CLEAN, COMPACT, DEDICATED CHECKOUT TRIGGER --}}
             <div class="p-3 sm:p-4 bg-slate-50 border-t border-slate-200 flex-shrink-0 space-y-2.5 shadow-md">
+                {{-- Labour / Installation Charges Inputs --}}
+                <div class="bg-white rounded-xl p-2.5 border border-slate-200/90 shadow-2xs space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>
+                            <span>Labour / Installation Charges</span>
+                        </span>
+                        <template x-if="labourProfit > 0">
+                            <span class="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                                Profit: +₹<span x-text="labourProfit.toFixed(0)"></span>
+                            </span>
+                        </template>
+                        <template x-if="labourProfit < 0">
+                            <span class="text-[10px] font-extrabold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
+                                Loss: -₹<span x-text="Math.abs(labourProfit).toFixed(0)"></span>
+                            </span>
+                        </template>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                            <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">
+                                Actual Cost (₹)
+                                <span class="text-[9px] text-slate-400 font-normal">(Internal)</span>
+                            </label>
+                            <input type="number"
+                                   x-model.number="labourCost"
+                                   min="0" step="1"
+                                   placeholder="0"
+                                   class="w-full text-right font-bold text-xs bg-slate-50 focus:bg-white border border-slate-200 focus:border-brand-500 rounded-lg px-2 py-1 text-slate-800 focus:outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold text-slate-700 mb-0.5">
+                                Customer Rate (₹)
+                                <span class="text-[9px] text-brand-600 font-normal">(Billed)</span>
+                            </label>
+                            <input type="number"
+                                   x-model.number="labourCharges"
+                                   min="0" step="1"
+                                   placeholder="0"
+                                   class="w-full text-right font-bold text-xs bg-slate-50 focus:bg-white border border-slate-200 focus:border-brand-500 rounded-lg px-2 py-1 text-brand-700 focus:outline-none transition">
+                        </div>
+                    </div>
+                </div>
+
                 {{-- Pricing Summary Row --}}
                 <div class="flex items-center justify-between text-xs gap-3">
                     <div class="flex items-center gap-2">
@@ -462,6 +507,9 @@
                 <div class="text-right">
                     <span class="text-xs text-slate-400 block font-semibold uppercase">Total Payable</span>
                     <span class="text-xl sm:text-2xl font-black text-brand-700" x-text="'₹' + cartGrandTotal.toFixed(0)"></span>
+                    <template x-if="labourCharges > 0">
+                        <span class="text-[10px] text-slate-500 block font-medium">Incl. ₹<span x-text="Number(labourCharges).toFixed(0)"></span> Labour</span>
+                    </template>
                 </div>
             </div>
 
@@ -920,6 +968,8 @@
             selectedCustomerId: '',
             cart: [],
             orderDiscount: 0,
+            labourCost: 0,
+            labourCharges: 0,
             showPaymentModal: false,
             paymentMethod: 'cash',
             amountTendered: null,
@@ -1171,8 +1221,12 @@
                 return this.cart.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
             },
 
+            get labourProfit() {
+                return Number(this.labourCharges || 0) - Number(this.labourCost || 0);
+            },
+
             get cartGrandTotal() {
-                const raw = Math.max(0, this.cartSubtotal - (this.orderDiscount || 0));
+                const raw = Math.max(0, this.cartSubtotal + Number(this.labourCharges || 0) - Number(this.orderDiscount || 0));
                 return Math.round(raw);
             },
 
@@ -1273,11 +1327,15 @@
                     customer_name: cust ? cust.name : 'Walk-in Customer',
                     items: [...this.cart],
                     discount: this.orderDiscount,
+                    labour_charges: this.labourCharges,
+                    labour_cost: this.labourCost,
                     total: this.cartGrandTotal,
                     time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
                 });
                 this.cart = [];
                 this.orderDiscount = 0;
+                this.labourCharges = 0;
+                this.labourCost = 0;
                 this.selectedCustomerId = '';
                 this.mobileTab = 'catalog';
             },
@@ -1287,6 +1345,8 @@
                 this.cart = hc.items;
                 this.selectedCustomerId = hc.customer_id;
                 this.orderDiscount = hc.discount;
+                this.labourCharges = hc.labour_charges || 0;
+                this.labourCost = hc.labour_cost || 0;
                 this.heldCarts.splice(idx, 1);
                 this.showHeldCarts = false;
                 this.mobileTab = 'cart';
@@ -1399,6 +1459,8 @@
                         supplier_id: i.supplier_id || null,
                     })),
                     discount_amount: this.orderDiscount || 0,
+                    labour_charges: Number(this.labourCharges || 0),
+                    labour_cost: Number(this.labourCost || 0),
                     payment_method: this.paymentMethod,
                     payments: this.paymentMethod === 'split' ? payments : null,
                     amount_tendered: amountTendered,
@@ -1441,6 +1503,8 @@
             resetCart() {
                 this.cart = [];
                 this.orderDiscount = 0;
+                this.labourCharges = 0;
+                this.labourCost = 0;
                 this.amountTendered = null;
                 this.digitalAmountPaid = null;
                 this.clearSplit();

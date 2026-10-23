@@ -141,7 +141,7 @@ class ReportController extends Controller
                 ->get();
 
             foreach ($posSales as $sale) {
-                $taxable = (float) $sale->subtotal - (float) $sale->discount_amount;
+                $taxable = (float) $sale->subtotal + (float) ($sale->labour_charges ?? 0) - (float) $sale->discount_amount;
                 $tax = (float) $sale->gst_amount;
                 $grand = (float) $sale->grand_total;
                 $paid = (float) $sale->amount_paid;
@@ -713,13 +713,14 @@ class ReportController extends Controller
             ->get();
 
         foreach ($posSales as $pos) {
-            $billSale = (float) $pos->subtotal - (float) $pos->discount_amount;
+            $billSale = (float) $pos->subtotal + (float) ($pos->labour_charges ?? 0) - (float) $pos->discount_amount;
             $billCost = 0.0;
 
             foreach ($pos->items as $pi) {
                 $costPrice = (float) ($pi->cost_price ?? ($pi->unit_price * 0.70));
                 $billCost += (float) $pi->quantity * $costPrice;
             }
+            $billCost += (float) ($pos->labour_cost ?? 0);
 
             $profit = $billSale - $billCost;
             $margin = $billSale > 0 ? ($profit / $billSale) * 100 : 0;
@@ -864,7 +865,12 @@ class ReportController extends Controller
         $posSubtotal = (float) PosSale::where('status', 'completed')
             ->whereDate('sale_date', '>=', $from->toDateString())
             ->whereDate('sale_date', '<=', $to->toDateString())
-            ->sum('subtotal');
+            ->sum(DB::raw('subtotal + labour_charges'));
+
+        $posLabourCosts = (float) PosSale::where('status', 'completed')
+            ->whereDate('sale_date', '>=', $from->toDateString())
+            ->whereDate('sale_date', '<=', $to->toDateString())
+            ->sum('labour_cost');
 
         $discountsGiven = (float) PosSale::where('status', 'completed')
             ->whereDate('sale_date', '>=', $from->toDateString())
@@ -886,7 +892,7 @@ class ReportController extends Controller
             ->whereDate('created_at', '<=', $to->toDateString())
             ->sum(DB::raw('quantity * rate'));
 
-        $totalCogs = $purchaseSubtotal + $shippingCost + $workOrderMaterialCost;
+        $totalCogs = $purchaseSubtotal + $shippingCost + $workOrderMaterialCost + $posLabourCosts;
 
         $grossProfit = $totalRevenue - $totalCogs;
         $grossMarginPercent = $totalRevenue > 0 ? ($grossProfit / $totalRevenue) * 100 : 0;
@@ -895,7 +901,7 @@ class ReportController extends Controller
         return compact(
             'invoiceTaxable', 'posSubtotal', 'discountsGiven', 'totalRevenue',
             'purchaseSubtotal', 'shippingCost', 'workOrderMaterialCost', 'totalCogs',
-            'grossProfit', 'grossMarginPercent', 'netProfit'
+            'grossProfit', 'grossMarginPercent', 'netProfit', 'posLabourCosts'
         );
     }
 

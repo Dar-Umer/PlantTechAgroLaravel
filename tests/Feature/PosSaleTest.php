@@ -399,4 +399,73 @@ class PosSaleTest extends TestCase
         $customer->refresh();
         $this->assertEquals(0.00, (float) $customer->outstanding_balance);
     }
+
+    public function test_pos_checkout_with_labour_and_installation_charges_and_profit_calculation(): void
+    {
+        $customer = PosCustomer::create([
+            'name' => 'Fayaz Rather',
+            'phone' => '9419001122',
+            'outstanding_balance' => 0,
+        ]);
+
+        // Product rate is 200 (cost), selling_price is 350
+        // Buy 2 units = 700. Internal cost = 400. Item profit = 300.
+        // Labour customer rate = 800, Labour actual cost = 450. Labour profit = 350.
+        // Total expected profit = 300 + 350 = 650.
+        // Net Grand total = 700 + 800 = 1500.
+        $response = $this->actingAs($this->admin, 'admin')->postJson(route('admin.pos.checkout'), [
+            'customer_id' => $customer->id,
+            'customer_name' => $customer->name,
+            'customer_phone' => $customer->phone,
+            'items' => [
+                [
+                    'product_id' => $this->product->id,
+                    'quantity' => 2,
+                    'unit_price' => 350.00,
+                ],
+            ],
+            'labour_charges' => 800.00,
+            'labour_cost' => 450.00,
+            'discount_amount' => 0,
+            'payment_method' => 'cash',
+            'amount_tendered' => 1500.00,
+            'amount_paid' => 1500.00,
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonPath('success', true);
+        $response->assertJsonPath('grand_total', 1500);
+
+        $sale = PosSale::latest()->first();
+        $this->assertNotNull($sale);
+        $this->assertEquals(700.00, (float) $sale->subtotal);
+        $this->assertEquals(800.00, (float) $sale->labour_charges);
+        $this->assertEquals(450.00, (float) $sale->labour_cost);
+        $this->assertEquals(1500.00, (float) $sale->grand_total);
+        $this->assertEquals(350.00, $sale->labourProfit());
+        $this->assertEquals(650.00, $sale->totalProfit());
+
+        // Check receipt: Customer rate (800) must appear, internal cost (450) must NOT appear
+        $receiptResp = $this->actingAs($this->admin, 'admin')->get(route('admin.pos.receipt', $sale));
+        $receiptResp->assertOk();
+        $receiptResp->assertSee('Labour / Installation');
+        $receiptResp->assertSee('800.00');
+        $receiptResp->assertDontSee('450.00');
+
+        // Check invoice: Customer rate (800) must appear, internal cost (450) must NOT appear
+        $invoiceResp = $this->actingAs($this->admin, 'admin')->get(route('admin.pos.invoice', $sale));
+        $invoiceResp->assertOk();
+        $invoiceResp->assertSee('Labour / Installation Charges');
+        $invoiceResp->assertSee('800.00');
+        $invoiceResp->assertDontSee('450.00');
+
+        // Check admin show page: Shows Labour charges, Internal cost, and Profit
+        $showResp = $this->actingAs($this->admin, 'admin')->get(route('admin.pos.sales.show', $sale));
+        $showResp->assertOk();
+        $showResp->assertSee('800.00');
+        $showResp->assertSee('Internal Labour Cost');
+        $showResp->assertSee('450.00');
+        $showResp->assertSee('Labour Profit');
+        $showResp->assertSee('Estimated Net Profit');
+    }
 }
