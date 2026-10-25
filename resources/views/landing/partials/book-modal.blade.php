@@ -25,6 +25,10 @@
         address: '{{ old('address') }}',
         submitted: {{ $formSubmitted ? 'true' : 'false' }},
         loadedAt: Math.floor(Date.now() / 1000),
+        submitting: false,
+        fieldErrors: {},
+        generalError: '',
+        successMessage: @js($leadFormSuccessMessage),
         get selectedService() {
             return this.services.find(s => String(s.id) === String(this.serviceId)) || null;
         },
@@ -41,6 +45,66 @@
             this.selectedVariation = '';
             if (!this.requiresUnit) {
                 this.area = '';
+            }
+        },
+        async submitForm(e) {
+            if (this.submitting) return;
+
+            const tokenInput = document.getElementById('lead-recaptcha-token');
+            if (tokenInput && typeof grecaptcha !== 'undefined') {
+                this.submitting = true;
+                try {
+                    const token = await new Promise((resolve) => {
+                        grecaptcha.ready(() => {
+                            grecaptcha.execute('{{ config('apis.recaptcha_site_key') }}', {action: 'lead'}).then(resolve);
+                        });
+                    });
+                    tokenInput.value = token;
+                } catch (err) {
+                    console.error('Recaptcha error', err);
+                }
+            }
+
+            this.submitting = true;
+            this.fieldErrors = {};
+            this.generalError = '';
+
+            const form = e.target;
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    if (data.message) {
+                        this.successMessage = data.message;
+                    }
+                    this.submitted = true;
+                    form.reset();
+                    this.serviceId = '';
+                    this.selectedVariation = '';
+                    this.area = '';
+                    this.address = '';
+                } else if (response.status === 422) {
+                    this.fieldErrors = data.errors || {};
+                    this.generalError = data.message || 'Please check the highlighted fields.';
+                } else {
+                    this.generalError = data.message || 'Something went wrong. Please try again.';
+                }
+            } catch (err) {
+                // If fetch fails or network error occurs, fall back to native submission
+                form.submit();
+            } finally {
+                this.submitting = false;
             }
         }
      }"
@@ -85,16 +149,18 @@
                     <div class="w-14 h-14 mx-auto rounded-full bg-brand-50 dark:bg-brand-900/40 flex items-center justify-center mb-4">
                         <svg class="w-6 h-6 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     </div>
-                    <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{{ $leadFormSuccessMessage }}</p>
-                    <button type="button" @click="open = false; submitted = false"
+                    <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed" x-text="successMessage"></p>
+                    <button type="button" @click="open = false; submitted = false; fieldErrors = {}; generalError = ''"
                             class="mt-6 inline-flex items-center px-5 py-2.5 rounded-lg bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 transition">
                         Done
                     </button>
                 </div>
 
                 {{-- Form --}}
-                <form id="lead-form" x-show="!submitted" action="{{ route('leads.store') }}" method="POST" class="px-5 sm:px-6 py-5 space-y-3.5 max-h-[72vh] overflow-y-auto">
+                <form id="lead-form" x-show="!submitted" action="{{ route('leads.store') }}" method="POST" @submit.prevent="submitForm($event)" class="px-5 sm:px-6 py-5 space-y-3.5 max-h-[72vh] overflow-y-auto">
                     @csrf
+
+                    <div x-show="generalError" x-cloak class="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 rounded-lg text-xs text-red-700 dark:text-red-300" x-text="generalError"></div>
 
                     @if(\App\Support\Recaptcha::enabled())
                         <input type="hidden" name="g-recaptcha-response" id="lead-recaptcha-token">
@@ -116,6 +182,9 @@
                             </label>
                         </div>
                         @error('name')<p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>@enderror
+                        <template x-if="fieldErrors['name']">
+                            <p class="mt-1.5 text-xs text-red-500" x-text="fieldErrors['name'][0]"></p>
+                        </template>
                     </div>
 
                     {{-- Mandatory: Phone --}}
@@ -131,6 +200,9 @@
                             </label>
                         </div>
                         @error('phone')<p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>@enderror
+                        <template x-if="fieldErrors['phone']">
+                            <p class="mt-1.5 text-xs text-red-500" x-text="fieldErrors['phone'][0]"></p>
+                        </template>
                     </div>
 
                     {{-- Address / Location --}}
@@ -144,6 +216,9 @@
                             </label>
                         </div>
                         @error('address')<p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>@enderror
+                        <template x-if="fieldErrors['address']">
+                            <p class="mt-1.5 text-xs text-red-500" x-text="fieldErrors['address'][0]"></p>
+                        </template>
                     </div>
 
                     {{-- Mandatory: Service --}}
@@ -162,6 +237,9 @@
                             </label>
                         </div>
                         @error('service_id')<p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>@enderror
+                        <template x-if="fieldErrors['service_id']">
+                            <p class="mt-1.5 text-xs text-red-500" x-text="fieldErrors['service_id'][0]"></p>
+                        </template>
                     </div>
 
                     {{-- Service Variation (conditionally visible if service has variations) --}}
@@ -180,6 +258,9 @@
                             </label>
                         </div>
                         @error('service_variation')<p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>@enderror
+                        <template x-if="fieldErrors['service_variation']">
+                            <p class="mt-1.5 text-xs text-red-500" x-text="fieldErrors['service_variation'][0]"></p>
+                        </template>
                     </div>
 
                     {{-- Area / Requirement (Kanals, Meters, Samples, etc.) --}}
@@ -198,6 +279,9 @@
                             <span x-text="currentUnit.toLowerCase() === 'kanal' ? 'e.g. 2, 4, 10 Kanals' : 'Specify required ' + currentUnit.toLowerCase()"></span>
                         </p>
                         @error('area')<p class="mt-1.5 text-xs text-red-500">{{ $message }}</p>@enderror
+                        <template x-if="fieldErrors['area']">
+                            <p class="mt-1.5 text-xs text-red-500" x-text="fieldErrors['area'][0]"></p>
+                        </template>
                     </div>
 
                     {{-- Dynamic custom fields --}}
@@ -205,8 +289,18 @@
 
                     <div class="pt-1">
                         <button type="submit"
-                                class="w-full inline-flex items-center justify-center px-6 py-3 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 transition shadow-sm shadow-brand-600/25">
-                            {{ $leadFormButtonText }}
+                                :disabled="submitting"
+                                class="w-full inline-flex items-center justify-center px-6 py-3 rounded-lg bg-brand-600 text-white text-sm font-bold hover:bg-brand-700 transition shadow-sm shadow-brand-600/25 disabled:opacity-60 disabled:cursor-not-allowed">
+                            <span x-show="!submitting" class="flex items-center justify-center">
+                                {{ $leadFormButtonText }}
+                            </span>
+                            <span x-show="submitting" class="flex items-center justify-center gap-2" x-cloak>
+                                <svg class="w-4 h-4 animate-spin text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                                </svg>
+                                <span>Submitting Request...</span>
+                            </span>
                         </button>
                         <p class="mt-3 text-[11px] text-center text-gray-400 dark:text-gray-500">Our team will call you back to confirm the details.</p>
                     </div>

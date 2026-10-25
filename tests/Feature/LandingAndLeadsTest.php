@@ -170,4 +170,59 @@ class LandingAndLeadsTest extends TestCase
 
         $this->assertSame(0, Lead::count());
     }
+
+    public function test_lead_can_be_submitted_via_ajax_and_returns_json(): void
+    {
+        $service = Service::factory()->create();
+
+        $response = $this->postJson('/leads', [
+            'name' => 'John Doe',
+            'phone' => '9876543210',
+            'service_id' => $service->id,
+            'loaded_at' => time() - 10,
+            'custom' => [
+                'address' => 'Srinagar',
+            ],
+        ]);
+
+        $response->assertOk()
+            ->assertJson([
+                'success' => true,
+            ]);
+
+        $lead = Lead::first();
+        $this->assertNotNull($lead);
+        $this->assertSame('John Doe', $lead->name);
+        $this->assertSame('9876543210', $lead->phone);
+    }
+
+    public function test_ajax_honeypot_returns_json_without_saving(): void
+    {
+        $service = Service::factory()->create();
+
+        $response = $this->postJson('/leads', [
+            'name' => 'Spam Bot',
+            'phone' => '9876543210',
+            'service_id' => $service->id,
+            'loaded_at' => time() - 10,
+            'website' => 'http://spam.com',
+        ]);
+
+        $response->assertOk()
+            ->assertJson([
+                'success' => true,
+            ]);
+
+        $this->assertSame(0, Lead::count());
+    }
+
+    public function test_ajax_validation_failure_returns_json_errors(): void
+    {
+        $response = $this->postJson('/leads', []);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['name', 'phone', 'service_id']);
+
+        $this->assertSame(0, Lead::count());
+    }
 }

@@ -18,6 +18,12 @@ class LeadController extends Controller
     {
         // Honeypot: bots fill hidden fields — pretend success without saving.
         if ($request->filled('website')) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => config('frontend.lead_form.success_message', 'Thank you! Our team will contact you soon.'),
+                ]);
+            }
             return redirect()->to('/?submitted=1');
         }
 
@@ -41,6 +47,12 @@ class LeadController extends Controller
         $loadedAt = (int) $request->input('loaded_at');
 
         if (! $request->filled('loaded_at') || $loadedAt <= 0 || $loadedAt > time() + 60 || (time() - $loadedAt) < $minSeconds) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => config('frontend.lead_form.success_message', 'Thank you! Our team will contact you soon.'),
+                ]);
+            }
             return redirect()->to('/?submitted=1');
         }
 
@@ -68,8 +80,24 @@ class LeadController extends Controller
             'source' => 'landing',
         ]);
 
+        // Send notifications asynchronously after HTTP response finishes, so SMTP latency never blocks the visitor
         if (config('automation.new_lead_alerts_enabled', true)) {
-            AdminNotifier::send(new NewLeadAlert($lead));
+            app()->terminating(function () use ($lead) {
+                try {
+                    AdminNotifier::send(new NewLeadAlert($lead));
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Failed sending new lead notification: '.$e->getMessage(), [
+                        'lead_id' => $lead->id,
+                    ]);
+                }
+            });
+        }
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => config('frontend.lead_form.success_message', 'Thank you! Our team will contact you soon.'),
+            ]);
         }
 
         return redirect()->to('/?submitted=1');
