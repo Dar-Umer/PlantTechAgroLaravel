@@ -50,9 +50,12 @@
         async submitForm(e) {
             if (this.submitting) return;
 
+            this.submitting = true;
+            this.fieldErrors = {};
+            this.generalError = '';
+
             const tokenInput = document.getElementById('lead-recaptcha-token');
             if (tokenInput && typeof grecaptcha !== 'undefined') {
-                this.submitting = true;
                 try {
                     const token = await new Promise((resolve) => {
                         grecaptcha.ready(() => {
@@ -64,10 +67,6 @@
                     console.error('Recaptcha error', err);
                 }
             }
-
-            this.submitting = true;
-            this.fieldErrors = {};
-            this.generalError = '';
 
             const form = e.target;
             const formData = new FormData(form);
@@ -101,8 +100,7 @@
                     this.generalError = data.message || 'Something went wrong. Please try again.';
                 }
             } catch (err) {
-                // If fetch fails or network error occurs, fall back to native submission
-                form.submit();
+                this.generalError = 'An error occurred while submitting your request. Please try again.';
             } finally {
                 this.submitting = false;
             }
@@ -311,17 +309,4 @@
 </div>
 @if(\App\Support\Recaptcha::enabled())
     <script src="https://www.google.com/recaptcha/api.js?render={{ config('apis.recaptcha_site_key') }}"></script>
-    <script>
-        document.getElementById('lead-form').addEventListener('submit', function (e) {
-            var tokenInput = document.getElementById('lead-recaptcha-token');
-            if (tokenInput.value) return;
-            e.preventDefault();
-            grecaptcha.ready(function () {
-                grecaptcha.execute('{{ config('apis.recaptcha_site_key') }}', {action: 'lead'}).then(function (token) {
-                    tokenInput.value = token;
-                    e.target.submit();
-                });
-            });
-        });
-    </script>
 @endif

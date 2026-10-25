@@ -67,6 +67,23 @@ class LeadController extends Controller
         $unit = $requiresUnit ? ($data['unit'] ?? ($service?->default_unit ?? 'Kanal')) : null;
         $area = $requiresUnit && isset($data['area']) && $data['area'] !== '' ? (float) $data['area'] : null;
 
+        // Idempotency: prevent duplicate lead creation from rapid double clicks or parallel submissions
+        $recentDuplicate = Lead::where('phone', $data['phone'])
+            ->where('service_id', $data['service_id'])
+            ->where('created_at', '>=', now()->subSeconds(60))
+            ->first();
+
+        if ($recentDuplicate) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => config('frontend.lead_form.success_message', 'Thank you! Our team will contact you soon.'),
+                ]);
+            }
+
+            return redirect()->to('/?submitted=1');
+        }
+
         $lead = Lead::create([
             'name' => $data['name'],
             'phone' => $data['phone'],

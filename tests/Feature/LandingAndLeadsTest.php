@@ -143,7 +143,7 @@ class LandingAndLeadsTest extends TestCase
         $payload = ['name' => 'Test', 'phone' => '9999999999', 'service_id' => $service->id, 'loaded_at' => time() - 10];
 
         for ($i = 0; $i < 5; $i++) {
-            $this->post('/leads', $payload + ['phone' => '999999999'.$i]);
+            $this->post('/leads', array_merge($payload, ['phone' => '999999999'.$i]));
         }
 
         $this->post('/leads', $payload)->assertStatus(429);
@@ -224,5 +224,27 @@ class LandingAndLeadsTest extends TestCase
             ->assertJsonValidationErrors(['name', 'phone', 'service_id']);
 
         $this->assertSame(0, Lead::count());
+    }
+
+    public function test_duplicate_submission_within_short_window_is_deduplicated(): void
+    {
+        $service = Service::factory()->create();
+
+        $payload = [
+            'name' => 'Umer',
+            'phone' => '8888888888',
+            'service_id' => $service->id,
+            'loaded_at' => time() - 10,
+        ];
+
+        // First submission creates lead
+        $res1 = $this->postJson('/leads', $payload);
+        $res1->assertOk()->assertJson(['success' => true]);
+        $this->assertSame(1, Lead::count());
+
+        // Immediate duplicate submission returns success but does not create a second row
+        $res2 = $this->postJson('/leads', $payload);
+        $res2->assertOk()->assertJson(['success' => true]);
+        $this->assertSame(1, Lead::count());
     }
 }
