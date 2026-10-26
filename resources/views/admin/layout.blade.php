@@ -894,7 +894,7 @@
             @endif
 
             <!-- Page Content -->
-            <main class="flex-1 overflow-y-auto p-4 lg:p-6 relative">
+            <main class="{{ $isPosContext ? 'flex-1 flex flex-col overflow-hidden p-0 relative min-h-0' : 'flex-1 overflow-y-auto p-4 lg:p-6 relative' }}">
                 {{-- Floating Toast Notifications (Auto-dismissing) --}}
                 @if(session('success'))
                     <div x-data="{ show: true }"
@@ -969,6 +969,7 @@
                 @yield('content')
             </main>
 
+            @if(! $isPosContext)
             <!-- Footer -->
             <footer class="flex-shrink-0 px-4 lg:px-6 py-3 border-t {{ $sidebarStyle === 'light' ? 'border-gray-200 bg-gray-50' : 'border-gray-100 bg-white' }}">
                 <div class="flex items-center justify-between flex-wrap gap-2">
@@ -976,6 +977,7 @@
                     <p class="text-xs text-gray-400">Version <span class="font-medium text-gray-600">{{ config('version.number', '1.0') }}</span></p>
                 </div>
             </footer>
+            @endif
         </div>
     </div>
 

@@ -4,45 +4,48 @@
 
 @section('content')
 <div x-data="posTerminal()" x-init="init()" @keydown.window="handleShortcuts($event)"
-     class="-m-4 lg:-m-6 flex flex-col h-[100dvh] bg-slate-100 overflow-hidden select-none font-sans text-slate-800">
+     class="flex-1 flex flex-col h-full w-full bg-slate-100 overflow-hidden select-none font-sans text-slate-800 min-h-0">
 
     {{-- POS Header Bar --}}
-    <header class="bg-white border-b border-slate-200 px-3 sm:px-6 py-2.5 flex items-center justify-between flex-shrink-0 shadow-xs z-20">
+    <header class="bg-white border-b border-slate-200 px-2 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between flex-shrink-0 shadow-xs z-20 gap-2">
         {{-- Left: Brand & Status --}}
-        <div class="flex items-center gap-2.5 sm:gap-3">
-            <button @click="sidebarOpen = true" class="lg:hidden p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition" title="Menu">
+        <div class="flex items-center gap-1.5 sm:gap-3 min-w-0">
+            <button @click="sidebarOpen = true" class="lg:hidden p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition flex-shrink-0" title="Menu">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center font-bold shadow-sm">
+            <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center font-bold shadow-sm flex-shrink-0">
                     <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                 </div>
-                <div>
-                    <h1 class="text-sm sm:text-base font-bold text-slate-900 leading-tight">POS Terminal</h1>
-                    <p class="text-[10px] sm:text-[11px] text-slate-500 hidden xs:block">Fast Retail Counter Billing</p>
+                <div class="min-w-0">
+                    <h1 class="text-xs sm:text-base font-bold text-slate-900 leading-tight truncate">
+                        <span class="sm:hidden">POS</span>
+                        <span class="hidden sm:inline">POS Terminal</span>
+                    </h1>
+                    <p class="text-[10px] sm:text-[11px] text-slate-500 hidden md:block">Fast Retail Counter Billing</p>
                 </div>
             </div>
-            <span class="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+            <span class="hidden xl:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
                 0% Tax & Multi-Batch
             </span>
         </div>
 
         {{-- Right Controls: Mobile Tabs, Shortcuts, Held Carts, Sales List --}}
-        <div class="flex items-center gap-1.5 sm:gap-3">
+        <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             {{-- Mobile Segmented Tab Switcher --}}
-            <div class="lg:hidden flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200">
+            <div class="lg:hidden flex items-center p-0.5 bg-slate-100 rounded-xl border border-slate-200">
                 <button type="button"
                         @click="mobileTab = 'catalog'"
                         :class="mobileTab === 'catalog' ? 'bg-white text-slate-900 font-bold shadow-xs' : 'text-slate-500 font-medium'"
-                        class="px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-1.5">
+                        class="px-2.5 sm:px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-1">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
                     <span>Products</span>
                 </button>
                 <button type="button"
                         @click="mobileTab = 'cart'"
                         :class="mobileTab === 'cart' ? 'bg-brand-600 text-white font-bold shadow-xs' : 'text-slate-600 font-medium'"
-                        class="px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-1.5">
+                        class="px-2.5 sm:px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-1">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                     <span>Cart</span>
                     <span x-show="cartTotalQty > 0"
@@ -56,23 +59,25 @@
             <button type="button"
                     @click="showHeldCarts = true"
                     x-show="heldCarts.length > 0"
-                    class="inline-flex items-center px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl transition shadow-2xs">
-                <svg class="w-3.5 h-3.5 sm:mr-1.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span class="hidden sm:inline">Held Carts</span>
+                    title="Held Carts"
+                    class="inline-flex items-center px-2 sm:px-3 py-1.5 text-xs font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl transition shadow-2xs">
+                <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="hidden md:inline ml-1">Held</span>
                 <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-extrabold bg-amber-600 text-white" x-text="heldCarts.length"></span>
             </button>
 
             {{-- Invoices History Link --}}
             <a href="{{ route('pos.sales') }}"
-               class="inline-flex items-center px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
-                <svg class="w-3.5 h-3.5 sm:mr-1.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                <span class="hidden sm:inline">Sales History</span>
+               title="Sales History"
+               class="inline-flex items-center px-2 sm:px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
+                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                <span class="hidden md:inline ml-1">Sales</span>
             </a>
 
             {{-- Cashier Time & Quick Logout --}}
-            <div class="flex items-center gap-2 pl-2 border-l border-slate-200">
-                <div class="text-right hidden sm:block">
-                    <p class="text-xs font-semibold text-slate-900 leading-tight">{{ auth('admin')->user()->name }}</p>
+            <div class="flex items-center gap-1 sm:gap-2 pl-1 sm:pl-2 border-l border-slate-200">
+                <div class="text-right hidden md:block">
+                    <p class="text-xs font-semibold text-slate-900 leading-tight truncate max-w-[100px]">{{ auth('admin')->user()->name }}</p>
                     <p class="text-[11px] text-slate-400" x-text="clockTime"></p>
                 </div>
                 <form method="POST" action="{{ route('pos.logout') }}" class="inline">
@@ -86,7 +91,7 @@
     </header>
 
     {{-- Main POS Work Area: Responsive Catalog & Cart --}}
-    <div class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+    <div class="flex-1 flex flex-col lg:flex-row overflow-hidden relative min-h-0">
 
         {{-- LEFT PANEL: Product Catalog (Compact, No Images, Fast Scan) --}}
         <div class="flex-1 flex flex-col border-r border-slate-200 bg-slate-50 overflow-hidden"
@@ -266,11 +271,11 @@
         </div>
 
         {{-- RIGHT PANEL: Cart & Billing (Spacious, Table-style Selected Items, Maximum Height) --}}
-        <div class="w-full lg:w-[540px] xl:w-[620px] 2xl:w-[680px] flex flex-col bg-white border-t lg:border-t-0 shadow-xl z-10 flex-shrink-0"
+        <div class="w-full lg:w-[540px] xl:w-[620px] 2xl:w-[680px] h-full flex-1 lg:flex-initial min-h-0 overflow-hidden flex flex-col bg-white border-t lg:border-t-0 shadow-xl z-10"
              :class="mobileTab === 'cart' ? 'flex' : 'hidden lg:flex'">
 
             {{-- Mobile Cart Top Bar --}}
-            <div class="lg:hidden px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
+            <div class="lg:hidden px-3 sm:px-4 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
                 <button type="button" @click="mobileTab = 'catalog'" class="text-xs font-bold text-brand-600 flex items-center gap-1 hover:text-brand-800">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                     <span>+ Add More Items</span>
@@ -286,11 +291,11 @@
             </div>
 
             {{-- Compact Customer Selector Bar --}}
-            <div class="p-2.5 sm:p-3 border-b border-slate-200 bg-slate-50/80 flex-shrink-0 space-y-2">
+            <div class="p-2 sm:p-2.5 border-b border-slate-200 bg-slate-50/80 flex-shrink-0 space-y-1.5">
                 <div class="flex items-center gap-2">
                     <div class="flex-1 min-w-0">
                         <select x-model="selectedCustomerId" @change="onCustomerChange()"
-                                class="w-full text-xs font-semibold bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 shadow-2xs">
+                                class="w-full text-xs font-semibold bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 shadow-2xs">
                             <option value="">Walk-in Customer (Retail)</option>
                             <template x-for="cust in customers" :key="cust.id">
                                 <option :value="cust.id" x-text="cust.name + (cust.phone ? ' (' + cust.phone + ')' : '') + (cust.outstanding_balance > 0 ? ' [Due: ₹' + Number(cust.outstanding_balance).toFixed(0) + ']' : '')"></option>
@@ -298,7 +303,7 @@
                         </select>
                     </div>
                     <button type="button" @click="showAddCustomer = true" title="Add New Customer / Farmer"
-                            class="px-2.5 py-2 text-xs font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-xl border border-brand-200 transition flex items-center gap-1 flex-shrink-0 shadow-2xs">
+                            class="px-2.5 py-1.5 text-xs font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-xl border border-brand-200 transition flex items-center gap-1 flex-shrink-0 shadow-2xs">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
                         <span>New</span>
                     </button>
@@ -326,9 +331,9 @@
             </div>
 
             {{-- SELECTED ITEMS LIST: MAX SPACE, CLEAR HEADERS, HIGH VISIBILITY --}}
-            <div class="flex-1 flex flex-col overflow-hidden bg-white">
+            <div class="flex-1 flex flex-col min-h-0 overflow-hidden bg-white">
                 {{-- Table Header --}}
-                <div class="px-3 sm:px-4 py-2 bg-slate-100/80 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider grid grid-cols-12 gap-2 flex-shrink-0">
+                <div class="px-3 sm:px-4 py-1.5 bg-slate-100/80 border-b border-slate-200 text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider grid grid-cols-12 gap-1.5 sm:gap-2 flex-shrink-0">
                     <div class="col-span-5 sm:col-span-6">Item & Lot</div>
                     <div class="col-span-2 text-right">Rate (₹)</div>
                     <div class="col-span-3 text-center">Qty</div>
@@ -336,7 +341,7 @@
                 </div>
 
                 {{-- Scrollable Items List --}}
-                <div class="flex-1 overflow-y-auto divide-y divide-slate-100 p-2 sm:p-3 space-y-1">
+                <div class="flex-1 min-h-0 overflow-y-auto divide-y divide-slate-100 p-2 sm:p-3 space-y-1 overscroll-contain">
                     <template x-for="(item, idx) in cart" :key="item.cart_key">
                         <div class="py-2 px-1 hover:bg-slate-50/80 rounded-xl transition grid grid-cols-12 gap-2 items-center group">
                             {{-- Col 1: Product Name, Unit, Batch Info --}}
@@ -409,27 +414,36 @@
             </div>
 
             {{-- DOCKED CART FOOTER: CLEAN, COMPACT, DEDICATED CHECKOUT TRIGGER --}}
-            <div class="p-3 sm:p-4 bg-slate-50 border-t border-slate-200 flex-shrink-0 space-y-2.5 shadow-md">
-                {{-- Labour / Installation Charges Inputs --}}
-                <div class="bg-white rounded-xl p-2.5 border border-slate-200/90 shadow-2xs space-y-1.5">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
-                            <svg class="w-3.5 h-3.5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>
-                            <span>Labour / Installation Charges</span>
-                        </span>
-                        <template x-if="labourProfit > 0">
-                            <span class="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                                Profit: +₹<span x-text="labourProfit.toFixed(0)"></span>
-                            </span>
-                        </template>
-                        <template x-if="labourProfit < 0">
-                            <span class="text-[10px] font-extrabold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
-                                Loss: -₹<span x-text="Math.abs(labourProfit).toFixed(0)"></span>
-                            </span>
-                        </template>
+            <div class="p-2.5 sm:p-4 bg-slate-50 border-t border-slate-200 flex-shrink-0 space-y-2 shadow-md"
+                 x-data="{ showLabourInputs: false }">
+                {{-- Labour / Installation Charges Inputs (Collapsible on mobile when 0 to maximize items visibility) --}}
+                <div class="bg-white rounded-xl p-2 sm:p-2.5 border border-slate-200/90 shadow-2xs">
+                    <div class="flex items-center justify-between cursor-pointer select-none"
+                         @click="showLabourInputs = !showLabourInputs">
+                        <div class="flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5 text-brand-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>
+                            <span class="text-[11px] font-bold text-slate-700">Labour / Installation</span>
+                            <span x-show="labourCharges > 0" class="text-brand-700 font-extrabold text-[10px]" x-text="'(₹' + Number(labourCharges).toFixed(0) + ')'"></span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <template x-if="labourProfit > 0">
+                                <span class="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded-full border border-emerald-200">
+                                    +₹<span x-text="labourProfit.toFixed(0)"></span> Profit
+                                </span>
+                            </template>
+                            <template x-if="labourProfit < 0">
+                                <span class="text-[10px] font-extrabold text-rose-700 bg-rose-50 px-1.5 py-0.2 rounded-full border border-rose-200">
+                                    -₹<span x-text="Math.abs(labourProfit).toFixed(0)"></span> Loss
+                                </span>
+                            </template>
+                            <span x-show="labourCharges <= 0 && labourCost <= 0" class="text-[10px] text-brand-600 font-semibold" x-text="showLabourInputs ? 'Hide' : '+ Add'"></span>
+                            <svg class="w-3.5 h-3.5 text-slate-400 transition-transform duration-150"
+                                 :class="(showLabourInputs || labourCharges > 0 || labourCost > 0) ? 'rotate-180' : ''"
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div x-show="showLabourInputs || labourCharges > 0 || labourCost > 0" x-cloak class="grid grid-cols-2 gap-2 text-xs pt-1.5 mt-1.5 border-t border-slate-100">
                         <div>
                             <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">
                                 Actual Cost (₹)
@@ -456,18 +470,18 @@
                 </div>
 
                 {{-- Pricing Summary Row --}}
-                <div class="flex items-center justify-between text-xs gap-3">
-                    <div class="flex items-center gap-2">
+                <div class="flex items-center justify-between text-xs gap-2">
+                    <div class="flex items-center gap-1.5 sm:gap-2">
                         <span class="text-slate-500 font-medium">Items (<span class="font-bold text-slate-800" x-text="cartTotalQty"></span>)</span>
                         <span class="text-slate-300">|</span>
                         <div class="flex items-center gap-1 text-slate-600">
                             <span>Disc: ₹</span>
-                            <input type="number" x-model.number="orderDiscount" min="0" step="1" placeholder="0" class="w-16 text-right text-xs bg-white border border-slate-200 rounded-lg px-1.5 py-0.5 font-bold text-slate-900 focus:outline-none focus:border-brand-500">
+                            <input type="number" x-model.number="orderDiscount" min="0" step="1" placeholder="0" class="w-14 sm:w-16 text-right text-xs bg-white border border-slate-200 rounded-lg px-1.5 py-0.5 font-bold text-slate-900 focus:outline-none focus:border-brand-500">
                         </div>
                     </div>
                     <div class="text-right">
-                        <span class="text-[11px] text-slate-500 block">Net Payable</span>
-                        <span class="text-base sm:text-lg font-black text-brand-700" x-text="'₹' + cartGrandTotal.toFixed(0)"></span>
+                        <span class="text-[10px] sm:text-[11px] text-slate-500 block leading-tight">Net Payable</span>
+                        <span class="text-base sm:text-lg font-black text-brand-700 leading-tight" x-text="'₹' + cartGrandTotal.toFixed(0)"></span>
                     </div>
                 </div>
 
@@ -477,18 +491,18 @@
                     <button type="button"
                             @click="quickCashCheckout()"
                             :disabled="cart.length === 0 || isProcessing"
-                            class="py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-800 rounded-xl font-bold text-xs border border-emerald-200 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 shadow-2xs">
-                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                        <span>Exact Cash</span>
+                            class="py-2.5 px-2 sm:px-3 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-800 rounded-xl font-bold text-xs border border-emerald-200 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 shadow-2xs">
+                        <svg class="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        <span class="truncate">Exact Cash</span>
                     </button>
 
                     {{-- Pay / Split Payment Button (Opens Payment Modal) --}}
                     <button type="button"
                             @click="openPaymentModal()"
                             :disabled="cart.length === 0 || isProcessing"
-                            class="py-2.5 px-3 bg-brand-600 hover:bg-brand-700 active:scale-[0.99] text-white rounded-xl font-extrabold text-xs shadow-md hover:shadow-lg transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                        <span>Pay (F4 / Space)</span>
+                            class="py-2.5 px-2 sm:px-3 bg-brand-600 hover:bg-brand-700 active:scale-[0.99] text-white rounded-xl font-extrabold text-xs shadow-md hover:shadow-lg transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        <span class="truncate">Pay (F4 / Space)</span>
                     </button>
                 </div>
             </div>
