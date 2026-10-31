@@ -59,9 +59,9 @@
             <p class="text-xs text-gray-400 mt-1">Invoices (Taxable) + POS Counter Sales</p>
         </div>
         <div class="bg-white rounded-2xl shadow-xs border border-gray-100 p-5">
-            <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Cost of Goods / Direct Purchases</p>
+            <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Cost of Goods Sold (COGS)</p>
             <p class="text-2xl font-bold text-amber-600 mt-1">₹{{ number_format($totalCogs, 2) }}</p>
-            <p class="text-xs text-gray-400 mt-1">Stock Purchases &amp; Service Materials</p>
+            <p class="text-xs text-gray-400 mt-1">Acquisition Cost of Sold Items &amp; Services</p>
         </div>
         <div class="bg-white rounded-2xl shadow-xs border border-gray-100 p-5">
             <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Gross Margin</p>
@@ -110,23 +110,19 @@
         <div class="bg-white rounded-2xl shadow-xs border border-gray-100 p-6 space-y-4">
             <div class="flex items-center justify-between border-b border-gray-100 pb-3">
                 <div>
-                    <h3 class="text-base font-bold text-gray-900">Direct Costs &amp; COGS (Outflows)</h3>
-                    <p class="text-xs text-gray-400">Procurement of plants, fertilizers, machinery &amp; stage consumables</p>
+                    <h3 class="text-base font-bold text-gray-900">Cost of Goods Sold (COGS)</h3>
+                    <p class="text-xs text-gray-400">Direct acquisition cost of inventory sold &amp; project materials</p>
                 </div>
                 <span class="p-2 bg-amber-50 text-amber-700 rounded-xl text-xs font-bold">Outflows</span>
             </div>
             <div class="divide-y divide-gray-100">
                 <div class="py-3 flex justify-between items-center text-sm">
-                    <span class="text-gray-700 font-medium">Supplier Purchase Bills (Net of Tax)</span>
-                    <span class="font-bold text-gray-900">₹{{ number_format($purchaseSubtotal, 2) }}</span>
+                    <span class="text-gray-700 font-medium">Cost of POS Retail Goods Sold</span>
+                    <span class="font-bold text-gray-900">₹{{ number_format($posCogs, 2) }}</span>
                 </div>
                 <div class="py-3 flex justify-between items-center text-sm">
-                    <span class="text-gray-700 font-medium">Work Order Consumables / Direct Materials</span>
-                    <span class="font-bold text-gray-900">₹{{ number_format($workOrderMaterialCost, 2) }}</span>
-                </div>
-                <div class="py-3 flex justify-between items-center text-sm">
-                    <span class="text-gray-700 font-medium">Inward Freight &amp; Shipping Charges</span>
-                    <span class="font-bold text-gray-900">₹{{ number_format($shippingCost, 2) }}</span>
+                    <span class="text-gray-700 font-medium">Cost of Invoiced Products &amp; Services</span>
+                    <span class="font-bold text-gray-900">₹{{ number_format($invoiceCogs, 2) }}</span>
                 </div>
                 @if(isset($posLabourCosts) && $posLabourCosts > 0)
                 <div class="py-3 flex justify-between items-center text-sm">
@@ -134,11 +130,22 @@
                     <span class="font-bold text-gray-900">₹{{ number_format($posLabourCosts, 2) }}</span>
                 </div>
                 @endif
+                <div class="py-3 flex justify-between items-center text-sm">
+                    <span class="text-gray-700 font-medium">Inward Freight &amp; Shipping Charges</span>
+                    <span class="font-bold text-gray-900">₹{{ number_format($shippingCost, 2) }}</span>
+                </div>
                 <div class="pt-4 flex justify-between items-center text-base font-bold border-t-2 border-gray-200">
-                    <span class="text-gray-900">Total Direct Operating Expenses</span>
+                    <span class="text-gray-900">Total Cost of Goods Sold (COGS)</span>
                     <span class="text-amber-600">₹{{ number_format($totalCogs, 2) }}</span>
                 </div>
             </div>
+
+            @if(isset($purchaseSubtotal) && $purchaseSubtotal > 0)
+            <div class="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-xs text-slate-600 flex justify-between items-center">
+                <span>Supplier Purchases in Period (Added to Inventory Stock):</span>
+                <span class="font-bold text-slate-800">₹{{ number_format($purchaseSubtotal, 2) }}</span>
+            </div>
+            @endif
         </div>
     </div>
 
@@ -148,7 +155,7 @@
             <div>
                 <p class="text-xs font-bold uppercase tracking-wider {{ $netProfit >= 0 ? 'text-emerald-700' : 'text-rose-700' }}">Accounting Net Profit / Loss for Selected Period</p>
                 <h3 class="text-3xl font-extrabold text-gray-900 mt-1">₹{{ number_format($netProfit, 2) }}</h3>
-                <p class="text-xs text-gray-500 mt-1">Calculated as (Total Revenue ₹{{ number_format($totalRevenue, 2) }}) − (Direct COGS &amp; Purchases ₹{{ number_format($totalCogs, 2) }}).</p>
+                <p class="text-xs text-gray-500 mt-1">Calculated as (Total Revenue ₹{{ number_format($totalRevenue, 2) }}) − (Cost of Goods Sold ₹{{ number_format($totalCogs, 2) }}).</p>
             </div>
             <div class="text-right">
                 <span class="inline-flex items-center px-4 py-2 rounded-xl text-sm font-bold {{ $netProfit >= 0 ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white' }}">

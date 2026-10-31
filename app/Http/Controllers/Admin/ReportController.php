@@ -833,11 +833,13 @@ class ReportController extends Controller
             ['section' => '1. REVENUE (INCOME)', 'particulars' => 'Retail POS Counter Sales (Subtotal)', 'amount' => '₹' . number_format($pl['posSubtotal'], 2)],
             ['section' => '1. REVENUE (INCOME)', 'particulars' => 'Less: Discounts Allowed', 'amount' => '− ₹' . number_format($pl['discountsGiven'], 2)],
             ['section' => '1. REVENUE TOTAL', 'particulars' => 'NET OPERATING TURNOVER', 'amount' => '₹' . number_format($pl['totalRevenue'], 2)],
-            ['section' => '2. DIRECT COSTS (COGS)', 'particulars' => 'Supplier Purchases (Net of Tax)', 'amount' => '₹' . number_format($pl['purchaseSubtotal'], 2)],
-            ['section' => '2. DIRECT COSTS (COGS)', 'particulars' => 'Work Order Materials & Consumables', 'amount' => '₹' . number_format($pl['workOrderMaterialCost'], 2)],
+            ['section' => '2. DIRECT COSTS (COGS)', 'particulars' => 'Cost of POS Retail Goods Sold', 'amount' => '₹' . number_format($pl['posCogs'], 2)],
+            ['section' => '2. DIRECT COSTS (COGS)', 'particulars' => 'Cost of Invoiced Products & Services', 'amount' => '₹' . number_format($pl['invoiceCogs'], 2)],
+            ['section' => '2. DIRECT COSTS (COGS)', 'particulars' => 'POS Labour & Installation Direct Cost', 'amount' => '₹' . number_format($pl['posLabourCosts'], 2)],
             ['section' => '2. DIRECT COSTS (COGS)', 'particulars' => 'Inward Freight & Logistics', 'amount' => '₹' . number_format($pl['shippingCost'], 2)],
             ['section' => '2. COGS TOTAL', 'particulars' => 'TOTAL COST OF GOODS SOLD', 'amount' => '₹' . number_format($pl['totalCogs'], 2)],
             ['section' => '3. BOTTOMLINE', 'particulars' => 'NET OPERATING PROFIT / (LOSS)', 'amount' => '₹' . number_format($pl['netProfit'], 2)],
+            ['section' => '4. MEMORANDUM (STOCK)', 'particulars' => 'Supplier Purchases in Period (Added to Inventory)', 'amount' => '₹' . number_format($pl['purchaseSubtotal'], 2)],
         ];
 
         $totals = [
@@ -879,29 +881,59 @@ class ReportController extends Controller
 
         $totalRevenue = max(0, $invoiceTaxable + $posSubtotal - $discountsGiven);
 
-        // 2. Direct Costs / COGS
-        $purchaseSubtotal = (float) PurchaseBill::whereDate('bill_date', '>=', $from->toDateString())
-            ->whereDate('bill_date', '<=', $to->toDateString())
-            ->sum(DB::raw('subtotal - discount'));
+        // 2. Direct Costs / Cost of Goods Sold (COGS)
+        // A. Cost of retail goods sold at POS
+        $posSales = PosSale::with(['items.product'])
+            ->where('status', 'completed')
+            ->whereDate('sale_date', '>=', $from->toDateString())
+            ->whereDate('sale_date', '<=', $to->toDateString())
+            ->get();
 
+        $posCogs = 0.0;
+        foreach ($posSales as $pos) {
+            foreach ($pos->items as $pi) {
+                $cost = (float) ($pi->cost_price > 0 ? $pi->cost_price : ($pi->product?->rate > 0 ? $pi->product->rate : ($pi->unit_price * 0.70)));
+                $posCogs += (float) $pi->quantity * $cost;
+            }
+        }
+
+        // B. Cost of invoiced products and delivered materials
+        $invoices = Invoice::with(['items.product'])
+            ->whereNotIn('status', ['cancelled'])
+            ->whereDate('invoice_date', '>=', $from->toDateString())
+            ->whereDate('invoice_date', '<=', $to->toDateString())
+            ->get();
+
+        $invoiceCogs = 0.0;
+        foreach ($invoices as $inv) {
+            foreach ($inv->items as $it) {
+                $unitCost = (float) ($it->product?->rate > 0 ? $it->product->rate : ($it->rate * 0.70));
+                $invoiceCogs += (float) $it->qty * $unitCost;
+            }
+        }
+
+        // C. Inward freight / logistics on purchases
         $shippingCost = (float) PurchaseBill::whereDate('bill_date', '>=', $from->toDateString())
             ->whereDate('bill_date', '<=', $to->toDateString())
             ->sum('shipping_cost');
 
-        $workOrderMaterialCost = (float) WorkOrderStageProduct::whereDate('created_at', '>=', $from->toDateString())
-            ->whereDate('created_at', '<=', $to->toDateString())
-            ->sum(DB::raw('quantity * rate'));
-
-        $totalCogs = $purchaseSubtotal + $shippingCost + $workOrderMaterialCost + $posLabourCosts;
+        // Total COGS matched to revenue
+        $totalCogs = $posCogs + $invoiceCogs + $posLabourCosts + $shippingCost;
 
         $grossProfit = $totalRevenue - $totalCogs;
         $grossMarginPercent = $totalRevenue > 0 ? ($grossProfit / $totalRevenue) * 100 : 0;
         $netProfit = $grossProfit; // Operating net
 
+        // Informational: Period Supplier Purchases (Working Capital deployed to Stock)
+        $purchaseSubtotal = (float) PurchaseBill::whereDate('bill_date', '>=', $from->toDateString())
+            ->whereDate('bill_date', '<=', $to->toDateString())
+            ->sum(DB::raw('subtotal - discount'));
+
         return compact(
             'invoiceTaxable', 'posSubtotal', 'discountsGiven', 'totalRevenue',
-            'purchaseSubtotal', 'shippingCost', 'workOrderMaterialCost', 'totalCogs',
-            'grossProfit', 'grossMarginPercent', 'netProfit', 'posLabourCosts'
+            'posCogs', 'invoiceCogs', 'shippingCost', 'posLabourCosts',
+            'totalCogs', 'grossProfit', 'grossMarginPercent', 'netProfit',
+            'purchaseSubtotal'
         );
     }
 
