@@ -16,6 +16,7 @@ use App\Services\PosInvoiceNumberer;
 use App\Services\StockService;
 use App\Support\Format;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -192,6 +193,7 @@ class PosController extends Controller
 
     /**
      * Record payment towards customer's outstanding balance.
+     * Automatically applies the payment FIFO to the customer's unpaid POS sales.
      */
     public function settleBalance(Request $request, PosCustomer $customer): JsonResponse
     {
@@ -202,14 +204,150 @@ class PosController extends Controller
         ]);
 
         $amount = min((float) $validated['amount'], (float) $customer->outstanding_balance);
-        $customer->decrement('outstanding_balance', $amount);
-        $customer->increment('total_spent', $amount);
+
+        DB::transaction(function () use ($customer, $amount, $validated) {
+            $remainingToApply = $amount;
+
+            // Apply settlement FIFO to customer's unpaid completed sales
+            $unpaidSales = PosSale::where('pos_customer_id', $customer->id)
+                ->where('status', PosSale::STATUS_COMPLETED)
+                ->where('balance_due', '>', 0)
+                ->orderBy('sale_date', 'asc')
+                ->orderBy('id', 'asc')
+                ->lockForUpdate()
+                ->get();
+
+            foreach ($unpaidSales as $sale) {
+                if ($remainingToApply <= 0) {
+                    break;
+                }
+
+                $due = (float) $sale->balance_due;
+                $pay = min($due, $remainingToApply);
+
+                $sale->amount_paid = round((float) $sale->amount_paid + $pay, 2);
+                $sale->balance_due = max(0, round($due - $pay, 2));
+                $sale->payment_status = $sale->balance_due <= 0
+                    ? PosSale::PAYMENT_STATUS_PAID
+                    : PosSale::PAYMENT_STATUS_PARTIAL;
+                $sale->save();
+
+                $sale->payments()->create([
+                    'method' => $validated['payment_method'],
+                    'amount' => $pay,
+                    'reference' => $validated['note'] ?: 'Customer balance settlement',
+                ]);
+
+                $remainingToApply = round($remainingToApply - $pay, 2);
+            }
+
+            $customer->decrement('outstanding_balance', $amount);
+            $customer->increment('total_spent', $amount);
+        });
 
         return response()->json([
             'success' => true,
             'message' => 'Payment of ₹' . number_format($amount, 2) . ' recorded against ' . $customer->name . "'s balance.",
             'new_balance' => (float) $customer->refresh()->outstanding_balance,
         ]);
+    }
+
+    /**
+     * Record payment directly against a specific POS Sale with balance due.
+     */
+    public function recordPayment(Request $request, PosSale $sale): RedirectResponse
+    {
+        $validated = $request->validate([
+            'amount' => ['required', 'numeric', 'min:0.01', 'max:' . max(0.01, (float) $sale->balance_due)],
+            'payment_method' => ['required', 'in:cash,upi,card,bank_transfer,other'],
+            'reference' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        DB::transaction(function () use ($sale, $validated) {
+            $locked = PosSale::whereKey($sale->id)->lockForUpdate()->firstOrFail();
+            $payAmount = min((float) $validated['amount'], (float) $locked->balance_due);
+
+            $locked->amount_paid = round((float) $locked->amount_paid + $payAmount, 2);
+            $locked->balance_due = max(0, round((float) $locked->balance_due - $payAmount, 2));
+            $locked->payment_status = $locked->balance_due <= 0
+                ? PosSale::PAYMENT_STATUS_PAID
+                : PosSale::PAYMENT_STATUS_PARTIAL;
+            $locked->save();
+
+            $locked->payments()->create([
+                'method' => $validated['payment_method'],
+                'amount' => $payAmount,
+                'reference' => $validated['reference'] ?? null,
+            ]);
+
+            if ($locked->pos_customer_id) {
+                $cust = PosCustomer::find($locked->pos_customer_id);
+                if ($cust) {
+                    $cust->decrement('outstanding_balance', min($payAmount, (float) $cust->outstanding_balance));
+                    $cust->increment('total_spent', $payAmount);
+                }
+            }
+        });
+
+        return back()->with('success', 'Payment of ₹' . number_format($validated['amount'], 2) . ' recorded against ' . $sale->invoice_number . '.');
+    }
+
+    /**
+     * Reconcile past customer balance settlements to their underlying POS sales (FIFO).
+     * If a customer's total sales balance_due is greater than their current outstanding_balance,
+     * it means payments were settled in the past without being applied to the individual sales.
+     */
+    public static function reconcileCustomerSalesBalances(?int $customerId = null): void
+    {
+        $query = PosCustomer::query();
+        if ($customerId) {
+            $query->where('id', $customerId);
+        }
+
+        $customers = $query->get();
+
+        foreach ($customers as $customer) {
+            $salesDue = (float) PosSale::where('pos_customer_id', $customer->id)
+                ->where('status', PosSale::STATUS_COMPLETED)
+                ->sum('balance_due');
+
+            $currentOutstanding = (float) $customer->outstanding_balance;
+
+            if ($salesDue > $currentOutstanding) {
+                $alreadyCollected = round($salesDue - $currentOutstanding, 2);
+
+                $unpaidSales = PosSale::where('pos_customer_id', $customer->id)
+                    ->where('status', PosSale::STATUS_COMPLETED)
+                    ->where('balance_due', '>', 0)
+                    ->orderBy('sale_date', 'asc')
+                    ->orderBy('id', 'asc')
+                    ->get();
+
+                foreach ($unpaidSales as $sale) {
+                    if ($alreadyCollected <= 0) {
+                        break;
+                    }
+
+                    $due = (float) $sale->balance_due;
+                    $applied = min($due, $alreadyCollected);
+
+                    $sale->amount_paid = round((float) $sale->amount_paid + $applied, 2);
+                    $sale->balance_due = max(0, round($due - $applied, 2));
+                    $sale->payment_status = $sale->balance_due <= 0
+                        ? PosSale::PAYMENT_STATUS_PAID
+                        : PosSale::PAYMENT_STATUS_PARTIAL;
+                    $sale->save();
+
+                    $sale->payments()->create([
+                        'method' => 'cash',
+                        'amount' => $applied,
+                        'reference' => 'Historical balance settlement reconciliation',
+                    ]);
+
+                    $alreadyCollected = round($alreadyCollected - $applied, 2);
+                }
+            }
+        }
     }
 
     /**

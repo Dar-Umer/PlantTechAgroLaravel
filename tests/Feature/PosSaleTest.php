@@ -291,6 +291,21 @@ class PosSaleTest extends TestCase
             'total_spent' => 1000.00,
         ]);
 
+        $sale = PosSale::create([
+            'invoice_number' => 'POS/2026-27/0077',
+            'pos_customer_id' => $customer->id,
+            'customer_name' => $customer->name,
+            'sale_date' => now(),
+            'status' => PosSale::STATUS_COMPLETED,
+            'subtotal' => 500.00,
+            'grand_total' => 500.00,
+            'amount_paid' => 0.00,
+            'balance_due' => 500.00,
+            'payment_status' => PosSale::PAYMENT_STATUS_UNPAID,
+            'payment_method' => 'cash',
+            'created_by' => $this->admin->id,
+        ]);
+
         $response = $this->actingAs($this->admin, 'admin')->postJson(route('admin.pos.customers.settle-balance', $customer), [
             'amount' => 300.00,
             'payment_method' => 'cash',
@@ -304,6 +319,60 @@ class PosSaleTest extends TestCase
         $customer->refresh();
         $this->assertEquals(200.00, (float) $customer->outstanding_balance);
         $this->assertEquals(1300.00, (float) $customer->total_spent);
+
+        // Verify the underlying POS Sale was updated and balance due decreased
+        $sale->refresh();
+        $this->assertEquals(300.00, (float) $sale->amount_paid);
+        $this->assertEquals(200.00, (float) $sale->balance_due);
+        $this->assertEquals(PosSale::PAYMENT_STATUS_PARTIAL, $sale->payment_status);
+
+        // Check Sales Report reflects the reduced balance due
+        $reportResp = $this->actingAs($this->admin, 'admin')->get(route('admin.reports.sales', [
+            'from' => now()->subDay()->toDateString(),
+            'to' => now()->addDay()->toDateString(),
+        ]));
+        $reportResp->assertOk();
+        $reportResp->assertSee('200.00');
+    }
+
+    public function test_record_payment_directly_on_sale_reduces_balance(): void
+    {
+        $customer = PosCustomer::create([
+            'name' => 'Nazir Ahmad',
+            'phone' => '9419111222',
+            'outstanding_balance' => 400.00,
+        ]);
+
+        $sale = PosSale::create([
+            'invoice_number' => 'POS/2026-27/0088',
+            'pos_customer_id' => $customer->id,
+            'customer_name' => $customer->name,
+            'sale_date' => now(),
+            'status' => PosSale::STATUS_COMPLETED,
+            'subtotal' => 400.00,
+            'grand_total' => 400.00,
+            'amount_paid' => 0.00,
+            'balance_due' => 400.00,
+            'payment_status' => PosSale::PAYMENT_STATUS_UNPAID,
+            'payment_method' => 'cash',
+            'created_by' => $this->admin->id,
+        ]);
+
+        $response = $this->actingAs($this->admin, 'admin')->post(route('admin.pos.sales.payments.store', $sale), [
+            'amount' => 400.00,
+            'payment_method' => 'upi',
+            'reference' => 'UPI-TXN-123456',
+        ]);
+
+        $response->assertRedirect();
+
+        $sale->refresh();
+        $this->assertEquals(400.00, (float) $sale->amount_paid);
+        $this->assertEquals(0.00, (float) $sale->balance_due);
+        $this->assertEquals(PosSale::PAYMENT_STATUS_PAID, $sale->payment_status);
+
+        $customer->refresh();
+        $this->assertEquals(0.00, (float) $customer->outstanding_balance);
     }
 
     public function test_can_view_receipt_and_invoice(): void

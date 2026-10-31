@@ -96,6 +96,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('terminal', [PosController::class, 'terminal'])->name('pos.terminal');
     Route::get('sales', [PosController::class, 'sales'])->name('pos.sales');
     Route::get('sales/{sale}', [PosController::class, 'show'])->name('pos.sales.show');
+    Route::post('sales/{sale}/payments', [PosController::class, 'recordPayment'])->name('pos.sales.payments.store');
     Route::get('sales/{sale}/receipt', [PosController::class, 'receipt'])->name('pos.receipt');
     Route::get('sales/{sale}/invoice', [PosController::class, 'invoice'])->name('pos.invoice');
     Route::post('sales/{sale}/cancel', [PosController::class, 'cancel'])->name('pos.sales.cancel');

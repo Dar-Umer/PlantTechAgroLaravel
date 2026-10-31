@@ -86,6 +86,9 @@ class ReportController extends Controller
 
     private function buildSalesReportData(Carbon $from, Carbon $to, string $type): array
     {
+        // Auto-reconcile any customer settlements that were recorded against customer balance
+        PosController::reconcileCustomerSalesBalances();
+
         $rows = [];
         $totalTaxable = 0.0;
         $totalTax = 0.0;
@@ -95,7 +98,7 @@ class ReportController extends Controller
 
         // Invoices
         if ($type === 'all' || $type === 'invoice') {
-            $invoices = Invoice::with(['customer', 'items'])
+            $invoices = Invoice::with(['customer', 'items', 'payments'])
                 ->whereNotIn('status', ['cancelled'])
                 ->whereDate('invoice_date', '>=', $from->toDateString())
                 ->whereDate('invoice_date', '<=', $to->toDateString())
@@ -106,7 +109,7 @@ class ReportController extends Controller
                 $taxable = (float) $inv->items->sum(fn ($i) => (float) $i->qty * (float) $i->rate - (float) $i->discount);
                 $tax = (float) $inv->gst_total;
                 $grand = (float) $inv->grand_total;
-                $paid = (float) $inv->amount_paid;
+                $paid = (float) ($inv->amount_paid ?: $inv->payments->sum('amount'));
                 $due = max(0, $grand - $paid);
 
                 $totalTaxable += $taxable;
@@ -133,7 +136,7 @@ class ReportController extends Controller
 
         // POS Sales
         if ($type === 'all' || $type === 'pos') {
-            $posSales = PosSale::with('customer')
+            $posSales = PosSale::with(['customer', 'payments'])
                 ->where('status', 'completed')
                 ->whereDate('sale_date', '>=', $from->toDateString())
                 ->whereDate('sale_date', '<=', $to->toDateString())
@@ -144,7 +147,7 @@ class ReportController extends Controller
                 $taxable = (float) $sale->subtotal + (float) ($sale->labour_charges ?? 0) - (float) $sale->discount_amount;
                 $tax = (float) $sale->gst_amount;
                 $grand = (float) $sale->grand_total;
-                $paid = (float) $sale->amount_paid;
+                $paid = (float) ($sale->amount_paid ?? 0);
                 $due = max(0, (float) $sale->balance_due);
 
                 $totalTaxable += $taxable;

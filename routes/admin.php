@@ -370,6 +370,7 @@ Route::middleware('admin')->group(function () {
     Route::middleware('permission:pos.sales.view,admin')->group(function () {
         Route::get('pos/sales', [PosController::class, 'sales'])->name('admin.pos.sales');
         Route::get('pos/sales/{sale}', [PosController::class, 'show'])->name('admin.pos.sales.show');
+        Route::post('pos/sales/{sale}/payments', [PosController::class, 'recordPayment'])->name('admin.pos.sales.payments.store');
         Route::get('pos/sales/{sale}/receipt', [PosController::class, 'receipt'])->name('admin.pos.receipt');
         Route::get('pos/sales/{sale}/invoice', [PosController::class, 'invoice'])->name('admin.pos.invoice');
     });
