@@ -169,9 +169,9 @@ class PosController extends Controller
     }
 
     /**
-     * Quick-add a new POS customer during billing.
+     * Quick-add a new POS customer during billing or from customer directory.
      */
-    public function storeCustomer(Request $request): JsonResponse
+    public function storeCustomer(Request $request): JsonResponse|RedirectResponse
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -185,6 +185,10 @@ class PosController extends Controller
         $data['outstanding_balance'] = 0;
 
         $customer = PosCustomer::create($data);
+
+        if (! $request->wantsJson()) {
+            return redirect()->route('pos.customers.show', $customer)->with('success', "Customer {$customer->name} created successfully.");
+        }
 
         return response()->json([
             'success' => true,
@@ -747,6 +751,62 @@ class PosController extends Controller
         });
 
         return back()->with('success', "Sale #{$sale->invoice_number} has been cancelled and stock returned to inventory.");
+    }
+
+    /**
+     * POS Customers directory / list.
+     */
+    public function customerList(Request $request)
+    {
+        $query = PosCustomer::query();
+
+        if ($search = trim((string) $request->query('q', ''))) {
+            $safeQ = addcslashes($search, '%_\\');
+            $query->where(function ($sub) use ($safeQ) {
+                $sub->where('name', 'like', "%{$safeQ}%")
+                    ->orWhere('phone', 'like', "%{$safeQ}%")
+                    ->orWhere('email', 'like', "%{$safeQ}%")
+                    ->orWhere('gstin', 'like', "%{$safeQ}%")
+                    ->orWhere('address', 'like', "%{$safeQ}%");
+            });
+        }
+
+        if ($status = $request->query('status')) {
+            if ($status === 'dues') {
+                $query->where('outstanding_balance', '>', 0);
+            } elseif ($status === 'cleared') {
+                $query->where('outstanding_balance', '<=', 0);
+            } elseif ($status === 'b2b') {
+                $query->whereNotNull('gstin')->where('gstin', '!=', '');
+            }
+        }
+
+        $sort = $request->query('sort', 'due_desc');
+        match ($sort) {
+            'due_desc' => $query->orderByDesc('outstanding_balance')->orderByDesc('id'),
+            'due_asc' => $query->orderBy('outstanding_balance')->orderByDesc('id'),
+            'spent_desc' => $query->orderByDesc('total_spent')->orderByDesc('id'),
+            'orders_desc' => $query->orderByDesc('orders_count')->orderByDesc('id'),
+            'name_asc' => $query->orderBy('name', 'asc'),
+            'latest' => $query->latest('id'),
+            default => $query->orderByDesc('outstanding_balance')->orderByDesc('id'),
+        };
+
+        // High-level KPIs across all POS customers
+        $totalCustomers = PosCustomer::count();
+        $duesCount = PosCustomer::where('outstanding_balance', '>', 0)->count();
+        $totalDue = (float) PosCustomer::where('outstanding_balance', '>', 0)->sum('outstanding_balance');
+        $totalSpent = (float) PosCustomer::sum('total_spent');
+
+        $customers = $query->paginate(25)->withQueryString();
+
+        return view('admin.pos.customers.index', compact(
+            'customers',
+            'totalCustomers',
+            'duesCount',
+            'totalDue',
+            'totalSpent'
+        ));
     }
 
     /**

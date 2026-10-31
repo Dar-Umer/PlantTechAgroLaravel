@@ -104,6 +104,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('checkout', [PosController::class, 'checkout'])->name('pos.checkout');
     Route::get('products/search', [PosController::class, 'searchProducts'])->name('pos.products.search');
     Route::get('customers/search', [PosController::class, 'searchCustomers'])->name('pos.customers.search');
+    Route::get('customers', [PosController::class, 'customerList'])->name('pos.customers.index');
     Route::post('customers', [PosController::class, 'storeCustomer'])->name('pos.customers.store');
     Route::get('customers/{customer}', [PosController::class, 'customerProfile'])->name('pos.customers.show');
     Route::get('customers/{customer}/statement', [PosController::class, 'customerStatement'])->name('pos.customers.statement');
@@ -120,6 +121,10 @@ Route::middleware(['auth:admin'])->group(function () {
 | smoothly redirect them to the clean POS URLs without /admin/.
 */
 Route::prefix('admin')->group(function () use ($isPosRequest) {
+    Route::any('pos/customers/statement', function (Request $request) {
+        return redirect()->route('pos.customers.index');
+    });
+
     Route::any('pos/customers/{customer}/statement', function (Request $request, $customer) use ($isPosRequest) {
         if ($isPosRequest($request)) {
             return redirect()->route('pos.customers.statement', $customer);
@@ -138,6 +143,13 @@ Route::prefix('admin')->group(function () use ($isPosRequest) {
             $customer instanceof PosCustomer ? $customer : PosCustomer::findOrFail($customer),
             $request
         );
+    });
+
+    Route::any('pos/customers', function (Request $request) use ($isPosRequest) {
+        if ($isPosRequest($request)) {
+            return redirect()->route('pos.customers.index');
+        }
+        return app(PosController::class)->customerList($request);
     });
 
     Route::any('pos/sales', function (Request $request) use ($isPosRequest) {

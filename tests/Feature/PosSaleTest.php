@@ -698,4 +698,74 @@ class PosSaleTest extends TestCase
         $updatedProfileResp->assertSee('300.00');
         $updatedProfileResp->assertSee('Payment via UPI / QR');
     }
+
+    public function test_pos_customers_directory_index_and_filters(): void
+    {
+        $c1 = PosCustomer::create([
+            'name' => 'Ghulam Hassan',
+            'phone' => '9419111222',
+            'outstanding_balance' => 450.00,
+            'total_spent' => 2000.00,
+            'orders_count' => 3,
+        ]);
+
+        $c2 = PosCustomer::create([
+            'name' => 'Tariq Ahmad',
+            'phone' => '9419333444',
+            'outstanding_balance' => 0.00,
+            'total_spent' => 1500.00,
+            'orders_count' => 2,
+        ]);
+
+        $c3 = PosCustomer::create([
+            'name' => 'Kashmir Agro Ltd',
+            'phone' => '9419555666',
+            'gstin' => '01AAAAA0000A1Z5',
+            'outstanding_balance' => 1200.00,
+            'total_spent' => 10000.00,
+            'orders_count' => 5,
+        ]);
+
+        // 1. Visit /customers
+        $resp = $this->actingAs($this->admin, 'admin')->get('/customers');
+        $resp->assertOk();
+        $resp->assertSee('POS Retail Customers');
+        $resp->assertSee('Ghulam Hassan');
+        $resp->assertSee('Tariq Ahmad');
+        $resp->assertSee('Kashmir Agro Ltd');
+        $resp->assertSee('450.00');
+        $resp->assertSee('1,200.00');
+        $resp->assertSee(route('pos.customers.show', $c1));
+
+        // 2. Filter dues only
+        $duesResp = $this->actingAs($this->admin, 'admin')->get(route('pos.customers.index', ['status' => 'dues']));
+        $duesResp->assertOk();
+        $duesResp->assertSee('Ghulam Hassan');
+        $duesResp->assertSee('Kashmir Agro Ltd');
+        $duesResp->assertDontSee('Tariq Ahmad');
+
+        // 3. Search query
+        $searchResp = $this->actingAs($this->admin, 'admin')->get(route('pos.customers.index', ['q' => 'Ghulam']));
+        $searchResp->assertOk();
+        $searchResp->assertSee('Ghulam Hassan');
+        $searchResp->assertDontSee('Kashmir Agro Ltd');
+
+        // 4. Admin route access
+        $adminResp = $this->actingAs($this->admin, 'admin')->get('/admin/pos/customers');
+        $adminResp->assertOk();
+        $adminResp->assertSee('POS Retail Customers');
+
+        // 5. Store customer with standard form redirect
+        $storeResp = $this->actingAs($this->admin, 'admin')->post(route('pos.customers.store'), [
+            'name' => 'New Retail Buyer',
+            'phone' => '9419888999',
+            'email' => 'buyer@example.com',
+            'address' => 'Baramulla',
+        ]);
+        $storeResp->assertRedirect();
+        $this->assertDatabaseHas('pos_customers', [
+            'name' => 'New Retail Buyer',
+            'phone' => '9419888999',
+        ]);
+    }
 }

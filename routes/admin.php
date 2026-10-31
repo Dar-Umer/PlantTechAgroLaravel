@@ -378,6 +378,7 @@ Route::middleware('admin')->group(function () {
         Route::post('pos/sales/{sale}/cancel', [PosController::class, 'cancel'])->name('admin.pos.sales.cancel');
     });
     Route::middleware('permission:pos.customers.manage,admin')->group(function () {
+        Route::get('pos/customers', [PosController::class, 'customerList'])->name('admin.pos.customers.index');
         Route::post('pos/customers', [PosController::class, 'storeCustomer'])->name('admin.pos.customers.store');
         Route::get('pos/customers/{customer}', [PosController::class, 'customerProfile'])->name('admin.pos.customers.show');
         Route::get('pos/customers/{customer}/statement', [PosController::class, 'customerStatement'])->name('admin.pos.customers.statement');
