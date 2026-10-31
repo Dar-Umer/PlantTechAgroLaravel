@@ -653,7 +653,14 @@ class PosController extends Controller
      */
     public function show(PosSale $sale)
     {
-        $sale->load(['customer', 'cashier', 'items.product', 'items.batch', 'items.supplier', 'payments']);
+        $sale->load([
+            'customer',
+            'cashier',
+            'items.product',
+            'items.batch',
+            'items.supplier',
+            'payments' => fn ($q) => $q->orderBy('id', 'asc'),
+        ]);
 
         return view('admin.pos.show', compact('sale'));
     }

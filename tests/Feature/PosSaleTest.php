@@ -565,4 +565,55 @@ class PosSaleTest extends TestCase
         $response->assertSee(':id="\'cart-rate-\' + idx"', false);
         $response->assertSee(':id="\'cart-qty-\' + idx"', false);
     }
+
+    public function test_sales_list_and_invoice_details_page_proper_records_and_due_collection(): void
+    {
+        $customer = PosCustomer::create([
+            'name' => 'Ghulam Rasool',
+            'phone' => '9419123456',
+        ]);
+
+        $checkoutResp = $this->actingAs($this->admin, 'admin')->postJson(route('admin.pos.checkout'), [
+            'customer_id' => $customer->id,
+            'customer_name' => $customer->name,
+            'items' => [
+                [
+                    'product_id' => $this->product->id,
+                    'quantity' => 2,
+                    'unit_price' => 500.00,
+                ],
+            ],
+            'payment_method' => 'cash',
+            'amount_tendered' => 600.00,
+        ]);
+        $checkoutResp->assertOk();
+        $sale = PosSale::latest()->first();
+        $this->assertEquals(400.00, (float) $sale->balance_due);
+
+        // 1. Check Sales List Page (/sales)
+        $salesListResp = $this->actingAs($this->admin, 'admin')->get(route('pos.sales'));
+        $salesListResp->assertOk();
+        $salesListResp->assertSee($sale->invoice_number);
+        $salesListResp->assertSee(route('pos.sales.show', $sale));
+        $salesListResp->assertSee('Receive Due');
+        $salesListResp->assertSee('receiveModal');
+
+        // 2. Check Invoice Details Page (/sales/{id})
+        $showResp = $this->actingAs($this->admin, 'admin')->get(route('pos.sales.show', $sale));
+        $showResp->assertOk();
+        $showResp->assertSee('Products & Items Sold', false);
+        $showResp->assertSee($this->product->name);
+        $showResp->assertSee($this->product->sku);
+        $showResp->assertSee('500.00');
+        $showResp->assertSee('1,000.00');
+
+        $showResp->assertSee('Payment Track Record', false);
+        $showResp->assertSee('600.00');
+        $showResp->assertSee('Received & Verified', false);
+        $showResp->assertSee('Remaining Due to Collect', false);
+        $showResp->assertSee('400.00');
+
+        $showResp->assertSee('Receive Outstanding Payment', false);
+        $showResp->assertSee(route('pos.sales.payments.store', $sale));
+    }
 }
