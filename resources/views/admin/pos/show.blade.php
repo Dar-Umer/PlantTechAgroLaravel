@@ -12,7 +12,7 @@
     $paymentUrl = Route::has('pos.sales.payments.store') ? route('pos.sales.payments.store', $sale) : route('admin.pos.sales.payments.store', $sale);
 @endphp
 
-<div class="space-y-6 max-w-6xl pb-16" x-data="{ showPaymentModal: {{ request('action') === 'pay' ? 'true' : 'false' }} }">
+<div class="space-y-6 w-full pb-16" x-data="{ showPaymentModal: {{ request('action') === 'pay' ? 'true' : 'false' }} }">
 
     {{-- Breadcrumb & Navigation Bar --}}
     <div class="flex items-center justify-between text-xs text-gray-500">
