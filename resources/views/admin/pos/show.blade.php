@@ -172,7 +172,7 @@
                 <p class="text-2xl font-black text-emerald-700 mt-1">₹{{ number_format($sale->totalProfit(), 2) }}</p>
                 @if($sale->labour_charges > 0 || $sale->labour_cost > 0)
                     <p class="text-xs text-gray-500 mt-1">
-                        Labour Profit: <strong class="{{ $sale->labourProfit() >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">+₹{{ number_format($sale->labourProfit(), 2) }}</strong>
+                        {{ $sale->chargeLabel() }} Profit: <strong class="{{ $sale->labourProfit() >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">+₹{{ number_format($sale->labourProfit(), 2) }}</strong>
                     </p>
                 @endif
             </div>
@@ -305,15 +305,15 @@
                 @if($sale->labour_charges > 0 || $sale->labour_cost > 0)
                     <div class="py-1.5 border-t border-dashed border-gray-200 space-y-1">
                         <div class="flex justify-between text-gray-800 font-semibold">
-                            <span>Labour / Installation:</span>
+                            <span>{{ $sale->chargeLabel() }} Charges:</span>
                             <span class="font-bold text-gray-900">+₹{{ number_format($sale->labour_charges, 2) }}</span>
                         </div>
                         <div class="flex justify-between text-gray-500 text-[11px]">
-                            <span>Internal Labour Cost:</span>
+                            <span>Internal {{ $sale->chargeLabel() }} Cost:</span>
                             <span>₹{{ number_format($sale->labour_cost, 2) }}</span>
                         </div>
                         <div class="flex justify-between text-[11px] font-bold {{ $sale->labourProfit() >= 0 ? 'text-emerald-700' : 'text-rose-600' }}">
-                            <span>Labour Profit:</span>
+                            <span>{{ $sale->chargeLabel() }} Profit:</span>
                             <span>+₹{{ number_format($sale->labourProfit(), 2) }}</span>
                         </div>
                     </div>

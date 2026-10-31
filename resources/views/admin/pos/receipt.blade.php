@@ -159,7 +159,7 @@
                 </tr>
                 @if($sale->labour_charges > 0)
                     <tr>
-                        <td>Labour / Installation:</td>
+                        <td>{{ $sale->chargeLabel() }}:</td>
                         <td class="right">+₹{{ number_format($sale->labour_charges, 2) }}</td>
                     </tr>
                 @endif

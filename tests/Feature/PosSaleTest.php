@@ -520,14 +520,14 @@ class PosSaleTest extends TestCase
         // Check receipt: Customer rate (800) must appear, internal cost (450) must NOT appear
         $receiptResp = $this->actingAs($this->admin, 'admin')->get(route('admin.pos.receipt', $sale));
         $receiptResp->assertOk();
-        $receiptResp->assertSee('Labour / Installation');
+        $receiptResp->assertSee('Labour:');
         $receiptResp->assertSee('800.00');
         $receiptResp->assertDontSee('450.00');
 
         // Check invoice: Customer rate (800) must appear, internal cost (450) must NOT appear
         $invoiceResp = $this->actingAs($this->admin, 'admin')->get(route('admin.pos.invoice', $sale));
         $invoiceResp->assertOk();
-        $invoiceResp->assertSee('Labour / Installation Charges');
+        $invoiceResp->assertSee('Labour Charges:');
         $invoiceResp->assertSee('800.00');
         $invoiceResp->assertDontSee('450.00');
 
@@ -539,6 +539,35 @@ class PosSaleTest extends TestCase
         $showResp->assertSee('450.00');
         $showResp->assertSee('Labour Profit');
         $showResp->assertSee('Estimated Net Profit');
+
+        // Test Freight charge type
+        $freightResp = $this->actingAs($this->admin, 'admin')->postJson(route('admin.pos.checkout'), [
+            'customer_id' => $customer->id,
+            'customer_name' => $customer->name,
+            'customer_phone' => $customer->phone,
+            'items' => [
+                [
+                    'product_id' => $this->product->id,
+                    'quantity' => 1,
+                    'unit_price' => 350.00,
+                ],
+            ],
+            'labour_type' => 'Freight',
+            'labour_charges' => 250.00,
+            'labour_cost' => 150.00,
+            'payment_method' => 'cash',
+            'amount_tendered' => 600.00,
+            'amount_paid' => 600.00,
+        ]);
+        $freightResp->assertOk();
+        $freightSale = PosSale::latest('id')->first();
+        $this->assertEquals('Freight', $freightSale->labour_type);
+        $this->assertEquals(250.00, (float) $freightSale->labour_charges);
+
+        $freightInvoice = $this->actingAs($this->admin, 'admin')->get(route('admin.pos.invoice', $freightSale));
+        $freightInvoice->assertOk();
+        $freightInvoice->assertSee('Freight Charges:');
+        $freightInvoice->assertSee('250.00');
     }
 
     public function test_sales_page_has_vertical_scrolling_and_terminal_remains_docked(): void

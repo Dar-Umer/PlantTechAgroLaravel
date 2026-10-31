@@ -38,6 +38,13 @@ class PosSale extends Model
         'other' => 'Other',
     ];
 
+    public const LABOUR_TYPES = [
+        'Labour' => 'Labour',
+        'Installation' => 'Installation',
+        'Loading' => 'Loading',
+        'Freight' => 'Freight',
+    ];
+
     protected $fillable = [
         'invoice_number',
         'pos_customer_id',
@@ -47,6 +54,7 @@ class PosSale extends Model
         'sale_date',
         'status',
         'subtotal',
+        'labour_type',
         'labour_charges',
         'labour_cost',
         'discount_amount',
@@ -111,6 +119,11 @@ class PosSale extends Model
     public function isCancelled(): bool
     {
         return $this->status === self::STATUS_CANCELLED;
+    }
+
+    public function chargeLabel(): string
+    {
+        return $this->labour_type ?: 'Labour';
     }
 
     public function labourProfit(): float

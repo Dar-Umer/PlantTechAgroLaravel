@@ -388,6 +388,7 @@ class PosController extends Controller
             'items.*.supplier_id' => ['nullable', 'exists:suppliers,id'],
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'discount_type' => ['nullable', 'in:fixed,percent'],
+            'labour_type' => ['nullable', 'string', 'in:Labour,Installation,Loading,Freight'],
             'labour_charges' => ['nullable', 'numeric', 'min:0'],
             'labour_cost' => ['nullable', 'numeric', 'min:0'],
             'payment_method' => ['required', 'in:cash,upi,card,bank_transfer,split,other'],
@@ -482,6 +483,7 @@ class PosController extends Controller
             $orderDiscount = (float) ($validated['discount_amount'] ?? 0);
             $labourCharges = (float) ($validated['labour_charges'] ?? 0);
             $labourCost = (float) ($validated['labour_cost'] ?? 0);
+            $labourType = $validated['labour_type'] ?? 'Labour';
             $rawGrandTotal = max(0, $subtotal + $labourCharges - $orderDiscount);
             $roundedGrandTotal = round($rawGrandTotal);
             $roundOff = round($roundedGrandTotal - $rawGrandTotal, 2);
@@ -563,6 +565,7 @@ class PosController extends Controller
                 'sale_date' => now(),
                 'status' => PosSale::STATUS_COMPLETED,
                 'subtotal' => $subtotal,
+                'labour_type' => $labourType,
                 'labour_charges' => $labourCharges,
                 'labour_cost' => $labourCost,
                 'discount_amount' => $orderDiscount,

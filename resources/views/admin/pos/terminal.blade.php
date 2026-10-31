@@ -437,13 +437,19 @@
             {{-- DOCKED CART FOOTER: CLEAN, COMPACT, DEDICATED CHECKOUT TRIGGER --}}
             <div class="p-2.5 sm:p-4 bg-slate-50 border-t border-slate-200 flex-shrink-0 space-y-2 shadow-md"
                  x-data="{ showLabourInputs: false }">
-                {{-- Labour / Installation Charges Inputs (Collapsible on mobile when 0 to maximize items visibility) --}}
+                {{-- Labour / Installation / Loading / Freight Charges Inputs (Collapsible on mobile when 0 to maximize items visibility) --}}
                 <div class="bg-white rounded-xl p-2 sm:p-2.5 border border-slate-200/90 shadow-2xs">
                     <div class="flex items-center justify-between cursor-pointer select-none"
                          @click="showLabourInputs = !showLabourInputs">
-                        <div class="flex items-center gap-1.5">
+                        <div class="flex items-center gap-1.5" @click.stop>
                             <svg class="w-3.5 h-3.5 text-brand-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>
-                            <span class="text-[11px] font-bold text-slate-700">Labour / Installation</span>
+                            <select x-model="labourType"
+                                    class="text-[11px] font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg px-2 py-0.5 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 cursor-pointer transition">
+                                <option value="Labour">Labour</option>
+                                <option value="Installation">Installation</option>
+                                <option value="Loading">Loading</option>
+                                <option value="Freight">Freight</option>
+                            </select>
                             <span x-show="labourCharges > 0" class="text-brand-700 font-extrabold text-[10px]" x-text="'(₹' + Number(labourCharges).toFixed(0) + ')'"></span>
                         </div>
                         <div class="flex items-center gap-1.5">
@@ -512,6 +518,9 @@
                     <div class="text-right">
                         <span class="text-[10px] sm:text-[11px] text-slate-500 block leading-tight">Net Payable</span>
                         <span class="text-base sm:text-lg font-black text-brand-700 leading-tight" x-text="'₹' + cartGrandTotal.toFixed(0)"></span>
+                        <template x-if="labourCharges > 0">
+                            <span class="text-[10px] text-slate-500 block leading-tight">Incl. ₹<span x-text="Number(labourCharges).toFixed(0)"></span> <span x-text="labourType"></span></span>
+                        </template>
                     </div>
                 </div>
 
@@ -552,7 +561,7 @@
                     <span class="text-xs text-slate-400 block font-semibold uppercase">Total Payable</span>
                     <span class="text-xl sm:text-2xl font-black text-brand-700" x-text="'₹' + cartGrandTotal.toFixed(0)"></span>
                     <template x-if="labourCharges > 0">
-                        <span class="text-[10px] text-slate-500 block font-medium">Incl. ₹<span x-text="Number(labourCharges).toFixed(0)"></span> Labour</span>
+                        <span class="text-[10px] text-slate-500 block font-medium">Incl. ₹<span x-text="Number(labourCharges).toFixed(0)"></span> <span x-text="labourType"></span></span>
                     </template>
                 </div>
             </div>
@@ -1015,6 +1024,7 @@
             customerRequiredWarning: false,
             cart: [],
             orderDiscount: 0,
+            labourType: 'Labour',
             labourCost: 0,
             labourCharges: 0,
             showPaymentModal: false,
@@ -1447,6 +1457,7 @@
                     customer_name: cust ? cust.name : 'Unknown Customer',
                     items: [...this.cart],
                     discount: this.orderDiscount,
+                    labour_type: this.labourType,
                     labour_charges: this.labourCharges,
                     labour_cost: this.labourCost,
                     total: this.cartGrandTotal,
@@ -1454,6 +1465,7 @@
                 });
                 this.cart = [];
                 this.orderDiscount = 0;
+                this.labourType = 'Labour';
                 this.labourCharges = 0;
                 this.labourCost = 0;
                 this.selectedCustomerId = '';
@@ -1466,6 +1478,7 @@
                 this.cart = hc.items;
                 this.selectedCustomerId = hc.customer_id;
                 this.orderDiscount = hc.discount;
+                this.labourType = hc.labour_type || 'Labour';
                 this.labourCharges = hc.labour_charges || 0;
                 this.labourCost = hc.labour_cost || 0;
                 this.heldCarts.splice(idx, 1);
@@ -1583,6 +1596,7 @@
                         supplier_id: i.supplier_id || null,
                     })),
                     discount_amount: this.orderDiscount || 0,
+                    labour_type: this.labourType,
                     labour_charges: Number(this.labourCharges || 0),
                     labour_cost: Number(this.labourCost || 0),
                     payment_method: this.paymentMethod,
@@ -1627,6 +1641,7 @@
             resetCart() {
                 this.cart = [];
                 this.orderDiscount = 0;
+                this.labourType = 'Labour';
                 this.labourCharges = 0;
                 this.labourCost = 0;
                 this.amountTendered = null;

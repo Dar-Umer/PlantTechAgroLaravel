@@ -161,7 +161,7 @@
                     </div>
                     @if($sale->labour_charges > 0)
                         <div class="flex justify-between py-1 text-gray-700 font-medium">
-                            <span>Labour / Installation Charges:</span>
+                            <span>{{ $sale->chargeLabel() }} Charges:</span>
                             <span class="font-bold text-gray-900">+₹{{ number_format($sale->labour_charges, 2) }}</span>
                         </div>
                     @endif
