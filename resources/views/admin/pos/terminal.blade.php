@@ -334,9 +334,9 @@
             <div class="flex-1 flex flex-col min-h-0 overflow-hidden bg-white">
                 {{-- Table Header --}}
                 <div class="px-3 sm:px-4 py-1.5 bg-slate-100/80 border-b border-slate-200 text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider grid grid-cols-12 gap-1.5 sm:gap-2 flex-shrink-0">
-                    <div class="col-span-5 sm:col-span-6">Item & Lot</div>
-                    <div class="col-span-2 text-right">Rate (₹)</div>
+                    <div class="col-span-5">Item & Lot</div>
                     <div class="col-span-3 text-center">Qty</div>
+                    <div class="col-span-2 text-right">Rate (₹)</div>
                     <div class="col-span-2 text-right">Total (₹)</div>
                 </div>
 
@@ -345,7 +345,7 @@
                     <template x-for="(item, idx) in cart" :key="item.cart_key">
                         <div class="py-2 px-1 hover:bg-slate-50/80 rounded-xl transition grid grid-cols-12 gap-2 items-center group">
                             {{-- Col 1: Product Name, Unit, Batch Info --}}
-                            <div class="col-span-5 sm:col-span-6 min-w-0 pr-1">
+                            <div class="col-span-5 min-w-0 pr-1">
                                 <h4 class="text-xs font-bold text-slate-900 truncate" x-text="item.name"></h4>
                                 <div class="flex items-center flex-wrap gap-1 mt-0.5 text-[10px] text-slate-500">
                                     <span class="text-slate-400" x-text="'(' + item.unit + ')'"></span>
@@ -370,17 +370,7 @@
                                 </div>
                             </div>
 
-                            {{-- Col 2: Editable Unit Rate --}}
-                            <div class="col-span-2 text-right">
-                                <input type="number"
-                                       x-model.number="item.unit_price"
-                                       @focus="$event.target.select()"
-                                       @blur="if(item.unit_price === '' || item.unit_price === null || item.unit_price < 0) item.unit_price = 0"
-                                       step="1" min="0"
-                                       class="w-full text-right font-bold text-xs text-slate-900 bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 focus:border-brand-500 rounded-lg px-1.5 py-1 focus:outline-none transition">
-                            </div>
-
-                            {{-- Col 3: Qty Stepper --}}
+                            {{-- Col 2: Qty Stepper --}}
                             <div class="col-span-3 flex items-center justify-center">
                                 <div class="flex items-center border border-slate-200 rounded-xl bg-slate-50 overflow-hidden shadow-2xs">
                                     <button type="button" @click="updateQty(item, -1)" class="w-6 h-7 sm:w-7 sm:h-7 flex items-center justify-center text-slate-600 hover:bg-slate-200 active:bg-slate-300 transition font-bold text-sm">-</button>
@@ -392,6 +382,16 @@
                                            class="w-10 sm:w-12 text-center text-xs font-black bg-transparent border-0 focus:ring-0 p-0 text-slate-900">
                                     <button type="button" @click="updateQty(item, 1)" class="w-6 h-7 sm:w-7 sm:h-7 flex items-center justify-center text-slate-600 hover:bg-slate-200 active:bg-slate-300 transition font-bold text-sm">+</button>
                                 </div>
+                            </div>
+
+                            {{-- Col 3: Editable Unit Rate --}}
+                            <div class="col-span-2 text-right">
+                                <input type="number"
+                                       x-model.number="item.unit_price"
+                                       @focus="$event.target.select()"
+                                       @blur="if(item.unit_price === '' || item.unit_price === null || item.unit_price < 0) item.unit_price = 0"
+                                       step="1" min="0"
+                                       class="w-full text-right font-bold text-xs text-slate-900 bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 focus:border-brand-500 rounded-lg px-1.5 py-1 focus:outline-none transition">
                             </div>
 
                             {{-- Col 4: Total & Remove Button --}}
