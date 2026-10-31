@@ -372,25 +372,32 @@
 
                             {{-- Col 2: Qty Stepper --}}
                             <div class="col-span-3 flex items-center justify-center">
-                                <div class="flex items-center border border-slate-200 rounded-xl bg-slate-50 overflow-hidden shadow-2xs">
-                                    <button type="button" @click="updateQty(item, -1)" class="w-6 h-7 sm:w-7 sm:h-7 flex items-center justify-center text-slate-600 hover:bg-slate-200 active:bg-slate-300 transition font-bold text-sm">-</button>
+                                <div :id="'cart-qty-stepper-' + idx"
+                                     class="flex items-center border border-slate-200 rounded-xl bg-slate-50 overflow-hidden shadow-2xs">
+                                    <button type="button" tabindex="-1" @click="updateQty(item, -1)" class="w-6 h-7 sm:w-7 sm:h-7 flex items-center justify-center text-slate-600 hover:bg-slate-200 active:bg-slate-300 transition font-bold text-sm select-none">-</button>
                                     <input type="number"
+                                           :id="'cart-qty-' + idx"
                                            x-model.number="item.quantity"
-                                           @focus="$event.target.select()"
-                                           @blur="if(!item.quantity || item.quantity < 0.01) item.quantity = 1"
-                                           step="1" min="0.01"
+                                           @focus="item._editingQty = true; $event.target.select()"
+                                           @click="$event.target.select()"
+                                           @blur="handleQtyBlur($event, item, idx)"
+                                           @keydown.enter.prevent="handleQtyEnter(item, idx)"
+                                           step="any" min="0.01"
                                            class="w-10 sm:w-12 text-center text-xs font-black bg-transparent border-0 focus:ring-0 p-0 text-slate-900">
-                                    <button type="button" @click="updateQty(item, 1)" class="w-6 h-7 sm:w-7 sm:h-7 flex items-center justify-center text-slate-600 hover:bg-slate-200 active:bg-slate-300 transition font-bold text-sm">+</button>
+                                    <button type="button" tabindex="-1" @click="updateQty(item, 1)" class="w-6 h-7 sm:w-7 sm:h-7 flex items-center justify-center text-slate-600 hover:bg-slate-200 active:bg-slate-300 transition font-bold text-sm select-none">+</button>
                                 </div>
                             </div>
 
                             {{-- Col 3: Editable Unit Rate --}}
                             <div class="col-span-2 text-right">
                                 <input type="number"
+                                       :id="'cart-rate-' + idx"
                                        x-model.number="item.unit_price"
                                        @focus="$event.target.select()"
+                                       @click="$event.target.select()"
                                        @blur="if(item.unit_price === '' || item.unit_price === null || item.unit_price < 0) item.unit_price = 0"
-                                       step="1" min="0"
+                                       @keydown.enter.prevent="$event.target.blur()"
+                                       step="any" min="0"
                                        class="w-full text-right font-bold text-xs text-slate-900 bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 focus:border-brand-500 rounded-lg px-1.5 py-1 focus:outline-none transition">
                             </div>
 
@@ -1028,6 +1035,9 @@
                 this.filteredProducts = this.allProducts;
                 this.updateClock();
                 setInterval(() => this.updateClock(), 1000);
+                window.addEventListener('mousedown', (e) => {
+                    this._lastMouseDownTarget = e.target;
+                }, true);
             },
 
             updateClock() {
@@ -1236,6 +1246,55 @@
             updateQty(item, delta) {
                 const current = Number(item.quantity) || 0;
                 item.quantity = Math.max(0.01, current + delta);
+            },
+
+            focusRate(idx) {
+                setTimeout(() => {
+                    if (!this.cart[idx]) return;
+                    const rateInput = document.getElementById('cart-rate-' + idx);
+                    if (rateInput) {
+                        rateInput.focus();
+                        rateInput.select();
+                    }
+                }, 30);
+            },
+
+            handleQtyBlur(event, item, idx) {
+                if (!item.quantity || item.quantity < 0.01) {
+                    item.quantity = 1;
+                }
+
+                if (!item._editingQty) return;
+                item._editingQty = false;
+
+                const clicked = this._lastMouseDownTarget || event.relatedTarget;
+
+                // 1. If clicked directly on this item's rate input, let it focus naturally
+                if (clicked && (clicked.id === 'cart-rate-' + idx || clicked.closest('#cart-rate-' + idx))) {
+                    return;
+                }
+
+                // 2. If clicked on this item's stepper buttons (-) or (+), keep editing qty
+                if (clicked && clicked.closest('#cart-qty-stepper-' + idx)) {
+                    return;
+                }
+
+                // 3. If clicked on an action button (Remove, Checkout, Clear Cart, Switch batch/supplier, etc.)
+                if (clicked && (clicked.closest('button') || clicked.closest('a') || (clicked.tagName === 'INPUT' && clicked.id !== 'cart-rate-' + idx))) {
+                    return;
+                }
+
+                // 4. Clicked outside (on table row, cart area, background, etc.):
+                // Automatically tab/shift focus to the Rate input field and select all text so user can enter the rate!
+                this.focusRate(idx);
+            },
+
+            handleQtyEnter(item, idx) {
+                if (!item.quantity || item.quantity < 0.01) {
+                    item.quantity = 1;
+                }
+                item._editingQty = false;
+                this.focusRate(idx);
             },
 
             itemTotal(item) {

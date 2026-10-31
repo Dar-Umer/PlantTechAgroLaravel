@@ -555,4 +555,14 @@ class PosSaleTest extends TestCase
         $terminalResp->assertOk();
         $terminalResp->assertSee('overflow-hidden', false);
     }
+
+    public function test_terminal_cart_inputs_support_auto_tab_from_qty_to_rate(): void
+    {
+        $response = $this->actingAs($this->admin, 'admin')->get(route('pos.terminal'));
+        $response->assertOk();
+        $response->assertSee('handleQtyBlur', false);
+        $response->assertSee('focusRate', false);
+        $response->assertSee(':id="\'cart-rate-\' + idx"', false);
+        $response->assertSee(':id="\'cart-qty-\' + idx"', false);
+    }
 }
