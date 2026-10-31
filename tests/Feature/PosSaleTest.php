@@ -882,4 +882,78 @@ class PosSaleTest extends TestCase
         $showResp->assertSee('Loading Charges:');
         $showResp->assertSee('Freight Charges:');
     }
+
+    public function test_invoice_groups_multi_batch_sale_of_same_product(): void
+    {
+        $customer = PosCustomer::create([
+            'name' => 'Aniyat Ahmad',
+            'phone' => '9596495998',
+            'outstanding_balance' => 0.00,
+        ]);
+
+        $batch1 = ProductBatch::create([
+            'product_id' => $this->product->id,
+            'batch_number' => 'LOT-261029-B162',
+            'current_qty' => 50,
+            'unit_cost' => 200,
+            'selling_price' => 1150.00,
+            'is_active' => true,
+        ]);
+
+        $batch2 = ProductBatch::create([
+            'product_id' => $this->product->id,
+            'batch_number' => 'LOT-261031-52F6',
+            'current_qty' => 100,
+            'unit_cost' => 200,
+            'selling_price' => 1150.00,
+            'is_active' => true,
+        ]);
+
+        $payload = [
+            'customer_id' => $customer->id,
+            'customer_name' => $customer->name,
+            'items' => [
+                [
+                    'product_id' => $this->product->id,
+                    'batch_id' => $batch1->id,
+                    'quantity' => 4,
+                    'unit_price' => 1150.00,
+                ],
+                [
+                    'product_id' => $this->product->id,
+                    'batch_id' => $batch2->id,
+                    'quantity' => 6,
+                    'unit_price' => 1150.00,
+                ],
+            ],
+            'payment_method' => 'cash',
+            'amount_tendered' => 11500.00,
+            'amount_paid' => 11500.00,
+        ];
+
+        $res = $this->actingAs($this->admin, 'admin')->postJson(route('admin.pos.checkout'), $payload);
+        $res->assertOk();
+
+        $sale = PosSale::latest('id')->first();
+        $this->assertNotNull($sale);
+        $this->assertEquals(2, $sale->items()->count());
+
+        $invResp = $this->actingAs($this->admin, 'admin')->get(route('admin.pos.invoice', $sale));
+        $invResp->assertOk();
+
+        // Must show batches with quantities
+        $invResp->assertSee('LOT-261029-B162');
+        $invResp->assertSee('4 bottle');
+        $invResp->assertSee('LOT-261031-52F6');
+        $invResp->assertSee('6 bottle');
+
+        // Total combined quantity and amount
+        $invResp->assertSee('10.00 bottle');
+        $invResp->assertSee('11,500.00');
+
+        // Row number #2 should NOT exist because there is only 1 merged product row
+        // In the table body, the product name should appear only once
+        $content = $invResp->getContent();
+        $this->assertEquals(1, substr_count($content, '<td class="py-3 px-2 font-semibold text-gray-900 align-top">'));
+    }
 }

@@ -114,18 +114,57 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 text-xs">
-                        @foreach($sale->items as $i => $item)
+                        @php
+                            $groupedItems = $sale->items->groupBy(function($item) {
+                                return $item->product_id ?: $item->product_name;
+                            });
+                            $rowNum = 1;
+                        @endphp
+                        @foreach($groupedItems as $group)
+                            @php
+                                $first = $group->first();
+                                $productName = $first->product_name;
+                                $unit = $first->unit;
+                                $totalQty = $group->sum('quantity');
+                                $totalAmount = $group->sum('total_price');
+                                $unitPrice = $totalQty > 0 ? ($totalAmount / $totalQty) : $first->unit_price;
+
+                                $batches = [];
+                                foreach ($group as $item) {
+                                    $bNum = $item->batch?->batch_number ?: ($item->batch_id ? 'Lot #'.$item->batch_id : 'Auto Lot');
+                                    if (!isset($batches[$bNum])) {
+                                        $batches[$bNum] = [
+                                            'batch_number' => $bNum,
+                                            'quantity' => 0,
+                                        ];
+                                    }
+                                    $batches[$bNum]['quantity'] += (float) $item->quantity;
+                                }
+                            @endphp
                             <tr>
-                                <td class="py-3 px-2 text-gray-400">{{ $i + 1 }}</td>
-                                <td class="py-3 px-2 font-semibold text-gray-900">
-                                    {{ $item->product_name }}
+                                <td class="py-3 px-2 text-gray-400 align-top">{{ $rowNum++ }}</td>
+                                <td class="py-3 px-2 font-semibold text-gray-900 align-top">
+                                    {{ $productName }}
                                 </td>
-                                <td class="py-3 px-2 text-gray-500 font-mono">
-                                    {{ $item->batch?->batch_number ?? 'Auto Lot' }}
+                                <td class="py-3 px-2 align-top">
+                                    @if(count($batches) > 1)
+                                        <div class="space-y-1">
+                                            @foreach($batches as $b)
+                                                <div class="text-[11px] leading-tight flex items-baseline gap-1">
+                                                    <span class="font-mono text-gray-800">{{ $b['batch_number'] }}:</span>
+                                                    <span class="font-bold text-gray-600">{{ number_format($b['quantity'], $b['quantity'] == (int)$b['quantity'] ? 0 : 2) }} {{ $unit }}</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <span class="font-mono text-gray-700">
+                                            {{ reset($batches)['batch_number'] }}
+                                        </span>
+                                    @endif
                                 </td>
-                                <td class="py-3 px-2 text-right font-medium text-gray-800">{{ number_format($item->quantity, 2) }} {{ $item->unit }}</td>
-                                <td class="py-3 px-2 text-right font-medium text-gray-800">{{ number_format($item->unit_price, 2) }}</td>
-                                <td class="py-3 px-2 text-right font-bold text-gray-900">{{ number_format($item->total_price, 2) }}</td>
+                                <td class="py-3 px-2 text-right font-medium text-gray-800 align-top">{{ number_format($totalQty, 2) }} {{ $unit }}</td>
+                                <td class="py-3 px-2 text-right font-medium text-gray-800 align-top">{{ number_format($unitPrice, 2) }}</td>
+                                <td class="py-3 px-2 text-right font-bold text-gray-900 align-top">{{ number_format($totalAmount, 2) }}</td>
                             </tr>
                         @endforeach
                     </tbody>
