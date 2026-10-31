@@ -537,4 +537,22 @@ class PosSaleTest extends TestCase
         $showResp->assertSee('Labour Profit');
         $showResp->assertSee('Estimated Net Profit');
     }
+
+    public function test_sales_page_has_vertical_scrolling_and_terminal_remains_docked(): void
+    {
+        // 1. Sales list page (/sales and /admin/pos/sales) must have overflow-y-auto so mouse wheel scrolling works
+        $salesResp = $this->actingAs($this->admin, 'admin')->get(route('pos.sales'));
+        $salesResp->assertOk();
+        $salesResp->assertSee('overflow-y-auto', false);
+        $salesResp->assertDontSee('<main class="flex-1 flex flex-col overflow-hidden', false);
+
+        $adminSalesResp = $this->actingAs($this->admin, 'admin')->get(route('admin.pos.sales'));
+        $adminSalesResp->assertOk();
+        $adminSalesResp->assertSee('overflow-y-auto', false);
+
+        // 2. Terminal page (/terminal and /admin/pos) must remain docked full height without outer scrollbars
+        $terminalResp = $this->actingAs($this->admin, 'admin')->get(route('pos.terminal'));
+        $terminalResp->assertOk();
+        $terminalResp->assertSee('overflow-hidden', false);
+    }
 }

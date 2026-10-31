@@ -98,6 +98,7 @@
         $isPosOnlyUser = (bool) $currentAdmin?->isPosOnly();
         $isPosSubdomainOrPort = in_array(request()->getHost(), $posHosts, true) || (int) request()->getPort() === $posPort;
         $isPosContext = $isPosSubdomainOrPort || request()->routeIs('pos.*') || request()->routeIs('admin.pos.*') || $isPosOnlyUser;
+        $isPosTerminal = request()->routeIs('pos.terminal') || request()->routeIs('admin.pos.terminal');
         $brandHomeUrl = $isPosContext ? (Route::has('pos.terminal') ? route('pos.terminal') : route('admin.pos.terminal')) : route('admin.dashboard');
     @endphp
 </head>
@@ -894,7 +895,7 @@
             @endif
 
             <!-- Page Content -->
-            <main class="{{ $isPosContext ? 'flex-1 flex flex-col overflow-hidden p-0 relative min-h-0' : 'flex-1 overflow-y-auto p-4 lg:p-6 relative' }}">
+            <main class="{{ $isPosTerminal ? 'flex-1 flex flex-col overflow-hidden p-0 relative min-h-0' : 'flex-1 overflow-y-auto p-4 lg:p-6 relative' }}">
                 {{-- Floating Toast Notifications (Auto-dismissing) --}}
                 @if(session('success'))
                     <div x-data="{ show: true }"
