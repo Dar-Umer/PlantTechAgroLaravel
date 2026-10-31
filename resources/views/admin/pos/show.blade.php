@@ -172,7 +172,7 @@
                 <p class="text-2xl font-black text-emerald-700 mt-1">₹{{ number_format($sale->totalProfit(), 2) }}</p>
                 @if($sale->labour_charges > 0 || $sale->labour_cost > 0)
                     <p class="text-xs text-gray-500 mt-1">
-                        {{ $sale->chargeLabel() }} Profit: <strong class="{{ $sale->labourProfit() >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">+₹{{ number_format($sale->labourProfit(), 2) }}</strong>
+                        Charges Profit: <strong class="{{ $sale->labourProfit() >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">{{ $sale->labourProfit() >= 0 ? '+' : '' }}₹{{ number_format($sale->labourProfit(), 2) }}</strong>
                     </p>
                 @endif
             </div>
@@ -302,7 +302,31 @@
                     <span class="font-bold text-gray-900">₹{{ number_format($sale->subtotal, 2) }}</span>
                 </div>
 
-                @if($sale->labour_charges > 0 || $sale->labour_cost > 0)
+                @if(!empty($sale->extraChargesList()))
+                    @foreach($sale->extraChargesList() as $charge)
+                        @php
+                            $cRate = (float)($charge['rate'] ?? 0);
+                            $cCost = (float)($charge['cost'] ?? 0);
+                            $cProfit = $cRate - $cCost;
+                        @endphp
+                        <div class="py-1.5 border-t border-dashed border-gray-200 space-y-1">
+                            <div class="flex justify-between text-gray-800 font-semibold">
+                                <span>{{ $charge['type'] }} Charges:</span>
+                                <span class="font-bold text-gray-900">+₹{{ number_format($cRate, 2) }}</span>
+                            </div>
+                            @if($cCost > 0)
+                                <div class="flex justify-between text-gray-500 text-[11px]">
+                                    <span>Internal {{ $charge['type'] }} Cost:</span>
+                                    <span>₹{{ number_format($cCost, 2) }}</span>
+                                </div>
+                            @endif
+                            <div class="flex justify-between text-[11px] font-bold {{ $cProfit >= 0 ? 'text-emerald-700' : 'text-rose-600' }}">
+                                <span>{{ $charge['type'] }} Profit:</span>
+                                <span>{{ $cProfit >= 0 ? '+' : '' }}₹{{ number_format($cProfit, 2) }}</span>
+                            </div>
+                        </div>
+                    @endforeach
+                @elseif($sale->labour_charges > 0 || $sale->labour_cost > 0)
                     <div class="py-1.5 border-t border-dashed border-gray-200 space-y-1">
                         <div class="flex justify-between text-gray-800 font-semibold">
                             <span>{{ $sale->chargeLabel() }} Charges:</span>
@@ -314,7 +338,7 @@
                         </div>
                         <div class="flex justify-between text-[11px] font-bold {{ $sale->labourProfit() >= 0 ? 'text-emerald-700' : 'text-rose-600' }}">
                             <span>{{ $sale->chargeLabel() }} Profit:</span>
-                            <span>+₹{{ number_format($sale->labourProfit(), 2) }}</span>
+                            <span>{{ $sale->labourProfit() >= 0 ? '+' : '' }}₹{{ number_format($sale->labourProfit(), 2) }}</span>
                         </div>
                     </div>
                 @endif

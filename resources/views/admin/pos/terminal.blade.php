@@ -437,20 +437,14 @@
             {{-- DOCKED CART FOOTER: CLEAN, COMPACT, DEDICATED CHECKOUT TRIGGER --}}
             <div class="p-2.5 sm:p-4 bg-slate-50 border-t border-slate-200 flex-shrink-0 space-y-2 shadow-md"
                  x-data="{ showLabourInputs: false }">
-                {{-- Labour / Installation / Loading / Freight Charges Inputs (Collapsible on mobile when 0 to maximize items visibility) --}}
+                {{-- Additional Charges (Labour, Loading, Freight, Installation) with multi-row support --}}
                 <div class="bg-white rounded-xl p-2 sm:p-2.5 border border-slate-200/90 shadow-2xs">
                     <div class="flex items-center justify-between cursor-pointer select-none"
                          @click="showLabourInputs = !showLabourInputs">
-                        <div class="flex items-center gap-1.5" @click.stop>
+                        <div class="flex items-center gap-1.5">
                             <svg class="w-3.5 h-3.5 text-brand-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>
-                            <select x-model="labourType"
-                                    class="text-[11px] font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg px-2 py-0.5 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 cursor-pointer transition">
-                                <option value="Labour">Labour</option>
-                                <option value="Installation">Installation</option>
-                                <option value="Loading">Loading</option>
-                                <option value="Freight">Freight</option>
-                            </select>
-                            <span x-show="labourCharges > 0" class="text-brand-700 font-extrabold text-[10px]" x-text="'(₹' + Number(labourCharges).toFixed(0) + ')'"></span>
+                            <span class="text-xs font-bold text-slate-800">Additional Charges</span>
+                            <span x-show="totalExtraCharges > 0" class="text-brand-700 font-extrabold text-[11px]" x-text="'(+₹' + Number(totalExtraCharges).toFixed(0) + ')'"></span>
                         </div>
                         <div class="flex items-center gap-1.5">
                             <template x-if="labourProfit > 0">
@@ -463,39 +457,77 @@
                                     -₹<span x-text="Math.abs(labourProfit).toFixed(0)"></span> Loss
                                 </span>
                             </template>
-                            <span x-show="labourCharges <= 0 && labourCost <= 0" class="text-[10px] text-brand-600 font-semibold" x-text="showLabourInputs ? 'Hide' : '+ Add'"></span>
+                            <span x-show="totalExtraCharges <= 0 && totalExtraCost <= 0" class="text-[10px] text-brand-600 font-semibold" x-text="showLabourInputs ? 'Hide' : '+ Add'"></span>
                             <svg class="w-3.5 h-3.5 text-slate-400 transition-transform duration-150"
-                                 :class="(showLabourInputs || labourCharges > 0 || labourCost > 0) ? 'rotate-180' : ''"
+                                 :class="(showLabourInputs || totalExtraCharges > 0 || totalExtraCost > 0) ? 'rotate-180' : ''"
                                  fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </div>
                     </div>
 
-                    <div x-show="showLabourInputs || labourCharges > 0 || labourCost > 0" x-cloak class="grid grid-cols-2 gap-2 text-xs pt-1.5 mt-1.5 border-t border-slate-100">
-                        <div>
-                            <label class="block text-[10px] font-semibold text-slate-500 mb-0.5">
-                                Actual Cost (₹)
-                                <span class="text-[9px] text-slate-400 font-normal">(Internal)</span>
-                            </label>
-                            <input type="number"
-                                   x-model.number="labourCost"
-                                   @focus="$event.target.select()"
-                                   @blur="if(!labourCost || labourCost < 0) labourCost = 0"
-                                   min="0" step="1"
-                                   placeholder="0"
-                                   class="w-full text-right font-bold text-xs bg-slate-50 focus:bg-white border border-slate-200 focus:border-brand-500 rounded-lg px-2 py-1 text-slate-800 focus:outline-none transition">
+                    <div x-show="showLabourInputs || totalExtraCharges > 0 || totalExtraCost > 0" x-cloak class="space-y-2 pt-2 mt-2 border-t border-slate-100">
+                        {{-- Column Header labels --}}
+                        <div class="grid grid-cols-12 gap-1.5 px-0.5 text-[10px] font-bold text-slate-500">
+                            <div class="col-span-5">Charge Type</div>
+                            <div class="col-span-3 text-right">Actual Cost</div>
+                            <div class="col-span-3 text-right text-brand-700">Billed Rate</div>
+                            <div class="col-span-1"></div>
                         </div>
-                        <div>
-                            <label class="block text-[10px] font-semibold text-slate-700 mb-0.5">
-                                Customer Rate (₹)
-                                <span class="text-[9px] text-brand-600 font-normal">(Billed)</span>
-                            </label>
-                            <input type="number"
-                                   x-model.number="labourCharges"
-                                   @focus="$event.target.select()"
-                                   @blur="if(!labourCharges || labourCharges < 0) labourCharges = 0"
-                                   min="0" step="1"
-                                   placeholder="0"
-                                   class="w-full text-right font-bold text-xs bg-slate-50 focus:bg-white border border-slate-200 focus:border-brand-500 rounded-lg px-2 py-1 text-brand-700 focus:outline-none transition">
+
+                        {{-- Dynamic rows --}}
+                        <template x-for="(charge, cIdx) in extraCharges" :key="cIdx">
+                            <div class="grid grid-cols-12 gap-1.5 items-center">
+                                <div class="col-span-5">
+                                    <select x-model="charge.type"
+                                            class="w-full text-[11px] font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg px-1.5 py-1 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 cursor-pointer">
+                                        <option value="Labour">Labour</option>
+                                        <option value="Loading">Loading</option>
+                                        <option value="Freight">Freight</option>
+                                        <option value="Installation">Installation</option>
+                                    </select>
+                                </div>
+                                <div class="col-span-3">
+                                    <input type="number"
+                                           x-model.number="charge.cost"
+                                           @focus="$event.target.select()"
+                                           @blur="if(!charge.cost || charge.cost < 0) charge.cost = 0"
+                                           min="0" step="1"
+                                           placeholder="0"
+                                           title="Actual Cost (Internal)"
+                                           class="w-full text-right font-medium text-xs bg-slate-50 focus:bg-white border border-slate-200 focus:border-brand-500 rounded-lg px-1.5 py-1 text-slate-800 focus:outline-none transition">
+                                </div>
+                                <div class="col-span-3">
+                                    <input type="number"
+                                           x-model.number="charge.rate"
+                                           @focus="$event.target.select()"
+                                           @blur="if(!charge.rate || charge.rate < 0) charge.rate = 0"
+                                           min="0" step="1"
+                                           placeholder="0"
+                                           title="Customer Rate (Billed)"
+                                           class="w-full text-right font-bold text-xs bg-slate-50 focus:bg-white border border-slate-200 focus:border-brand-500 rounded-lg px-1.5 py-1 text-brand-700 focus:outline-none transition">
+                                </div>
+                                <div class="col-span-1 flex justify-center">
+                                    <button type="button"
+                                            @click="removeExtraCharge(cIdx)"
+                                            x-show="extraCharges.length > 1 || charge.rate > 0 || charge.cost > 0"
+                                            title="Remove charge"
+                                            class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+
+                        {{-- Add button & summary helper --}}
+                        <div class="flex items-center justify-between pt-1">
+                            <button type="button"
+                                    @click="addExtraCharge()"
+                                    class="inline-flex items-center gap-1 text-[11px] font-bold text-brand-700 hover:text-brand-800 hover:underline">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                                <span>+ Add Another Charge</span>
+                            </button>
+                            <span class="text-[10px] text-slate-400" x-show="extraCharges.length > 1">
+                                <span x-text="extraCharges.length"></span> charges configured
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -508,18 +540,18 @@
                         <div class="flex items-center gap-1 text-slate-600">
                             <span>Disc: ₹</span>
                             <input type="number"
-                                   x-model.number="orderDiscount"
-                                   @focus="$event.target.select()"
-                                   @blur="if(!orderDiscount || orderDiscount < 0) orderDiscount = 0"
-                                   min="0" step="1" placeholder="0"
-                                   class="w-14 sm:w-16 text-right text-xs bg-white border border-slate-200 rounded-lg px-1.5 py-0.5 font-bold text-slate-900 focus:outline-none focus:border-brand-500">
+                                    x-model.number="orderDiscount"
+                                    @focus="$event.target.select()"
+                                    @blur="if(!orderDiscount || orderDiscount < 0) orderDiscount = 0"
+                                    min="0" step="1" placeholder="0"
+                                    class="w-14 sm:w-16 text-right text-xs bg-white border border-slate-200 rounded-lg px-1.5 py-0.5 font-bold text-slate-900 focus:outline-none focus:border-brand-500">
                         </div>
                     </div>
                     <div class="text-right">
                         <span class="text-[10px] sm:text-[11px] text-slate-500 block leading-tight">Net Payable</span>
                         <span class="text-base sm:text-lg font-black text-brand-700 leading-tight" x-text="'₹' + cartGrandTotal.toFixed(0)"></span>
-                        <template x-if="labourCharges > 0">
-                            <span class="text-[10px] text-slate-500 block leading-tight">Incl. ₹<span x-text="Number(labourCharges).toFixed(0)"></span> <span x-text="labourType"></span></span>
+                        <template x-if="totalExtraCharges > 0">
+                            <span class="text-[10px] text-slate-500 block leading-tight">Incl. ₹<span x-text="Number(totalExtraCharges).toFixed(0)"></span> Charges</span>
                         </template>
                     </div>
                 </div>
@@ -560,8 +592,8 @@
                 <div class="text-right">
                     <span class="text-xs text-slate-400 block font-semibold uppercase">Total Payable</span>
                     <span class="text-xl sm:text-2xl font-black text-brand-700" x-text="'₹' + cartGrandTotal.toFixed(0)"></span>
-                    <template x-if="labourCharges > 0">
-                        <span class="text-[10px] text-slate-500 block font-medium">Incl. ₹<span x-text="Number(labourCharges).toFixed(0)"></span> <span x-text="labourType"></span></span>
+                    <template x-if="totalExtraCharges > 0">
+                        <span class="text-[10px] text-slate-500 block font-medium">Incl. ₹<span x-text="Number(totalExtraCharges).toFixed(0)"></span> Charges</span>
                     </template>
                 </div>
             </div>
@@ -1024,9 +1056,9 @@
             customerRequiredWarning: false,
             cart: [],
             orderDiscount: 0,
-            labourType: 'Labour',
-            labourCost: 0,
-            labourCharges: 0,
+            extraCharges: [
+                { type: 'Labour', cost: 0, rate: 0 }
+            ],
             showPaymentModal: false,
             paymentMethod: 'cash',
             amountTendered: null,
@@ -1331,12 +1363,34 @@
                 return this.cart.reduce((sum, item) => sum + ((Number(item.unit_price) || 0) * (Number(item.quantity) || 0)), 0);
             },
 
+            addExtraCharge() {
+                const usedTypes = this.extraCharges.map(c => c.type);
+                const available = ['Labour', 'Loading', 'Freight', 'Installation'];
+                const nextType = available.find(t => !usedTypes.includes(t)) || 'Labour';
+                this.extraCharges.push({ type: nextType, cost: 0, rate: 0 });
+            },
+
+            removeExtraCharge(idx) {
+                this.extraCharges.splice(idx, 1);
+                if (this.extraCharges.length === 0) {
+                    this.extraCharges.push({ type: 'Labour', cost: 0, rate: 0 });
+                }
+            },
+
+            get totalExtraCharges() {
+                return this.extraCharges.reduce((sum, c) => sum + (Number(c.rate) || 0), 0);
+            },
+
+            get totalExtraCost() {
+                return this.extraCharges.reduce((sum, c) => sum + (Number(c.cost) || 0), 0);
+            },
+
             get labourProfit() {
-                return Number(this.labourCharges || 0) - Number(this.labourCost || 0);
+                return this.totalExtraCharges - this.totalExtraCost;
             },
 
             get cartGrandTotal() {
-                const raw = Math.max(0, this.cartSubtotal + Number(this.labourCharges || 0) - Number(this.orderDiscount || 0));
+                const raw = Math.max(0, this.cartSubtotal + this.totalExtraCharges - Number(this.orderDiscount || 0));
                 return Math.round(raw);
             },
 
@@ -1457,17 +1511,16 @@
                     customer_name: cust ? cust.name : 'Unknown Customer',
                     items: [...this.cart],
                     discount: this.orderDiscount,
-                    labour_type: this.labourType,
-                    labour_charges: this.labourCharges,
-                    labour_cost: this.labourCost,
+                    extra_charges: JSON.parse(JSON.stringify(this.extraCharges)),
+                    labour_type: this.extraCharges[0]?.type || 'Labour',
+                    labour_charges: this.totalExtraCharges,
+                    labour_cost: this.totalExtraCost,
                     total: this.cartGrandTotal,
                     time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
                 });
                 this.cart = [];
                 this.orderDiscount = 0;
-                this.labourType = 'Labour';
-                this.labourCharges = 0;
-                this.labourCost = 0;
+                this.extraCharges = [{ type: 'Labour', cost: 0, rate: 0 }];
                 this.selectedCustomerId = '';
                 this.customerRequiredWarning = false;
                 this.mobileTab = 'catalog';
@@ -1478,9 +1531,15 @@
                 this.cart = hc.items;
                 this.selectedCustomerId = hc.customer_id;
                 this.orderDiscount = hc.discount;
-                this.labourType = hc.labour_type || 'Labour';
-                this.labourCharges = hc.labour_charges || 0;
-                this.labourCost = hc.labour_cost || 0;
+                if (hc.extra_charges && hc.extra_charges.length > 0) {
+                    this.extraCharges = hc.extra_charges;
+                } else {
+                    this.extraCharges = [{
+                        type: hc.labour_type || 'Labour',
+                        cost: hc.labour_cost || 0,
+                        rate: hc.labour_charges || 0,
+                    }];
+                }
                 this.heldCarts.splice(idx, 1);
                 this.showHeldCarts = false;
                 this.mobileTab = 'cart';
@@ -1583,6 +1642,7 @@
                     amountTendered = amountPaid;
                 }
 
+                const activeCharges = this.extraCharges.filter(c => (Number(c.rate) > 0 || Number(c.cost) > 0));
                 const payload = {
                     customer_id: cust.id,
                     customer_name: cust.name,
@@ -1596,9 +1656,10 @@
                         supplier_id: i.supplier_id || null,
                     })),
                     discount_amount: this.orderDiscount || 0,
-                    labour_type: this.labourType,
-                    labour_charges: Number(this.labourCharges || 0),
-                    labour_cost: Number(this.labourCost || 0),
+                    labour_type: activeCharges.length > 0 ? activeCharges[0].type : 'Labour',
+                    labour_charges: Number(this.totalExtraCharges || 0),
+                    labour_cost: Number(this.totalExtraCost || 0),
+                    extra_charges: activeCharges,
                     payment_method: this.paymentMethod,
                     payments: this.paymentMethod === 'split' ? payments : null,
                     amount_tendered: amountTendered,
@@ -1641,9 +1702,7 @@
             resetCart() {
                 this.cart = [];
                 this.orderDiscount = 0;
-                this.labourType = 'Labour';
-                this.labourCharges = 0;
-                this.labourCost = 0;
+                this.extraCharges = [{ type: 'Labour', cost: 0, rate: 0 }];
                 this.amountTendered = null;
                 this.digitalAmountPaid = null;
                 this.clearSplit();

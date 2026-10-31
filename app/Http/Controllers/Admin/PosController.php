@@ -388,7 +388,11 @@ class PosController extends Controller
             'items.*.supplier_id' => ['nullable', 'exists:suppliers,id'],
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'discount_type' => ['nullable', 'in:fixed,percent'],
-            'labour_type' => ['nullable', 'string', 'in:Labour,Installation,Loading,Freight'],
+            'extra_charges' => ['nullable', 'array'],
+            'extra_charges.*.type' => ['nullable', 'string', 'max:50'],
+            'extra_charges.*.rate' => ['nullable', 'numeric', 'min:0'],
+            'extra_charges.*.cost' => ['nullable', 'numeric', 'min:0'],
+            'labour_type' => ['nullable', 'string', 'max:50'],
             'labour_charges' => ['nullable', 'numeric', 'min:0'],
             'labour_cost' => ['nullable', 'numeric', 'min:0'],
             'payment_method' => ['required', 'in:cash,upi,card,bank_transfer,split,other'],
@@ -481,9 +485,47 @@ class PosController extends Controller
             }
 
             $orderDiscount = (float) ($validated['discount_amount'] ?? 0);
-            $labourCharges = (float) ($validated['labour_charges'] ?? 0);
-            $labourCost = (float) ($validated['labour_cost'] ?? 0);
-            $labourType = $validated['labour_type'] ?? 'Labour';
+
+            // Process extra charges (Labour, Loading, Installation, Freight)
+            $extraCharges = [];
+            $totalChargeRate = 0.0;
+            $totalChargeCost = 0.0;
+
+            if (! empty($validated['extra_charges']) && is_array($validated['extra_charges'])) {
+                foreach ($validated['extra_charges'] as $ec) {
+                    $rate = (float) ($ec['rate'] ?? 0);
+                    $cost = (float) ($ec['cost'] ?? 0);
+                    $type = trim((string) ($ec['type'] ?? 'Labour'));
+                    if ($rate > 0 || $cost > 0) {
+                        $extraCharges[] = [
+                            'type' => $type,
+                            'rate' => $rate,
+                            'cost' => $cost,
+                        ];
+                        $totalChargeRate += $rate;
+                        $totalChargeCost += $cost;
+                    }
+                }
+            }
+
+            // Fallback for single charge fields if extra_charges array not sent
+            if (empty($extraCharges) && (isset($validated['labour_charges']) || isset($validated['labour_cost']))) {
+                $totalChargeRate = (float) ($validated['labour_charges'] ?? 0);
+                $totalChargeCost = (float) ($validated['labour_cost'] ?? 0);
+                $singleType = $validated['labour_type'] ?? 'Labour';
+                if ($totalChargeRate > 0 || $totalChargeCost > 0) {
+                    $extraCharges[] = [
+                        'type' => $singleType,
+                        'rate' => $totalChargeRate,
+                        'cost' => $totalChargeCost,
+                    ];
+                }
+            }
+
+            $labourCharges = $totalChargeRate;
+            $labourCost = $totalChargeCost;
+            $labourType = ! empty($extraCharges) ? $extraCharges[0]['type'] : ($validated['labour_type'] ?? 'Labour');
+
             $rawGrandTotal = max(0, $subtotal + $labourCharges - $orderDiscount);
             $roundedGrandTotal = round($rawGrandTotal);
             $roundOff = round($roundedGrandTotal - $rawGrandTotal, 2);
@@ -566,6 +608,7 @@ class PosController extends Controller
                 'status' => PosSale::STATUS_COMPLETED,
                 'subtotal' => $subtotal,
                 'labour_type' => $labourType,
+                'extra_charges' => $extraCharges,
                 'labour_charges' => $labourCharges,
                 'labour_cost' => $labourCost,
                 'discount_amount' => $orderDiscount,

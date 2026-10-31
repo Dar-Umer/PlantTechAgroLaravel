@@ -55,6 +55,7 @@ class PosSale extends Model
         'status',
         'subtotal',
         'labour_type',
+        'extra_charges',
         'labour_charges',
         'labour_cost',
         'discount_amount',
@@ -77,6 +78,7 @@ class PosSale extends Model
     {
         return [
             'sale_date' => 'datetime',
+            'extra_charges' => 'array',
             'subtotal' => 'decimal:2',
             'labour_charges' => 'decimal:2',
             'labour_cost' => 'decimal:2',
@@ -124,6 +126,27 @@ class PosSale extends Model
     public function chargeLabel(): string
     {
         return $this->labour_type ?: 'Labour';
+    }
+
+    public function extraChargesList(): array
+    {
+        if (! empty($this->extra_charges) && is_array($this->extra_charges)) {
+            return array_values(array_filter($this->extra_charges, function ($c) {
+                return (isset($c['rate']) && (float) $c['rate'] > 0) || (isset($c['cost']) && (float) $c['cost'] > 0);
+            }));
+        }
+
+        if ((float) ($this->labour_charges ?? 0) > 0 || (float) ($this->labour_cost ?? 0) > 0) {
+            return [
+                [
+                    'type' => $this->chargeLabel(),
+                    'rate' => (float) $this->labour_charges,
+                    'cost' => (float) $this->labour_cost,
+                ],
+            ];
+        }
+
+        return [];
     }
 
     public function labourProfit(): float

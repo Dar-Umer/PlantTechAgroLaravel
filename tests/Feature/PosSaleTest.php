@@ -800,4 +800,86 @@ class PosSaleTest extends TestCase
             'phone' => '9419888999',
         ]);
     }
+
+    public function test_pos_checkout_with_multiple_extra_charges_and_invoice_receipt_rendering(): void
+    {
+        $customer = PosCustomer::create([
+            'name' => 'Wani Apple Orchards',
+            'phone' => '9419998877',
+            'outstanding_balance' => 0.00,
+        ]);
+
+        $payload = [
+            'customer_id' => $customer->id,
+            'customer_name' => $customer->name,
+            'items' => [
+                [
+                    'product_id' => $this->product->id,
+                    'quantity' => 2,
+                    'unit_price' => 350.00,
+                ],
+            ],
+            'discount_amount' => 50.00,
+            'extra_charges' => [
+                [
+                    'type' => 'Labour',
+                    'rate' => 500.00,
+                    'cost' => 350.00,
+                ],
+                [
+                    'type' => 'Loading',
+                    'rate' => 300.00,
+                    'cost' => 200.00,
+                ],
+                [
+                    'type' => 'Freight',
+                    'rate' => 250.00,
+                    'cost' => 150.00,
+                ],
+            ],
+            'payment_method' => 'cash',
+            'amount_tendered' => 1700.00,
+            'amount_paid' => 1700.00,
+        ];
+
+        $response = $this->actingAs($this->admin, 'admin')->postJson(route('admin.pos.checkout'), $payload);
+        $response->assertOk();
+        $response->assertJson(['success' => true]);
+
+        $sale = PosSale::latest('id')->first();
+        $this->assertNotNull($sale);
+        // Subtotal = 2 * 350 = 700
+        // Charges = 500 + 300 + 250 = 1050
+        // Discount = 50
+        // Grand Total = 700 + 1050 - 50 = 1700
+        $this->assertEquals(700.00, (float) $sale->subtotal);
+        $this->assertEquals(1050.00, (float) $sale->labour_charges);
+        $this->assertEquals(700.00, (float) $sale->labour_cost); // 350 + 200 + 150 = 700
+        $this->assertEquals(1700.00, (float) $sale->grand_total);
+        $this->assertEquals(3, count($sale->extraChargesList()));
+
+        // Test Invoice view
+        $invResp = $this->actingAs($this->admin, 'admin')->get(route('admin.pos.invoice', $sale));
+        $invResp->assertOk();
+        $invResp->assertSee('Labour Charges:');
+        $invResp->assertSee('Loading Charges:');
+        $invResp->assertSee('Freight Charges:');
+        $invResp->assertSee('500.00');
+        $invResp->assertSee('300.00');
+        $invResp->assertSee('250.00');
+
+        // Test Receipt view
+        $recResp = $this->actingAs($this->admin, 'admin')->get(route('admin.pos.receipt', $sale));
+        $recResp->assertOk();
+        $recResp->assertSee('Labour:');
+        $recResp->assertSee('Loading:');
+        $recResp->assertSee('Freight:');
+
+        // Test Details view
+        $showResp = $this->actingAs($this->admin, 'admin')->get(route('admin.pos.sales.show', $sale));
+        $showResp->assertOk();
+        $showResp->assertSee('Labour Charges:');
+        $showResp->assertSee('Loading Charges:');
+        $showResp->assertSee('Freight Charges:');
+    }
 }

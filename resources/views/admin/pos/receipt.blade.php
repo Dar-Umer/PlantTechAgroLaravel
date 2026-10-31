@@ -157,7 +157,16 @@
                     <td>Items Subtotal:</td>
                     <td class="right">₹{{ number_format($sale->subtotal, 2) }}</td>
                 </tr>
-                @if($sale->labour_charges > 0)
+                @if(!empty($sale->extraChargesList()))
+                    @foreach($sale->extraChargesList() as $charge)
+                        @if((float) ($charge['rate'] ?? 0) > 0)
+                            <tr>
+                                <td>{{ $charge['type'] }}:</td>
+                                <td class="right">+₹{{ number_format($charge['rate'], 2) }}</td>
+                            </tr>
+                        @endif
+                    @endforeach
+                @elseif($sale->labour_charges > 0)
                     <tr>
                         <td>{{ $sale->chargeLabel() }}:</td>
                         <td class="right">+₹{{ number_format($sale->labour_charges, 2) }}</td>
