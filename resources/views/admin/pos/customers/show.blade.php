@@ -50,15 +50,6 @@
         </div>
 
         <div class="flex items-center gap-2">
-            @if((float) $customer->outstanding_balance > 0)
-                <button type="button"
-                        @click="openSettleModal()"
-                        class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs inline-flex items-center gap-1.5 shadow-sm transition cursor-pointer">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    <span>Settle Due (₹{{ number_format($customer->outstanding_balance, 2) }})</span>
-                </button>
-            @endif
-
             <a href="{{ route($statementRoute, array_merge(['customer' => $customer], request()->only(['from', 'to']))) }}"
                target="_blank"
                class="px-3.5 py-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-xl font-bold text-xs inline-flex items-center gap-1.5 shadow-2xs transition">
@@ -158,18 +149,9 @@
                 <div class="mt-1 text-2xl font-black {{ (float) $customer->outstanding_balance > 0 ? 'text-amber-900' : 'text-emerald-900' }}">
                     ₹{{ number_format($customer->outstanding_balance, 2) }}
                 </div>
-                @if((float) $customer->outstanding_balance > 0)
-                    <button type="button"
-                            @click="openSettleModal()"
-                            class="mt-2 text-xs font-bold text-amber-900 hover:text-amber-950 underline text-left flex items-center gap-1 cursor-pointer">
-                        <span>Record Payment Now</span>
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    </button>
-                @else
-                    <div class="mt-1 text-[11px] text-emerald-700 font-medium">
-                        No outstanding dues pending.
-                    </div>
-                @endif
+                <div class="mt-1.5 text-[11px] {{ (float) $customer->outstanding_balance > 0 ? 'text-amber-700 font-medium' : 'text-emerald-700 font-medium' }}">
+                    {{ (float) $customer->outstanding_balance > 0 ? 'Pending payment collection' : 'No outstanding dues pending.' }}
+                </div>
             </div>
         </div>
     </div>
