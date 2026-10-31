@@ -294,18 +294,21 @@
             <div class="p-2 sm:p-2.5 border-b border-slate-200 bg-slate-50/80 flex-shrink-0 space-y-1.5">
                 <div class="flex items-center gap-2">
                     <div class="flex-1 min-w-0">
-                        <select x-model="selectedCustomerId" @change="onCustomerChange()"
-                                class="w-full text-xs font-semibold bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 shadow-2xs">
-                            <option value="">Walk-in Customer (Retail)</option>
+                        <select x-ref="customerSelect"
+                                x-model="selectedCustomerId"
+                                @change="onCustomerChange()"
+                                :class="(!selectedCustomerId && customerRequiredWarning) ? 'border-rose-400 bg-rose-50/60 ring-2 ring-rose-300' : (!selectedCustomerId ? 'border-amber-300 bg-amber-50/30' : 'border-slate-200 bg-white')"
+                                class="w-full text-xs font-semibold rounded-xl px-2.5 py-1.5 text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 shadow-2xs transition">
+                            <option value="" disabled selected>-- Select Customer (Required) --</option>
                             <template x-for="cust in customers" :key="cust.id">
                                 <option :value="cust.id" x-text="cust.name + (cust.phone ? ' (' + cust.phone + ')' : '') + (cust.outstanding_balance > 0 ? ' [Due: ₹' + Number(cust.outstanding_balance).toFixed(0) + ']' : '')"></option>
                             </template>
                         </select>
                     </div>
                     <button type="button" @click="showAddCustomer = true" title="Add New Customer / Farmer"
-                            class="px-2.5 py-1.5 text-xs font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-xl border border-brand-200 transition flex items-center gap-1 flex-shrink-0 shadow-2xs">
+                            class="px-2.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl transition flex items-center gap-1 flex-shrink-0 shadow-2xs">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-                        <span>New</span>
+                        <span>+ New</span>
                     </button>
                     <button type="button" x-show="cart.length > 0" @click="holdCurrentCart()" title="Park cart to serve next customer"
                             class="hidden sm:inline-flex px-2.5 py-2 text-xs font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 rounded-xl border border-amber-200 transition items-center gap-1 shadow-2xs flex-shrink-0">
@@ -318,8 +321,16 @@
                     </button>
                 </div>
 
+                {{-- Customer Required Notification / Reminder when not chosen --}}
+                <div x-show="!selectedCustomerId" class="bg-amber-50/90 border border-amber-200/80 rounded-xl px-2.5 py-1 flex items-center justify-between text-[11px] text-amber-900 shadow-2xs">
+                    <div class="flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span>Customer required. Select from list or click <button type="button" @click="showAddCustomer = true" class="font-bold text-emerald-700 underline hover:text-emerald-900">+ New</button></span>
+                    </div>
+                </div>
+
                 {{-- Outstanding Customer Balance Alert Banner --}}
-                <div x-show="currentCustomerDue > 0" x-cloak class="bg-amber-50 border border-amber-200 rounded-xl px-3 py-1.5 flex items-center justify-between text-xs text-amber-900 shadow-2xs">
+                <div x-show="selectedCustomerId && currentCustomerDue > 0" x-cloak class="bg-amber-50 border border-amber-200 rounded-xl px-3 py-1.5 flex items-center justify-between text-xs text-amber-900 shadow-2xs">
                     <div class="flex items-center gap-1.5">
                         <svg class="w-3.5 h-3.5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                         <span>Customer Due: <strong class="font-extrabold text-amber-700" x-text="'₹' + currentCustomerDue.toFixed(2)"></strong></span>
@@ -535,7 +546,7 @@
             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div>
                     <h3 class="text-base sm:text-lg font-extrabold text-slate-900">Collect Payment</h3>
-                    <p class="text-xs text-slate-500">Customer: <strong class="text-slate-800" x-text="selectedCustomer ? selectedCustomer.name : 'Walk-in Customer'"></strong></p>
+                    <p class="text-xs text-slate-500">Customer: <strong class="text-slate-800" x-text="selectedCustomer ? selectedCustomer.name : 'No Customer Selected'"></strong></p>
                 </div>
                 <div class="text-right">
                     <span class="text-xs text-slate-400 block font-semibold uppercase">Total Payable</span>
@@ -1001,6 +1012,7 @@
             catalogView: 'grid', // 'grid' | 'list'
             customers: @js($customers),
             selectedCustomerId: '',
+            customerRequiredWarning: false,
             cart: [],
             orderDiscount: 0,
             labourCost: 0,
@@ -1358,6 +1370,15 @@
 
             openPaymentModal() {
                 if (this.cart.length === 0) return;
+                if (!this.selectedCustomerId || !this.selectedCustomer) {
+                    this.customerRequiredWarning = true;
+                    alert('Customer required! Please select an existing customer or click "+ New" to create one before proceeding to payment.');
+                    this.$nextTick(() => {
+                        this.$refs.customerSelect?.focus();
+                    });
+                    return;
+                }
+                this.customerRequiredWarning = false;
                 this.amountTendered = this.cartGrandTotal;
                 this.digitalAmountPaid = this.cartGrandTotal;
                 this.showPaymentModal = true;
@@ -1368,6 +1389,15 @@
 
             quickCashCheckout() {
                 if (this.cart.length === 0) return;
+                if (!this.selectedCustomerId || !this.selectedCustomer) {
+                    this.customerRequiredWarning = true;
+                    alert('Customer required! Please select an existing customer or click "+ New" to create one before proceeding to payment.');
+                    this.$nextTick(() => {
+                        this.$refs.customerSelect?.focus();
+                    });
+                    return;
+                }
+                this.customerRequiredWarning = false;
                 this.paymentMethod = 'cash';
                 this.amountTendered = this.cartGrandTotal;
                 this.processCheckout();
@@ -1403,7 +1433,9 @@
             },
 
             onCustomerChange() {
-                // Customer selection changed
+                if (this.selectedCustomerId) {
+                    this.customerRequiredWarning = false;
+                }
             },
 
             holdCurrentCart() {
@@ -1412,7 +1444,7 @@
                 this.heldCarts.push({
                     id: Date.now(),
                     customer_id: this.selectedCustomerId,
-                    customer_name: cust ? cust.name : 'Walk-in Customer',
+                    customer_name: cust ? cust.name : 'Unknown Customer',
                     items: [...this.cart],
                     discount: this.orderDiscount,
                     labour_charges: this.labourCharges,
@@ -1425,6 +1457,7 @@
                 this.labourCharges = 0;
                 this.labourCost = 0;
                 this.selectedCustomerId = '';
+                this.customerRequiredWarning = false;
                 this.mobileTab = 'catalog';
             },
 
@@ -1493,6 +1526,7 @@
                     if (data.success) {
                         this.customers.unshift(data.customer);
                         this.selectedCustomerId = data.customer.id;
+                        this.customerRequiredWarning = false;
                         this.showAddCustomer = false;
                         this.newCustomer = { name: '', phone: '', email: '', gstin: '', address: '' };
                     }
@@ -1503,6 +1537,16 @@
 
             async processCheckout() {
                 if (this.cart.length === 0) return;
+                if (!this.selectedCustomerId || !this.selectedCustomer) {
+                    this.customerRequiredWarning = true;
+                    alert('Customer required! Please select an existing customer or click "+ New" to create one before completing this sale.');
+                    this.$nextTick(() => {
+                        this.$refs.customerSelect?.focus();
+                    });
+                    this.isProcessing = false;
+                    return;
+                }
+                this.customerRequiredWarning = false;
                 this.isProcessing = true;
 
                 const cust = this.selectedCustomer;
@@ -1526,19 +1570,11 @@
                     amountTendered = amountPaid;
                 }
 
-                // If balance is due, ensure a named customer is selected
-                const balanceDue = Math.max(0, this.cartGrandTotal - amountPaid);
-                if (balanceDue > 0 && !this.selectedCustomerId && (!cust || cust.name === 'Walk-in Customer')) {
-                    alert('An unpaid balance of ₹' + balanceDue.toFixed(0) + ' is remaining. Please select or add a named Customer so this debt is recorded.');
-                    this.isProcessing = false;
-                    return;
-                }
-
                 const payload = {
-                    customer_id: this.selectedCustomerId || null,
-                    customer_name: cust ? cust.name : 'Walk-in Customer',
-                    customer_phone: cust ? cust.phone : null,
-                    customer_gstin: cust ? cust.gstin : null,
+                    customer_id: cust.id,
+                    customer_name: cust.name,
+                    customer_phone: cust.phone || null,
+                    customer_gstin: cust.gstin || null,
                     items: this.cart.map(i => ({
                         product_id: i.product_id,
                         quantity: Number(i.quantity) || 1,
@@ -1599,6 +1635,7 @@
                 this.showPaymentModal = false;
                 this.completedSale = null;
                 this.selectedCustomerId = '';
+                this.customerRequiredWarning = false;
                 this.mobileTab = 'catalog';
                 fetch("{{ route('pos.products.search') }}")
                     .then(r => r.json())

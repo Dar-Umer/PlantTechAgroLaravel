@@ -41,10 +41,9 @@ class PosController extends Controller
             ->orderBy('name')
             ->get();
 
-        $customers = PosCustomer::latest()->limit(50)->get();
-        $walkIn = PosCustomer::walkIn();
+        $customers = PosCustomer::where('name', '!=', 'Walk-in Customer')->latest('id')->limit(50)->get();
 
-        return view('admin.pos.terminal', compact('products', 'customers', 'walkIn'));
+        return view('admin.pos.terminal', compact('products', 'customers'));
     }
 
     /**

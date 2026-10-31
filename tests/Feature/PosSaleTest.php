@@ -64,6 +64,9 @@ class PosSaleTest extends TestCase
         $response->assertOk();
         $response->assertSee('POS Terminal');
         $response->assertSee('Organic Bio-Stimulant 1L');
+        $response->assertSee('-- Select Customer (Required) --');
+        $response->assertDontSee('Walk-in Customer (Retail)');
+        $response->assertSee('+ New');
     }
 
     public function test_can_add_pos_customer_via_ajax(): void
