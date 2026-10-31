@@ -8,6 +8,7 @@
     $receiptRoute = Route::has('pos.receipt') ? 'pos.receipt' : 'admin.pos.receipt';
     $invoiceRoute = Route::has('pos.invoice') ? 'pos.invoice' : 'admin.pos.invoice';
     $cancelRoute = Route::has('pos.sales.cancel') ? 'pos.sales.cancel' : 'admin.pos.sales.cancel';
+    $customerShowRoute = Route::has('pos.customers.show') ? 'pos.customers.show' : 'admin.pos.customers.show';
     $paymentUrlBase = Route::has('pos.sales.payments.store') ? url('/sales') : url('/admin/pos/sales');
 @endphp
 <div class="space-y-6 pb-12"
@@ -152,7 +153,16 @@
                                 <div class="text-gray-400">{{ $sale->sale_date->format('h:i A') }}</div>
                             </td>
                             <td class="py-3.5 px-4">
-                                <div class="font-semibold text-gray-900">{{ $sale->customer_name }}</div>
+                                @if($sale->customer)
+                                    <a href="{{ route($customerShowRoute, $sale->customer) }}"
+                                       class="font-semibold text-brand-700 hover:text-brand-900 hover:underline inline-flex items-center gap-1 group"
+                                       title="View Customer Profile, Ledger & Transactions">
+                                        <span>{{ $sale->customer_name }}</span>
+                                        <svg class="w-3 h-3 text-brand-400 group-hover:text-brand-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                    </a>
+                                @else
+                                    <div class="font-semibold text-gray-900">{{ $sale->customer_name }}</div>
+                                @endif
                                 @if($sale->customer_phone)
                                     <div class="text-xs text-gray-400">{{ $sale->customer_phone }}</div>
                                 @endif

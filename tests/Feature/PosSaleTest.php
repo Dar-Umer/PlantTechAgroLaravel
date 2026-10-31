@@ -615,5 +615,87 @@ class PosSaleTest extends TestCase
 
         $showResp->assertSee('Receive Outstanding Payment', false);
         $showResp->assertSee(route('pos.sales.payments.store', $sale));
+
+        // 3. Customer name should link to customer profile
+        $this->assertNotNull($customer);
+        $showResp->assertSee(route('pos.customers.show', $customer));
+        $salesListResp->assertSee(route('pos.customers.show', $customer));
+    }
+
+    public function test_customer_profile_and_statement_flow(): void
+    {
+        $customer = PosCustomer::create([
+            'name' => 'John Doe Orchardist',
+            'phone' => '9988776655',
+            'email' => 'john.doe@orchard.com',
+            'address' => 'Apple Orchard Lane, Shop 4',
+            'gstin' => '01ABCDE1234F1Z5',
+            'outstanding_balance' => 0,
+        ]);
+
+        // Create Sale with Partial Payment
+        $checkoutResp = $this->actingAs($this->admin, 'admin')->postJson(route('pos.checkout'), [
+            'customer_id' => $customer->id,
+            'customer_name' => $customer->name,
+            'customer_phone' => $customer->phone,
+            'customer_gstin' => $customer->gstin,
+            'items' => [
+                [
+                    'product_id' => $this->product->id,
+                    'quantity' => 4,
+                    'unit_price' => 500.00,
+                ],
+            ],
+            'payment_method' => 'cash',
+            'amount_tendered' => 1200.00, // Total is 2000, 800 balance due
+        ]);
+        $checkoutResp->assertOk();
+
+        $customer->refresh();
+        $this->assertEquals(800.00, (float) $customer->outstanding_balance);
+        $this->assertEquals(1200.00, (float) $customer->total_spent);
+        $this->assertEquals(1, $customer->orders_count);
+
+        // 1. Visit Customer Profile (/customers/{customer})
+        $profileResp = $this->actingAs($this->admin, 'admin')->get(route('pos.customers.show', $customer));
+        $profileResp->assertOk();
+        $profileResp->assertSee('John Doe Orchardist');
+        $profileResp->assertSee('9988776655');
+        $profileResp->assertSee('01ABCDE1234F1Z5');
+        $profileResp->assertSee('B2B / GST', false);
+        $profileResp->assertSee('800.00'); // Due balance
+        $profileResp->assertSee('2,000.00'); // Lifetime billed
+        $profileResp->assertSee('1,200.00'); // Total paid
+        $profileResp->assertSee('Account Statement & Ledger', false);
+        $profileResp->assertSee('Retail Invoice');
+        $profileResp->assertSee('Payment via Cash');
+        $profileResp->assertSee(route('pos.customers.statement', $customer));
+
+        // 2. Visit Customer Printable Statement (/customers/{customer}/statement)
+        $statementResp = $this->actingAs($this->admin, 'admin')->get(route('pos.customers.statement', $customer));
+        $statementResp->assertOk();
+        $statementResp->assertSee('Account Statement');
+        $statementResp->assertSee('John Doe Orchardist');
+        $statementResp->assertSee('800.00');
+        $statementResp->assertSee('2,000.00');
+
+        // 3. Settle balance via standard form POST (redirect response)
+        $settleResp = $this->actingAs($this->admin, 'admin')->post(route('pos.customers.settle-balance', $customer), [
+            'amount' => 500.00,
+            'payment_method' => 'upi',
+            'note' => 'GPay settlement',
+        ]);
+        $settleResp->assertRedirect();
+        $settleResp->assertSessionHas('success');
+
+        $customer->refresh();
+        $this->assertEquals(300.00, (float) $customer->outstanding_balance);
+        $this->assertEquals(1700.00, (float) $customer->total_spent);
+
+        // Verify updated statement shows new payment and closing balance 300.00
+        $updatedProfileResp = $this->actingAs($this->admin, 'admin')->get(route('pos.customers.show', $customer));
+        $updatedProfileResp->assertOk();
+        $updatedProfileResp->assertSee('300.00');
+        $updatedProfileResp->assertSee('Payment via UPI / QR');
     }
 }

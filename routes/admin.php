@@ -379,6 +379,8 @@ Route::middleware('admin')->group(function () {
     });
     Route::middleware('permission:pos.customers.manage,admin')->group(function () {
         Route::post('pos/customers', [PosController::class, 'storeCustomer'])->name('admin.pos.customers.store');
+        Route::get('pos/customers/{customer}', [PosController::class, 'customerProfile'])->name('admin.pos.customers.show');
+        Route::get('pos/customers/{customer}/statement', [PosController::class, 'customerStatement'])->name('admin.pos.customers.statement');
         Route::post('pos/customers/{customer}/settle-balance', [PosController::class, 'settleBalance'])->name('admin.pos.customers.settle-balance');
     });
     Route::middleware('permission:settings.manage,admin')->group(function () {

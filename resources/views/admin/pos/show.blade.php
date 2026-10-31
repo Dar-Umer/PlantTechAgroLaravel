@@ -9,6 +9,7 @@
     $invoiceRoute = Route::has('pos.invoice') ? 'pos.invoice' : 'admin.pos.invoice';
     $cancelRoute = Route::has('pos.sales.cancel') ? 'pos.sales.cancel' : 'admin.pos.sales.cancel';
     $salesListRoute = Route::has('pos.sales') ? 'pos.sales' : 'admin.pos.sales';
+    $customerShowRoute = Route::has('pos.customers.show') ? 'pos.customers.show' : 'admin.pos.customers.show';
     $paymentUrl = Route::has('pos.sales.payments.store') ? route('pos.sales.payments.store', $sale) : route('admin.pos.sales.payments.store', $sale);
 @endphp
 
@@ -72,8 +73,24 @@
         {{-- Card 1: Customer Details --}}
         <div class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm flex flex-col justify-between">
             <div>
-                <span class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Customer Details</span>
-                <h3 class="text-base font-extrabold text-gray-900 mt-1">{{ $sale->customer_name }}</h3>
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Customer Details</span>
+                    @if($sale->customer)
+                        <span class="text-[10px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">Profile Available</span>
+                    @endif
+                </div>
+                <h3 class="text-base font-extrabold text-gray-900 mt-1">
+                    @if($sale->customer)
+                        <a href="{{ route($customerShowRoute, $sale->customer) }}"
+                           class="text-brand-600 hover:text-brand-800 hover:underline inline-flex items-center gap-1.5 group"
+                           title="Open Customer Profile, Statement & Ledger">
+                            <span>{{ $sale->customer_name }}</span>
+                            <svg class="w-4 h-4 text-brand-400 group-hover:text-brand-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        </a>
+                    @else
+                        {{ $sale->customer_name }}
+                    @endif
+                </h3>
                 <div class="text-xs text-gray-500 mt-1 space-y-0.5">
                     @if($sale->customer_phone)
                         <p class="flex items-center gap-1.5">
@@ -86,10 +103,20 @@
                     @endif
                 </div>
             </div>
-            @if($sale->customer && (float) $sale->customer->outstanding_balance > 0)
-                <div class="mt-3 pt-2.5 border-t border-amber-100 flex items-center justify-between text-xs">
-                    <span class="text-amber-800 font-semibold">Account Total Due:</span>
-                    <strong class="text-amber-700 font-extrabold">₹{{ number_format($sale->customer->outstanding_balance, 2) }}</strong>
+
+            @if($sale->customer)
+                <div class="mt-3 pt-2.5 border-t border-gray-100 flex flex-col gap-2">
+                    @if((float) $sale->customer->outstanding_balance > 0)
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-amber-800 font-semibold">Account Total Due:</span>
+                            <strong class="text-amber-700 font-extrabold">₹{{ number_format($sale->customer->outstanding_balance, 2) }}</strong>
+                        </div>
+                    @endif
+                    <a href="{{ route($customerShowRoute, $sale->customer) }}"
+                       class="inline-flex items-center justify-center gap-1.5 w-full px-3 py-1.5 bg-gray-50 hover:bg-brand-50 text-gray-700 hover:text-brand-700 border border-gray-200 hover:border-brand-200 rounded-xl text-xs font-bold transition">
+                        <svg class="w-3.5 h-3.5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        <span>View Customer Profile & Statements</span>
+                    </a>
                 </div>
             @endif
         </div>

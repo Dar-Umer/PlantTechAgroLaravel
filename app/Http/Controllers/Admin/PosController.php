@@ -18,6 +18,7 @@ use App\Support\Format;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -195,13 +196,23 @@ class PosController extends Controller
      * Record payment towards customer's outstanding balance.
      * Automatically applies the payment FIFO to the customer's unpaid POS sales.
      */
-    public function settleBalance(Request $request, PosCustomer $customer): JsonResponse
+    public function settleBalance(Request $request, PosCustomer $customer): JsonResponse|RedirectResponse
     {
         $validated = $request->validate([
             'amount' => ['required', 'numeric', 'min:0.01'],
             'payment_method' => ['required', 'in:cash,upi,card,bank_transfer,other'],
             'note' => ['nullable', 'string', 'max:255'],
         ]);
+
+        if ((float) $customer->outstanding_balance <= 0) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Customer has no outstanding balance due.',
+                ], 422);
+            }
+            return back()->with('error', 'Customer has no outstanding balance due.');
+        }
 
         $amount = min((float) $validated['amount'], (float) $customer->outstanding_balance);
 
@@ -245,11 +256,15 @@ class PosController extends Controller
             $customer->increment('total_spent', $amount);
         });
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Payment of ₹' . number_format($amount, 2) . ' recorded against ' . $customer->name . "'s balance.",
-            'new_balance' => (float) $customer->refresh()->outstanding_balance,
-        ]);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Payment of ₹' . number_format($amount, 2) . ' recorded against ' . $customer->name . "'s balance.",
+                'new_balance' => (float) $customer->refresh()->outstanding_balance,
+            ]);
+        }
+
+        return back()->with('success', 'Payment of ₹' . number_format($amount, 2) . ' recorded successfully against ' . $customer->name . "'s balance.");
     }
 
     /**
@@ -732,5 +747,196 @@ class PosController extends Controller
         });
 
         return back()->with('success', "Sale #{$sale->invoice_number} has been cancelled and stock returned to inventory.");
+    }
+
+    /**
+     * Customer profile, complete statement/ledger, invoice history and payment track record.
+     */
+    public function customerProfile(PosCustomer $customer, Request $request)
+    {
+        // Reconcile past customer balance settlements
+        self::reconcileCustomerSalesBalances($customer->id);
+        $customer->refresh();
+
+        $statementData = $this->buildCustomerStatement($customer, $request);
+
+        // Sales history
+        $sales = PosSale::where('pos_customer_id', $customer->id)
+            ->with(['cashier', 'items.product', 'items.batch', 'payments'])
+            ->latest('sale_date')
+            ->paginate(15, ['*'], 'sales_page')
+            ->withQueryString();
+
+        // Payments track record
+        $payments = PosSalePayment::whereHas('sale', function ($q) use ($customer) {
+            $q->where('pos_customer_id', $customer->id);
+        })->with('sale')->latest('id')->paginate(15, ['*'], 'payments_page')->withQueryString();
+
+        // Linked CRM customer if available
+        $linkedCustomer = $customer->customer_id ? Customer::find($customer->customer_id) : null;
+
+        return view('admin.pos.customers.show', array_merge([
+            'customer' => $customer,
+            'sales' => $sales,
+            'payments' => $payments,
+            'linkedCustomer' => $linkedCustomer,
+        ], $statementData));
+    }
+
+    /**
+     * Printable A4 statement / account ledger for POS customer.
+     */
+    public function customerStatement(PosCustomer $customer, Request $request)
+    {
+        self::reconcileCustomerSalesBalances($customer->id);
+        $customer->refresh();
+
+        $statementData = $this->buildCustomerStatement($customer, $request);
+        $settings = app(\App\Services\ShopSettingsService::class)->all();
+
+        return view('admin.pos.customers.statement', array_merge([
+            'customer' => $customer,
+            'settings' => $settings,
+        ], $statementData));
+    }
+
+    /**
+     * Helper to build account statement / ledger for a POS customer.
+     */
+    private function buildCustomerStatement(PosCustomer $customer, Request $request): array
+    {
+        $fromInput = $request->query('from');
+        $toInput = $request->query('to');
+
+        $from = $fromInput ? Carbon::parse($fromInput)->startOfDay() : null;
+        $to = $toInput ? Carbon::parse($toInput)->endOfDay() : null;
+
+        // KPI Totals across all lifetime records
+        $lifetimePurchases = (float) PosSale::where('pos_customer_id', $customer->id)
+            ->where('status', PosSale::STATUS_COMPLETED)
+            ->sum('grand_total');
+
+        $lifetimePaid = (float) PosSalePayment::whereHas('sale', function ($q) use ($customer) {
+            $q->where('pos_customer_id', $customer->id)->where('status', PosSale::STATUS_COMPLETED);
+        })->sum('amount');
+
+        $lifetimeOrdersCount = PosSale::where('pos_customer_id', $customer->id)
+            ->where('status', PosSale::STATUS_COMPLETED)
+            ->count();
+
+        $outstandingBalance = (float) $customer->outstanding_balance;
+
+        // Opening balance calculation if $from date is set
+        $openingBalance = 0.0;
+        if ($from) {
+            $prevSales = (float) PosSale::where('pos_customer_id', $customer->id)
+                ->where('status', PosSale::STATUS_COMPLETED)
+                ->where('sale_date', '<', $from)
+                ->sum('grand_total');
+
+            $prevPayments = (float) PosSalePayment::whereHas('sale', function ($q) use ($customer) {
+                $q->where('pos_customer_id', $customer->id)->where('status', PosSale::STATUS_COMPLETED);
+            })->where('created_at', '<', $from)->sum('amount');
+
+            $openingBalance = round($prevSales - $prevPayments, 2);
+        }
+
+        // Period query for sales (debits)
+        $salesQuery = PosSale::where('pos_customer_id', $customer->id)
+            ->where('status', PosSale::STATUS_COMPLETED);
+
+        if ($from) {
+            $salesQuery->where('sale_date', '>=', $from);
+        }
+        if ($to) {
+            $salesQuery->where('sale_date', '<=', $to);
+        }
+        $periodSales = $salesQuery->get();
+
+        // Period query for payments (credits)
+        $paymentsQuery = PosSalePayment::whereHas('sale', function ($q) use ($customer) {
+            $q->where('pos_customer_id', $customer->id)->where('status', PosSale::STATUS_COMPLETED);
+        })->with('sale');
+
+        if ($from) {
+            $paymentsQuery->where('created_at', '>=', $from);
+        }
+        if ($to) {
+            $paymentsQuery->where('created_at', '<=', $to);
+        }
+        $periodPayments = $paymentsQuery->get();
+
+        // Combine into ledger events
+        $events = collect();
+
+        foreach ($periodSales as $sale) {
+            $events->push([
+                'type' => 'invoice',
+                'date' => $sale->sale_date,
+                'created_at' => $sale->created_at,
+                'sort_order' => 1, // Invoice comes before payment if created same second
+                'reference' => $sale->invoice_number,
+                'description' => 'Retail Invoice (' . $sale->items()->count() . ' item' . ($sale->items()->count() === 1 ? '' : 's') . ')',
+                'debit' => (float) $sale->grand_total,
+                'credit' => 0.0,
+                'sale_id' => $sale->id,
+                'sale' => $sale,
+            ]);
+        }
+
+        foreach ($periodPayments as $payment) {
+            $events->push([
+                'type' => 'payment',
+                'date' => $payment->created_at,
+                'created_at' => $payment->created_at,
+                'sort_order' => 2,
+                'reference' => $payment->reference ?: ('PMT-' . $payment->id),
+                'description' => 'Payment via ' . $payment->methodLabel() . ($payment->sale ? ' (Inv #' . $payment->sale->invoice_number . ')' : ''),
+                'debit' => 0.0,
+                'credit' => (float) $payment->amount,
+                'sale_id' => $payment->pos_sale_id,
+                'sale' => $payment->sale,
+                'payment' => $payment,
+            ]);
+        }
+
+        // Sort events chronologically
+        $sortedEvents = $events->sort(function ($a, $b) {
+            $dateA = $a['date'] instanceof Carbon ? $a['date']->timestamp : Carbon::parse($a['date'])->timestamp;
+            $dateB = $b['date'] instanceof Carbon ? $b['date']->timestamp : Carbon::parse($b['date'])->timestamp;
+            if ($dateA === $dateB) {
+                return $a['sort_order'] <=> $b['sort_order'];
+            }
+            return $dateA <=> $dateB;
+        })->values();
+
+        $running = $openingBalance;
+        $ledgerEntries = [];
+        $totalDebit = 0.0;
+        $totalCredit = 0.0;
+
+        foreach ($sortedEvents as $entry) {
+            $running = round($running + $entry['debit'] - $entry['credit'], 2);
+            $entry['running_balance'] = $running;
+            $totalDebit += $entry['debit'];
+            $totalCredit += $entry['credit'];
+            $ledgerEntries[] = $entry;
+        }
+
+        $closingBalance = $from ? $running : $outstandingBalance;
+
+        return [
+            'from' => $fromInput,
+            'to' => $toInput,
+            'openingBalance' => $openingBalance,
+            'closingBalance' => $closingBalance,
+            'totalDebit' => $totalDebit,
+            'totalCredit' => $totalCredit,
+            'ledgerEntries' => $ledgerEntries,
+            'lifetimePurchases' => $lifetimePurchases,
+            'lifetimePaid' => $lifetimePaid,
+            'lifetimeOrdersCount' => $lifetimeOrdersCount,
+            'outstandingBalance' => $outstandingBalance,
+        ];
     }
 }

@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\Admin\PosAuthController;
 use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\PosSettingController;
+use App\Models\PosCustomer;
 use App\Http\Controllers\Site\LandingController;
 use App\Http\Controllers\Site\LeadController;
 use App\Http\Controllers\Site\PostController;
@@ -104,6 +105,8 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('products/search', [PosController::class, 'searchProducts'])->name('pos.products.search');
     Route::get('customers/search', [PosController::class, 'searchCustomers'])->name('pos.customers.search');
     Route::post('customers', [PosController::class, 'storeCustomer'])->name('pos.customers.store');
+    Route::get('customers/{customer}', [PosController::class, 'customerProfile'])->name('pos.customers.show');
+    Route::get('customers/{customer}/statement', [PosController::class, 'customerStatement'])->name('pos.customers.statement');
     Route::post('customers/{customer}/settle-balance', [PosController::class, 'settleBalance'])->name('pos.customers.settle-balance');
     Route::get('pos-settings', [PosSettingController::class, 'index'])->name('pos.settings');
     Route::post('pos-settings', [PosSettingController::class, 'update'])->name('pos.settings.update');
@@ -117,6 +120,26 @@ Route::middleware(['auth:admin'])->group(function () {
 | smoothly redirect them to the clean POS URLs without /admin/.
 */
 Route::prefix('admin')->group(function () use ($isPosRequest) {
+    Route::any('pos/customers/{customer}/statement', function (Request $request, $customer) use ($isPosRequest) {
+        if ($isPosRequest($request)) {
+            return redirect()->route('pos.customers.statement', $customer);
+        }
+        return app(PosController::class)->customerStatement(
+            $customer instanceof PosCustomer ? $customer : PosCustomer::findOrFail($customer),
+            $request
+        );
+    });
+
+    Route::any('pos/customers/{customer}', function (Request $request, $customer) use ($isPosRequest) {
+        if ($isPosRequest($request)) {
+            return redirect()->route('pos.customers.show', $customer);
+        }
+        return app(PosController::class)->customerProfile(
+            $customer instanceof PosCustomer ? $customer : PosCustomer::findOrFail($customer),
+            $request
+        );
+    });
+
     Route::any('pos/sales', function (Request $request) use ($isPosRequest) {
         if ($isPosRequest($request)) {
             return redirect()->route('pos.sales');

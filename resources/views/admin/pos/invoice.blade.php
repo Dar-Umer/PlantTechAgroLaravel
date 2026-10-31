@@ -4,7 +4,36 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Retail Invoice #{{ $sale->invoice_number }} - Plant Tech Agro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family={{ $theme['fontGoogle'] ?? 'Inter:wght@400;500;600;700;800' }}&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['{{ $theme['font'] ?? 'Inter' }}', 'system-ui', '-apple-system', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace']
+                    },
+                    colors: {
+                        brand: {
+                            50:  '{{ $theme['palette'][50] ?? '#f0fdf4' }}',
+                            100: '{{ $theme['palette'][100] ?? '#dcfce7' }}',
+                            200: '{{ $theme['palette'][200] ?? '#bbf7d0' }}',
+                            300: '{{ $theme['palette'][300] ?? '#86efac' }}',
+                            400: '{{ $theme['palette'][400] ?? '#4ade80' }}',
+                            500: '{{ $theme['palette'][500] ?? '#22c55e' }}',
+                            600: '{{ $theme['palette'][600] ?? '#16a34a' }}',
+                            700: '{{ $theme['palette'][700] ?? '#15803d' }}',
+                            800: '{{ $theme['palette'][800] ?? '#166534' }}',
+                            900: '{{ $theme['palette'][900] ?? '#14532d' }}',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         @media print {
             body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
