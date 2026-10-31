@@ -374,6 +374,8 @@
                             <div class="col-span-2 text-right">
                                 <input type="number"
                                        x-model.number="item.unit_price"
+                                       @focus="$event.target.select()"
+                                       @blur="if(item.unit_price === '' || item.unit_price === null || item.unit_price < 0) item.unit_price = 0"
                                        step="1" min="0"
                                        class="w-full text-right font-bold text-xs text-slate-900 bg-slate-50 hover:bg-slate-100 focus:bg-white border border-slate-200 focus:border-brand-500 rounded-lg px-1.5 py-1 focus:outline-none transition">
                             </div>
@@ -384,7 +386,8 @@
                                     <button type="button" @click="updateQty(item, -1)" class="w-6 h-7 sm:w-7 sm:h-7 flex items-center justify-center text-slate-600 hover:bg-slate-200 active:bg-slate-300 transition font-bold text-sm">-</button>
                                     <input type="number"
                                            x-model.number="item.quantity"
-                                           @input="if(item.quantity < 0.01) item.quantity = 1"
+                                           @focus="$event.target.select()"
+                                           @blur="if(!item.quantity || item.quantity < 0.01) item.quantity = 1"
                                            step="1" min="0.01"
                                            class="w-10 sm:w-12 text-center text-xs font-black bg-transparent border-0 focus:ring-0 p-0 text-slate-900">
                                     <button type="button" @click="updateQty(item, 1)" class="w-6 h-7 sm:w-7 sm:h-7 flex items-center justify-center text-slate-600 hover:bg-slate-200 active:bg-slate-300 transition font-bold text-sm">+</button>
@@ -451,6 +454,8 @@
                             </label>
                             <input type="number"
                                    x-model.number="labourCost"
+                                   @focus="$event.target.select()"
+                                   @blur="if(!labourCost || labourCost < 0) labourCost = 0"
                                    min="0" step="1"
                                    placeholder="0"
                                    class="w-full text-right font-bold text-xs bg-slate-50 focus:bg-white border border-slate-200 focus:border-brand-500 rounded-lg px-2 py-1 text-slate-800 focus:outline-none transition">
@@ -462,6 +467,8 @@
                             </label>
                             <input type="number"
                                    x-model.number="labourCharges"
+                                   @focus="$event.target.select()"
+                                   @blur="if(!labourCharges || labourCharges < 0) labourCharges = 0"
                                    min="0" step="1"
                                    placeholder="0"
                                    class="w-full text-right font-bold text-xs bg-slate-50 focus:bg-white border border-slate-200 focus:border-brand-500 rounded-lg px-2 py-1 text-brand-700 focus:outline-none transition">
@@ -476,7 +483,12 @@
                         <span class="text-slate-300">|</span>
                         <div class="flex items-center gap-1 text-slate-600">
                             <span>Disc: ₹</span>
-                            <input type="number" x-model.number="orderDiscount" min="0" step="1" placeholder="0" class="w-14 sm:w-16 text-right text-xs bg-white border border-slate-200 rounded-lg px-1.5 py-0.5 font-bold text-slate-900 focus:outline-none focus:border-brand-500">
+                            <input type="number"
+                                   x-model.number="orderDiscount"
+                                   @focus="$event.target.select()"
+                                   @blur="if(!orderDiscount || orderDiscount < 0) orderDiscount = 0"
+                                   min="0" step="1" placeholder="0"
+                                   class="w-14 sm:w-16 text-right text-xs bg-white border border-slate-200 rounded-lg px-1.5 py-0.5 font-bold text-slate-900 focus:outline-none focus:border-brand-500">
                         </div>
                     </div>
                     <div class="text-right">
@@ -556,6 +568,7 @@
                     <input type="number"
                            x-ref="cashInput"
                            x-model.number="amountTendered"
+                           @focus="$event.target.select()"
                            :placeholder="cartGrandTotal"
                            class="w-36 text-right font-extrabold text-base bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-slate-900 focus:border-brand-500 focus:outline-none shadow-2xs">
                 </div>
@@ -599,6 +612,7 @@
                     <label class="text-xs font-bold text-slate-700">Amount Paid via <span x-text="paymentMethod.toUpperCase()"></span> (₹):</label>
                     <input type="number"
                            x-model.number="digitalAmountPaid"
+                           @focus="$event.target.select()"
                            :placeholder="cartGrandTotal"
                            class="w-36 text-right font-extrabold text-base bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-slate-900 focus:border-brand-500 focus:outline-none shadow-2xs">
                 </div>
@@ -620,19 +634,19 @@
                 <div class="grid grid-cols-2 gap-2.5 text-xs">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-600 mb-0.5">Cash (₹)</label>
-                        <input type="number" x-model.number="splitCash" min="0" placeholder="0" class="w-full text-right font-bold text-xs bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:border-purple-500 focus:outline-none shadow-2xs">
+                        <input type="number" x-model.number="splitCash" @focus="$event.target.select()" min="0" placeholder="0" class="w-full text-right font-bold text-xs bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:border-purple-500 focus:outline-none shadow-2xs">
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-600 mb-0.5">UPI / Online (₹)</label>
-                        <input type="number" x-model.number="splitUpi" min="0" placeholder="0" class="w-full text-right font-bold text-xs bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:border-purple-500 focus:outline-none shadow-2xs">
+                        <input type="number" x-model.number="splitUpi" @focus="$event.target.select()" min="0" placeholder="0" class="w-full text-right font-bold text-xs bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:border-purple-500 focus:outline-none shadow-2xs">
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-600 mb-0.5">Card (₹)</label>
-                        <input type="number" x-model.number="splitCard" min="0" placeholder="0" class="w-full text-right font-bold text-xs bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:border-purple-500 focus:outline-none shadow-2xs">
+                        <input type="number" x-model.number="splitCard" @focus="$event.target.select()" min="0" placeholder="0" class="w-full text-right font-bold text-xs bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:border-purple-500 focus:outline-none shadow-2xs">
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-600 mb-0.5">Bank / Transfer (₹)</label>
-                        <input type="number" x-model.number="splitBank" min="0" placeholder="0" class="w-full text-right font-bold text-xs bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:border-purple-500 focus:outline-none shadow-2xs">
+                        <input type="number" x-model.number="splitBank" @focus="$event.target.select()" min="0" placeholder="0" class="w-full text-right font-bold text-xs bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:border-purple-500 focus:outline-none shadow-2xs">
                     </div>
                 </div>
 
@@ -837,7 +851,7 @@
             <form @submit.prevent="submitSettleBalance()" class="space-y-3.5 text-xs">
                 <div>
                     <label class="block font-semibold text-slate-700 mb-1">Payment Amount (₹) <span class="text-rose-500">*</span></label>
-                    <input type="number" x-model.number="settleAmount" :max="currentCustomerDue" step="1" required class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-extrabold focus:border-brand-500 focus:outline-none">
+                    <input type="number" x-model.number="settleAmount" @focus="$event.target.select()" :max="currentCustomerDue" step="1" required class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-extrabold focus:border-brand-500 focus:outline-none">
                 </div>
                 <div>
                     <label class="block font-semibold text-slate-700 mb-1">Payment Mode <span class="text-rose-500">*</span></label>
@@ -1220,19 +1234,20 @@
             },
 
             updateQty(item, delta) {
-                item.quantity = Math.max(0.01, item.quantity + delta);
+                const current = Number(item.quantity) || 0;
+                item.quantity = Math.max(0.01, current + delta);
             },
 
             itemTotal(item) {
-                return item.unit_price * item.quantity;
+                return (Number(item.unit_price) || 0) * (Number(item.quantity) || 0);
             },
 
             get cartTotalQty() {
-                return this.cart.reduce((sum, item) => sum + item.quantity, 0);
+                return this.cart.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
             },
 
             get cartSubtotal() {
-                return this.cart.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+                return this.cart.reduce((sum, item) => sum + ((Number(item.unit_price) || 0) * (Number(item.quantity) || 0)), 0);
             },
 
             get labourProfit() {
@@ -1467,8 +1482,8 @@
                     customer_gstin: cust ? cust.gstin : null,
                     items: this.cart.map(i => ({
                         product_id: i.product_id,
-                        quantity: i.quantity,
-                        unit_price: i.unit_price,
+                        quantity: Number(i.quantity) || 1,
+                        unit_price: Number(i.unit_price) || 0,
                         batch_id: i.batch_id || null,
                         supplier_id: i.supplier_id || null,
                     })),
