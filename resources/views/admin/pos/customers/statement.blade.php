@@ -138,19 +138,19 @@
                 <div class="grid grid-cols-2 gap-2 mt-2 text-xs">
                     <div>
                         <span class="text-gray-500">Opening Balance:</span>
-                        <div class="font-mono font-bold text-gray-800">₹{{ number_format($openingBalance, 2) }}</div>
+                        <div class="font-bold text-gray-800">₹{{ number_format($openingBalance, 2) }}</div>
                     </div>
                     <div>
                         <span class="text-gray-500">Total Invoiced (Debits):</span>
-                        <div class="font-mono font-bold text-red-600">+₹{{ number_format($totalDebit, 2) }}</div>
+                        <div class="font-bold text-red-600">+₹{{ number_format($totalDebit, 2) }}</div>
                     </div>
                     <div>
                         <span class="text-gray-500">Total Paid (Credits):</span>
-                        <div class="font-mono font-bold text-emerald-600">-₹{{ number_format($totalCredit, 2) }}</div>
+                        <div class="font-bold text-emerald-600">-₹{{ number_format($totalCredit, 2) }}</div>
                     </div>
                     <div class="border-t border-gray-300 pt-1">
                         <span class="font-extrabold text-gray-900">Closing Balance Due:</span>
-                        <div class="font-mono font-black text-base {{ $closingBalance > 0 ? 'text-red-700' : 'text-gray-900' }}">
+                        <div class="font-black text-base {{ $closingBalance > 0 ? 'text-red-700' : 'text-gray-900' }}">
                             ₹{{ number_format($closingBalance, 2) }}
                         </div>
                     </div>
@@ -177,11 +177,11 @@
                         <td class="py-2 px-3 text-gray-500">
                             {{ $from ? \Illuminate\Support\Carbon::parse($from)->format('d M Y') : 'Start' }}
                         </td>
-                        <td class="py-2 px-3 font-mono text-gray-500">OPENING</td>
+                        <td class="py-2 px-3 font-bold text-gray-500">OPENING</td>
                         <td class="py-2 px-3 text-gray-600">Opening Balance Brought Forward</td>
-                        <td class="py-2 px-3 text-right text-gray-400 font-mono">—</td>
-                        <td class="py-2 px-3 text-right text-gray-400 font-mono">—</td>
-                        <td class="py-2 px-3 text-right font-mono font-bold text-gray-900">
+                        <td class="py-2 px-3 text-right text-gray-400">—</td>
+                        <td class="py-2 px-3 text-right text-gray-400">—</td>
+                        <td class="py-2 px-3 text-right font-bold text-gray-900">
                             ₹{{ number_format($openingBalance, 2) }}
                         </td>
                     </tr>
@@ -191,7 +191,7 @@
                             <td class="py-2 px-3 text-gray-700 whitespace-nowrap">
                                 {{ $entry['date'] ? $entry['date']->format('d M Y') : '—' }}
                             </td>
-                            <td class="py-2 px-3 font-mono whitespace-nowrap">
+                            <td class="py-2 px-3 whitespace-nowrap">
                                 @if($entry['type'] === 'invoice')
                                     <span class="font-bold text-blue-900">{{ $entry['reference'] }}</span>
                                 @else
@@ -201,24 +201,24 @@
                             <td class="py-2 px-3 text-gray-800">
                                 {{ $entry['description'] }}
                                 @if($entry['reference'] && $entry['type'] !== 'invoice')
-                                    <span class="text-[10px] text-gray-500 font-mono">({{ $entry['reference'] }})</span>
+                                    <span class="text-[10px] text-gray-500">({{ $entry['reference'] }})</span>
                                 @endif
                             </td>
-                            <td class="py-2 px-3 text-right font-mono font-semibold whitespace-nowrap">
+                            <td class="py-2 px-3 text-right font-bold whitespace-nowrap">
                                 @if($entry['debit'] > 0)
                                     <span class="text-red-700">₹{{ number_format($entry['debit'], 2) }}</span>
                                 @else
                                     <span class="text-gray-300">—</span>
                                 @endif
                             </td>
-                            <td class="py-2 px-3 text-right font-mono font-semibold whitespace-nowrap">
+                            <td class="py-2 px-3 text-right font-bold whitespace-nowrap">
                                 @if($entry['credit'] > 0)
                                     <span class="text-emerald-700">₹{{ number_format($entry['credit'], 2) }}</span>
                                 @else
                                     <span class="text-gray-300">—</span>
                                 @endif
                             </td>
-                            <td class="py-2 px-3 text-right font-mono font-bold whitespace-nowrap {{ $entry['running_balance'] > 0 ? 'text-amber-900' : 'text-gray-900' }}">
+                            <td class="py-2 px-3 text-right font-extrabold whitespace-nowrap {{ $entry['running_balance'] > 0 ? 'text-amber-900' : 'text-gray-900' }}">
                                 ₹{{ number_format($entry['running_balance'], 2) }}
                             </td>
                         </tr>
@@ -235,13 +235,13 @@
                         <td colspan="3" class="py-2.5 px-3 text-right uppercase tracking-wider text-gray-700">
                             Total / Net Closing Balance:
                         </td>
-                        <td class="py-2.5 px-3 text-right font-mono text-red-700">
+                        <td class="py-2.5 px-3 text-right font-extrabold text-red-700">
                             ₹{{ number_format($totalDebit, 2) }}
                         </td>
-                        <td class="py-2.5 px-3 text-right font-mono text-emerald-700">
+                        <td class="py-2.5 px-3 text-right font-extrabold text-emerald-700">
                             ₹{{ number_format($totalCredit, 2) }}
                         </td>
-                        <td class="py-2.5 px-3 text-right font-mono font-black text-sm {{ $closingBalance > 0 ? 'text-red-700' : 'text-emerald-700' }}">
+                        <td class="py-2.5 px-3 text-right font-black text-sm {{ $closingBalance > 0 ? 'text-red-700' : 'text-emerald-700' }}">
                             ₹{{ number_format($closingBalance, 2) }}
                         </td>
                     </tr>

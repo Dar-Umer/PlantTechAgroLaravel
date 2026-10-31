@@ -46,7 +46,7 @@
             <span class="text-gray-300">/</span>
             <span class="font-bold text-gray-800">Customer Profile & Statement</span>
             <span class="text-gray-300">/</span>
-            <span class="text-gray-600 font-mono text-xs">{{ $customer->name }}</span>
+            <span class="text-gray-700 font-semibold text-xs">{{ $customer->name }}</span>
         </div>
 
         <div class="flex items-center gap-2">
@@ -155,7 +155,7 @@
                         </span>
                     @endif
                 </div>
-                <div class="mt-1 text-2xl font-black font-mono {{ (float) $customer->outstanding_balance > 0 ? 'text-amber-900' : 'text-emerald-900' }}">
+                <div class="mt-1 text-2xl font-black {{ (float) $customer->outstanding_balance > 0 ? 'text-amber-900' : 'text-emerald-900' }}">
                     ₹{{ number_format($customer->outstanding_balance, 2) }}
                 </div>
                 @if((float) $customer->outstanding_balance > 0)
@@ -208,7 +208,7 @@
                 </div>
             </div>
             <div class="mt-3">
-                <div class="text-2xl font-black text-gray-900 font-mono">₹{{ number_format($lifetimePurchases, 2) }}</div>
+                <div class="text-2xl font-black text-gray-900">₹{{ number_format($lifetimePurchases, 2) }}</div>
                 <div class="text-xs text-gray-500 mt-1">Gross sales lifetime volume</div>
             </div>
         </div>
@@ -222,7 +222,7 @@
                 </div>
             </div>
             <div class="mt-3">
-                <div class="text-2xl font-black text-emerald-600 font-mono">₹{{ number_format($lifetimePaid, 2) }}</div>
+                <div class="text-2xl font-black text-emerald-600">₹{{ number_format($lifetimePaid, 2) }}</div>
                 <div class="text-xs text-gray-500 mt-1">Total cash/UPI collections settled</div>
             </div>
         </div>
@@ -236,7 +236,7 @@
                 </div>
             </div>
             <div class="mt-3">
-                <div class="text-2xl font-black font-mono {{ (float) $outstandingBalance > 0 ? 'text-red-600' : 'text-gray-900' }}">
+                <div class="text-2xl font-black {{ (float) $outstandingBalance > 0 ? 'text-red-600' : 'text-gray-900' }}">
                     ₹{{ number_format($outstandingBalance, 2) }}
                 </div>
                 <div class="text-xs {{ (float) $outstandingBalance > 0 ? 'text-red-600 font-medium' : 'text-gray-500' }} mt-1">
@@ -328,19 +328,19 @@
                 <div class="ml-auto flex flex-wrap items-center gap-3 text-xs">
                     <div class="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-2xs">
                         <span class="text-gray-400 font-semibold">Opening:</span>
-                        <strong class="font-mono text-gray-800">₹{{ number_format($openingBalance, 2) }}</strong>
+                        <strong class="font-extrabold text-gray-800">₹{{ number_format($openingBalance, 2) }}</strong>
                     </div>
                     <div class="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-2xs">
                         <span class="text-gray-400 font-semibold">Debit (Invoiced):</span>
-                        <strong class="font-mono text-red-600">+₹{{ number_format($totalDebit, 2) }}</strong>
+                        <strong class="font-extrabold text-red-600">+₹{{ number_format($totalDebit, 2) }}</strong>
                     </div>
                     <div class="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-2xs">
                         <span class="text-gray-400 font-semibold">Credit (Paid):</span>
-                        <strong class="font-mono text-emerald-600">-₹{{ number_format($totalCredit, 2) }}</strong>
+                        <strong class="font-extrabold text-emerald-600">-₹{{ number_format($totalCredit, 2) }}</strong>
                     </div>
                     <div class="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-2xs">
                         <span class="text-gray-400 font-semibold">Closing Due:</span>
-                        <strong class="font-mono text-brand-700 font-extrabold">₹{{ number_format($closingBalance, 2) }}</strong>
+                        <strong class="text-brand-700 font-black">₹{{ number_format($closingBalance, 2) }}</strong>
                     </div>
                 </div>
             </form>
@@ -365,11 +365,11 @@
                             <td class="py-3 px-4 text-gray-500">
                                 {{ $from ? \Illuminate\Support\Carbon::parse($from)->format('d M Y') : 'Start of Account' }}
                             </td>
-                            <td class="py-3 px-4 font-mono text-gray-500">OPENING</td>
+                            <td class="py-3 px-4 font-bold text-gray-500">OPENING</td>
                             <td class="py-3 px-4 text-gray-600">Opening Balance Brought Forward</td>
-                            <td class="py-3 px-4 text-right font-mono text-gray-400">—</td>
-                            <td class="py-3 px-4 text-right font-mono text-gray-400">—</td>
-                            <td class="py-3 px-4 text-right font-mono font-bold text-gray-800">
+                            <td class="py-3 px-4 text-right text-gray-400">—</td>
+                            <td class="py-3 px-4 text-right text-gray-400">—</td>
+                            <td class="py-3 px-4 text-right font-extrabold text-gray-800">
                                 ₹{{ number_format($openingBalance, 2) }}
                             </td>
                             <td class="py-3 px-4 text-right text-gray-400">—</td>
@@ -397,24 +397,24 @@
                                 <td class="py-3 px-4 text-gray-700">
                                     <div class="font-medium">{{ $entry['description'] }}</div>
                                     @if($entry['reference'] && $entry['type'] !== 'invoice')
-                                        <div class="text-[11px] text-gray-400 font-mono">Ref: {{ $entry['reference'] }}</div>
+                                        <div class="text-[11px] text-gray-400">Ref: {{ $entry['reference'] }}</div>
                                     @endif
                                 </td>
-                                <td class="py-3 px-4 text-right font-mono font-bold whitespace-nowrap">
+                                <td class="py-3 px-4 text-right font-extrabold whitespace-nowrap">
                                     @if($entry['debit'] > 0)
                                         <span class="text-red-600">+₹{{ number_format($entry['debit'], 2) }}</span>
                                     @else
                                         <span class="text-gray-300">—</span>
                                     @endif
                                 </td>
-                                <td class="py-3 px-4 text-right font-mono font-bold whitespace-nowrap">
+                                <td class="py-3 px-4 text-right font-extrabold whitespace-nowrap">
                                     @if($entry['credit'] > 0)
                                         <span class="text-emerald-600">-₹{{ number_format($entry['credit'], 2) }}</span>
                                     @else
                                         <span class="text-gray-300">—</span>
                                     @endif
                                 </td>
-                                <td class="py-3 px-4 text-right font-mono font-black whitespace-nowrap {{ $entry['running_balance'] > 0 ? 'text-amber-800' : 'text-gray-900' }}">
+                                <td class="py-3 px-4 text-right font-extrabold whitespace-nowrap {{ $entry['running_balance'] > 0 ? 'text-amber-800' : 'text-gray-900' }}">
                                     ₹{{ number_format($entry['running_balance'], 2) }}
                                 </td>
                                 <td class="py-3 px-4 text-right whitespace-nowrap">
@@ -443,13 +443,13 @@
                             <td colspan="3" class="py-3 px-4 text-right uppercase tracking-wider text-gray-700 text-[11px]">
                                 Closing Balance Due (as of {{ $to ? \Illuminate\Support\Carbon::parse($to)->format('d M Y') : now()->format('d M Y') }}):
                             </td>
-                            <td class="py-3 px-4 text-right font-mono text-red-600">
+                            <td class="py-3 px-4 text-right font-extrabold text-red-600">
                                 +₹{{ number_format($totalDebit, 2) }}
                             </td>
-                            <td class="py-3 px-4 text-right font-mono text-emerald-600">
+                            <td class="py-3 px-4 text-right font-extrabold text-emerald-600">
                                 -₹{{ number_format($totalCredit, 2) }}
                             </td>
-                            <td class="py-3 px-4 text-right font-mono font-black text-sm {{ $closingBalance > 0 ? 'text-red-700' : 'text-emerald-700' }}">
+                            <td class="py-3 px-4 text-right font-black text-sm {{ $closingBalance > 0 ? 'text-red-700' : 'text-emerald-700' }}">
                                 ₹{{ number_format($closingBalance, 2) }}
                             </td>
                             <td></td>
@@ -479,7 +479,7 @@
                     <tbody class="divide-y divide-gray-100">
                         @forelse($sales as $sale)
                             <tr class="hover:bg-gray-50/80 transition">
-                                <td class="py-3.5 px-4 font-mono font-bold text-gray-900 whitespace-nowrap">
+                                <td class="py-3.5 px-4 font-bold text-gray-900 whitespace-nowrap">
                                     <a href="{{ route($showSaleRoute, $sale) }}" class="text-brand-600 hover:text-brand-800 hover:underline inline-flex items-center gap-1 group">
                                         <span>{{ $sale->invoice_number }}</span>
                                         <svg class="w-3 h-3 text-brand-400 group-hover:text-brand-600 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
@@ -500,13 +500,13 @@
                                         </span>
                                     </div>
                                 </td>
-                                <td class="py-3.5 px-4 text-right font-mono font-bold text-gray-900">
+                                <td class="py-3.5 px-4 text-right font-bold text-gray-900">
                                     ₹{{ number_format($sale->grand_total, 2) }}
                                 </td>
-                                <td class="py-3.5 px-4 text-right font-mono text-emerald-600 font-bold">
+                                <td class="py-3.5 px-4 text-right text-emerald-600 font-bold">
                                     ₹{{ number_format($sale->amount_paid, 2) }}
                                 </td>
-                                <td class="py-3.5 px-4 text-right font-mono">
+                                <td class="py-3.5 px-4 text-right">
                                     @if((float) $sale->balance_due > 0)
                                         <span class="font-bold text-red-600">₹{{ number_format($sale->balance_due, 2) }}</span>
                                     @else
@@ -572,7 +572,7 @@
                                     <div class="font-medium text-gray-900">{{ $pmt->created_at ? $pmt->created_at->format('d M Y') : '—' }}</div>
                                     <div class="text-[11px] text-gray-400">{{ $pmt->created_at ? $pmt->created_at->format('h:i A') : '' }}</div>
                                 </td>
-                                <td class="py-3.5 px-4 font-mono font-bold text-gray-900 whitespace-nowrap">
+                                <td class="py-3.5 px-4 font-bold text-gray-900 whitespace-nowrap">
                                     @if($pmt->sale)
                                         <a href="{{ route($showSaleRoute, $pmt->sale) }}" class="text-brand-600 hover:text-brand-800 hover:underline">
                                             {{ $pmt->sale->invoice_number }}
@@ -586,7 +586,7 @@
                                         {{ $pmt->methodLabel() }}
                                     </span>
                                 </td>
-                                <td class="py-3.5 px-4 text-right font-mono font-black text-emerald-600 text-sm whitespace-nowrap">
+                                <td class="py-3.5 px-4 text-right font-extrabold text-emerald-600 text-sm whitespace-nowrap">
                                     ₹{{ number_format($pmt->amount, 2) }}
                                 </td>
                                 <td class="py-3.5 px-4 text-gray-600">
@@ -679,7 +679,7 @@
                                max="{{ (float) $customer->outstanding_balance }}"
                                x-model="settleAmount"
                                required
-                               class="w-full px-3 py-2 text-sm font-mono font-bold bg-white border border-gray-300 rounded-xl focus:ring-brand-500 focus:border-brand-500 shadow-2xs">
+                               class="w-full px-3 py-2 text-sm font-bold bg-white border border-gray-300 rounded-xl focus:ring-brand-500 focus:border-brand-500 shadow-2xs">
                         <span class="text-[11px] text-gray-400 mt-1 block">Payments will apply FIFO to clear unpaid invoices.</span>
                     </div>
 
